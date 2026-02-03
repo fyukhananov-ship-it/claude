@@ -16,7 +16,7 @@ struct PrimaryButton: View {
 
         var backgroundColor: Color {
             switch self {
-            case .primary: return .accentColor
+            case .primary: return Color.accentColor
             case .secondary: return Color(.systemGray5)
             case .success: return .green
             case .destructive: return .red
@@ -82,7 +82,7 @@ struct SecondaryButton: View {
                     .font(.subheadline)
                     .fontWeight(.semibold)
             }
-            .foregroundStyle(.accentColor)
+            .foregroundStyle(Color.accentColor)
         }
     }
 }

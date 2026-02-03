@@ -40,7 +40,7 @@ struct SearchBar: View {
                 Button(action: onFilterTap) {
                     Image(systemName: "slider.horizontal.3")
                         .font(.body)
-                        .foregroundStyle(.accentColor)
+                        .foregroundStyle(Color.accentColor)
                         .padding(10)
                         .background(
                             RoundedRectangle(cornerRadius: 12)

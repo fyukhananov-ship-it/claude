@@ -105,7 +105,7 @@ struct ActiveOfferCard: View {
                 Text(activatedOffer.offer.benefit.displayValue)
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundStyle(.accentColor)
+                    .foregroundStyle(Color.accentColor)
             }
 
             // Status row

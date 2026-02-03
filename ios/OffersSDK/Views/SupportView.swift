@@ -334,7 +334,7 @@ struct TicketTypeOption: View {
             HStack(spacing: 12) {
                 Image(systemName: icon)
                     .font(.title3)
-                    .foregroundStyle(isSelected ? .white : .accentColor)
+                    .foregroundStyle(isSelected ? .white : Color.accentColor)
                     .frame(width: 32)
 
                 Text(type.rawValue)

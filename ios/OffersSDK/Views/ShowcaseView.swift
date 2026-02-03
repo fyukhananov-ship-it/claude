@@ -96,7 +96,7 @@ struct OfferSection: View {
                         Text("Все")
                             .font(.subheadline)
                             .fontWeight(.semibold)
-                            .foregroundStyle(.accentColor)
+                            .foregroundStyle(Color.accentColor)
                     }
                 }
             }

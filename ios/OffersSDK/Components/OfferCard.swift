@@ -52,7 +52,7 @@ struct OfferCard: View {
                     .font(.system(size: 36, weight: .bold, design: .rounded))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [.accentColor, .accentColor.opacity(0.8)],
+                            colors: [Color.accentColor, Color.accentColor.opacity(0.8)],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -109,7 +109,7 @@ struct OfferCard: View {
                         Label("Активировать", systemImage: "arrow.right.circle.fill")
                             .font(.subheadline)
                             .fontWeight(.semibold)
-                            .foregroundStyle(.accentColor)
+                            .foregroundStyle(Color.accentColor)
                     }
                 }
             }
@@ -152,7 +152,7 @@ struct OfferCardCompact: View {
                 Text(offer.benefit.displayValue)
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundStyle(.accentColor)
+                    .foregroundStyle(Color.accentColor)
 
                 // Partner name
                 Text(offer.partner.name)

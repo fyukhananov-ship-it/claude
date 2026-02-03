@@ -119,7 +119,7 @@ struct OfferDetailView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(offer.benefit.displayValue)
                         .font(.system(size: 48, weight: .bold, design: .rounded))
-                        .foregroundStyle(.accentColor)
+                        .foregroundStyle(Color.accentColor)
 
                     Text(benefitTypeText)
                         .font(.subheadline)

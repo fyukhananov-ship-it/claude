@@ -21,9 +21,9 @@ struct ChipView: View {
 
         var backgroundColor: Color {
             switch self {
-            case .primary: return .accentColor.opacity(0.12)
+            case .primary: return Color.accentColor.opacity(0.12)
             case .secondary: return Color(.systemGray5)
-            case .accent: return .accentColor
+            case .accent: return Color.accentColor
             case .success: return .green.opacity(0.12)
             case .warning: return .orange.opacity(0.12)
             case .error: return .red.opacity(0.12)
@@ -32,7 +32,7 @@ struct ChipView: View {
 
         var foregroundColor: Color {
             switch self {
-            case .primary: return .accentColor
+            case .primary: return Color.accentColor
             case .secondary: return .secondary
             case .accent: return .white
             case .success: return .green
