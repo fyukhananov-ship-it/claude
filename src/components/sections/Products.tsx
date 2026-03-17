@@ -12,7 +12,7 @@ const categoryIconComponents: Record<string, typeof Cookie> = {
 }
 
 export default function Products() {
-  const { ref, isVisible } = useScrollReveal()
+  const { ref, isVisible } = useScrollReveal({ threshold: 0.02, rootMargin: '200px' })
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
 
   const displayedCategories = activeCategory
