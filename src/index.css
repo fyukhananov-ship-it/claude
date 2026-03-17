@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply antialiased scroll-smooth;
+  }
+  body {
+    @apply bg-white text-charcoal-900 font-sans m-0;
+  }
+  h1, h2, h3, h4 {
+    @apply font-serif;
+  }
+}
+
+@layer utilities {
+  .bg-dot-pattern {
+    background-image: radial-gradient(circle, rgba(232, 228, 224, 0.4) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .section-padding {
+    @apply py-20 px-6 lg:py-28 lg:px-0;
+  }
+}
