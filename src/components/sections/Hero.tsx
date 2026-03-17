@@ -29,13 +29,13 @@ export default function Hero() {
 
   return (
     <motion.section
-      className="relative flex w-full flex-col overflow-hidden bg-cream text-charcoal-900 md:flex-row min-h-[calc(100vh-72px)]"
+      className="relative flex w-full flex-col overflow-hidden bg-cream text-charcoal-900 md:flex-row min-h-screen mt-[72px]"
       initial="hidden"
       animate="visible"
       variants={containerVariants}
     >
       {/* Left Side: Content */}
-      <div className="flex w-full flex-col justify-between p-8 md:w-1/2 md:p-12 lg:w-3/5 lg:p-16 pt-[100px] md:pt-12 lg:pt-16">
+      <div className="flex w-full flex-col justify-between p-8 pt-12 md:w-1/2 md:p-12 lg:w-3/5 lg:p-16">
         {/* Top Section */}
         <div>
           <motion.header className="mb-10" variants={itemVariants}>
