@@ -29,13 +29,13 @@ export default function Hero() {
 
   return (
     <motion.section
-      className="relative flex w-full flex-col overflow-hidden bg-white text-charcoal-900 md:flex-row min-h-screen mt-[72px]"
+      className="relative flex w-full flex-col overflow-hidden bg-white text-charcoal-900 md:flex-row min-h-[520px] md:min-h-[560px] lg:min-h-[600px] mt-[72px]"
       initial="hidden"
       animate="visible"
       variants={containerVariants}
     >
       {/* Left Side: Content */}
-      <div className="flex w-full flex-col justify-between p-8 pt-12 md:w-1/2 md:p-12 lg:w-3/5 lg:p-16">
+      <div className="flex w-full flex-col justify-between p-8 pt-10 md:w-1/2 md:p-10 lg:w-3/5 lg:px-16 lg:py-10">
         {/* Top Section */}
         <div>
           <motion.header className="mb-10" variants={itemVariants}>
@@ -99,9 +99,11 @@ export default function Hero() {
 
       {/* Right Side: Image with Clip Path Animation */}
       <motion.div
-        className="w-full min-h-[300px] bg-cover bg-center md:w-1/2 md:min-h-full lg:w-2/5"
+        className="w-full min-h-[300px] md:w-1/2 md:min-h-full lg:w-2/5"
         style={{
           backgroundImage: 'url(/claude/hero-bg.jpg)',
+          backgroundSize: '115%',
+          backgroundPosition: '30% center',
         }}
         initial={{ clipPath: 'polygon(100% 0, 100% 0, 100% 100%, 100% 100%)' }}
         animate={{ clipPath: 'polygon(25% 0, 100% 0, 100% 100%, 0% 100%)' }}
