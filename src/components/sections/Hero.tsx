@@ -29,7 +29,7 @@ export default function Hero() {
 
   return (
     <motion.section
-      className="relative flex w-full flex-col overflow-hidden bg-cream text-charcoal-900 md:flex-row min-h-screen mt-[72px]"
+      className="relative flex w-full flex-col overflow-hidden bg-white text-charcoal-900 md:flex-row min-h-screen mt-[72px]"
       initial="hidden"
       animate="visible"
       variants={containerVariants}
