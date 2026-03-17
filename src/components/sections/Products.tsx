@@ -4,7 +4,7 @@ import {
 } from 'lucide-react'
 import { useScrollReveal } from '../../hooks/useScrollReveal'
 import SectionHeading from '../ui/SectionHeading'
-import CatalogCard from '../ui/CatalogCard'
+import CategoryCarousel from '../ui/CategoryCarousel'
 import { catalog } from '../../data/catalog'
 
 const categoryIconComponents: Record<string, typeof Cookie> = {
@@ -33,7 +33,7 @@ export default function Products() {
         <div className={`flex flex-wrap justify-center gap-2 mb-12 transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`} style={{ transitionDelay: '150ms' }}>
           <button
             onClick={() => setActiveCategory(null)}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full font-sans text-sm font-medium transition-all duration-200 ${
+            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full font-sans text-sm font-medium transition-all duration-200 cursor-pointer ${
               activeCategory === null
                 ? 'bg-warm-500 text-white shadow-md'
                 : 'bg-warm-50 text-charcoal-700 hover:bg-warm-100'
@@ -47,7 +47,7 @@ export default function Products() {
               <button
                 key={category.id}
                 onClick={() => setActiveCategory(category.id)}
-                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full font-sans text-sm font-medium transition-all duration-200 ${
+                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full font-sans text-sm font-medium transition-all duration-200 cursor-pointer ${
                   activeCategory === category.id
                     ? 'bg-warm-500 text-white shadow-md'
                     : 'bg-warm-50 text-charcoal-700 hover:bg-warm-100'
@@ -61,34 +61,33 @@ export default function Products() {
           })}
         </div>
 
-        {/* Product grid by category */}
+        {/* Product carousels by category */}
         {displayedCategories.map((category, catIdx) => (
           <div key={category.id} className={catIdx > 0 ? 'mt-14' : ''}>
-            {!activeCategory && (
-              <div className={`flex items-center gap-3 mb-6 transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`} style={{ transitionDelay: `${200 + catIdx * 100}ms` }}>
-                <div className="w-10 h-10 rounded-xl bg-warm-50 flex items-center justify-center">
-                  {(() => {
-                    const Icon = categoryIconComponents[category.icon] || Cake
-                    return <Icon className="w-5 h-5 text-warm-400" strokeWidth={1.5} />
-                  })()}
-                </div>
-                <h3 className="font-serif text-2xl font-semibold text-charcoal-900">
-                  {category.name}
-                </h3>
-                <div className="flex-1 h-px bg-charcoal-100 ml-4" />
+            <div
+              className={`flex items-center gap-3 mb-6 transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+              style={{ transitionDelay: `${200 + catIdx * 100}ms` }}
+            >
+              <div className="w-10 h-10 rounded-xl bg-warm-50 flex items-center justify-center">
+                {(() => {
+                  const Icon = categoryIconComponents[category.icon] || Cake
+                  return <Icon className="w-5 h-5 text-warm-400" strokeWidth={1.5} />
+                })()}
               </div>
-            )}
+              <h3 className="font-serif text-2xl font-semibold text-charcoal-900">
+                {category.name}
+              </h3>
+              <div className="flex-1 h-px bg-charcoal-100 ml-4" />
+            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {category.products.map((product, i) => (
-                <div
-                  key={product.id}
-                  className={`transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
-                  style={{ transitionDelay: `${250 + catIdx * 100 + i * 80}ms` }}
-                >
-                  <CatalogCard product={product} categoryIcon={category.icon} />
-                </div>
-              ))}
+            <div
+              className={`transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+              style={{ transitionDelay: `${250 + catIdx * 100}ms` }}
+            >
+              <CategoryCarousel
+                products={category.products}
+                categoryIcon={category.icon}
+              />
             </div>
           </div>
         ))}
