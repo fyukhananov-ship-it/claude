@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Menu } from 'lucide-react'
 import Button from '../ui/Button'
+import RequestModal from '../ui/RequestModal'
 import {
   Sheet,
   SheetContent,
@@ -20,6 +21,7 @@ const navLinks = [
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const [isRequestOpen, setIsRequestOpen] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20)
@@ -63,7 +65,7 @@ export default function Header() {
               ))}
             </div>
           </div>
-          <Button size="sm" onClick={() => scrollTo('#contacts')}>
+          <Button size="sm" onClick={() => setIsRequestOpen(true)}>
             Оставить заявку
           </Button>
         </nav>
@@ -110,7 +112,7 @@ export default function Header() {
                   </a>
                 ))}
                 <div className="mt-4 border-t border-charcoal-100 pt-6">
-                  <Button size="lg" className="w-full" onClick={() => scrollTo('#contacts')}>
+                  <Button size="lg" className="w-full" onClick={() => { setIsMobileOpen(false); setIsRequestOpen(true) }}>
                     Оставить заявку
                   </Button>
                 </div>
@@ -119,6 +121,8 @@ export default function Header() {
           </Sheet>
         </div>
       </div>
+
+      <RequestModal open={isRequestOpen} onOpenChange={setIsRequestOpen} />
     </header>
   )
 }
