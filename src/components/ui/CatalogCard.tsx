@@ -17,11 +17,11 @@ export default function CatalogCard({ product, categoryIcon }: CatalogCardProps)
 
   return (
     <div className="group bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 overflow-hidden flex flex-col h-full">
-      <div className="h-36 bg-gradient-to-br from-warm-50 to-warm-100 flex items-center justify-center relative overflow-hidden shrink-0">
+      <div className="h-48 bg-gradient-to-br from-warm-50 to-warm-100 flex items-center justify-center relative overflow-hidden shrink-0">
         <div className="absolute inset-0 bg-dot-pattern opacity-30" />
         <Icon
-          className="w-10 h-10 text-warm-300 group-hover:scale-110 transition-transform duration-300"
-          strokeWidth={1.5}
+          className="w-16 h-16 text-warm-300 group-hover:scale-110 transition-transform duration-300"
+          strokeWidth={1.2}
         />
       </div>
       <div className="p-5 flex flex-col flex-1">
