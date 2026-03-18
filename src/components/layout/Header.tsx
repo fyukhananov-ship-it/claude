@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Menu } from 'lucide-react'
+import logoImg from '/logo.png'
 import Button from '../ui/Button'
 import RequestModal from '../ui/RequestModal'
 import {
@@ -50,7 +51,7 @@ export default function Header() {
               onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
               className="flex items-center"
             >
-              <img src="/logo.png" alt="Линия Вкуса" className="h-12 w-auto" />
+              <img src={logoImg} alt="Линия Вкуса" className="h-12 w-auto" />
             </a>
             <div className="flex items-center gap-1">
               {navLinks.map((link) => (
@@ -77,7 +78,7 @@ export default function Header() {
             onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
             className="flex items-center"
           >
-            <img src="/logo.png" alt="Линия Вкуса" className="h-12 w-auto" />
+            <img src={logoImg} alt="Линия Вкуса" className="h-12 w-auto" />
           </a>
           <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
             <SheetTrigger asChild>
@@ -96,7 +97,7 @@ export default function Header() {
                     onClick={(e) => { e.preventDefault(); setIsMobileOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
                     className="flex items-center"
                   >
-                    <img src="/logo.png" alt="Линия Вкуса" className="h-12 w-auto" />
+                    <img src={logoImg} alt="Линия Вкуса" className="h-12 w-auto" />
                   </a>
                 </SheetTitle>
               </SheetHeader>

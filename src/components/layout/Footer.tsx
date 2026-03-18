@@ -1,3 +1,5 @@
+import logoImg from '/logo.png'
+
 const navLinks = [
   { label: 'О компании', href: '#about' },
   { label: 'Продукция', href: '#products' },
@@ -30,7 +32,7 @@ export default function Footer() {
               onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
               className="flex items-center"
             >
-              <img src="/logo.png" alt="Линия Вкуса" className="h-12 w-auto brightness-0 invert" />
+              <img src={logoImg} alt="Линия Вкуса" className="h-12 w-auto brightness-0 invert" />
             </a>
             <p className="mt-3 text-sm leading-relaxed">
               Кондитерские изделия и выпечка для отелей, ресторанов и кейтеринга
