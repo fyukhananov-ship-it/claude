@@ -30,6 +30,7 @@ export const catalog: CatalogCategory[] = [
         name: 'Амареттини',
         description: 'Классическое итальянское миндальное печенье с хрустящей корочкой и мягкой серединкой',
         weight: '30 г',
+        image: '/claude/amarettini.jpg',
       },
       {
         id: 'cookie-3',
