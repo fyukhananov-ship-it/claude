@@ -28,9 +28,9 @@ export default function Footer() {
             <a
               href="#"
               onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
-              className="font-serif font-semibold text-white text-lg tracking-tight"
+              className="flex items-center"
             >
-              Линия Вкуса
+              <img src="/logo.png" alt="Линия Вкуса" className="h-12 w-auto brightness-0 invert" />
             </a>
             <p className="mt-3 text-sm leading-relaxed">
               Кондитерские изделия и выпечка для отелей, ресторанов и кейтеринга

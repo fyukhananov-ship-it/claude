@@ -48,9 +48,9 @@ export default function Header() {
             <a
               href="#"
               onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
-              className="font-serif font-semibold text-charcoal-900 text-xl tracking-tight"
+              className="flex items-center"
             >
-              Линия Вкуса
+              <img src="/logo.png" alt="Линия Вкуса" className="h-12 w-auto" />
             </a>
             <div className="flex items-center gap-1">
               {navLinks.map((link) => (
@@ -75,9 +75,9 @@ export default function Header() {
           <a
             href="#"
             onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
-            className="font-serif font-semibold text-charcoal-900 text-xl tracking-tight"
+            className="flex items-center"
           >
-            Линия Вкуса
+            <img src="/logo.png" alt="Линия Вкуса" className="h-12 w-auto" />
           </a>
           <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
             <SheetTrigger asChild>
@@ -94,9 +94,9 @@ export default function Header() {
                   <a
                     href="#"
                     onClick={(e) => { e.preventDefault(); setIsMobileOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
-                    className="font-serif font-semibold text-charcoal-900 text-xl tracking-tight"
+                    className="flex items-center"
                   >
-                    Линия Вкуса
+                    <img src="/logo.png" alt="Линия Вкуса" className="h-12 w-auto" />
                   </a>
                 </SheetTitle>
               </SheetHeader>
