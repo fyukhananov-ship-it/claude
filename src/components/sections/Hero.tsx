@@ -102,8 +102,9 @@ export default function Hero() {
         className="w-full min-h-[300px] md:w-1/2 md:min-h-full lg:w-2/5"
         style={{
           backgroundImage: 'url(/claude/hero-bg.jpg)',
-          backgroundSize: '115%',
+          backgroundSize: 'cover',
           backgroundPosition: '30% center',
+          backgroundRepeat: 'no-repeat',
         }}
         initial={{ clipPath: 'polygon(100% 0, 100% 0, 100% 100%, 100% 100%)' }}
         animate={{ clipPath: 'polygon(25% 0, 100% 0, 100% 100%, 0% 100%)' }}
