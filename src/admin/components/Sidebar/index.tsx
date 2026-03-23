@@ -196,6 +196,33 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               </SidebarLinkGroup>
               {/* <!-- Menu Item Dashboard --> */}
 
+              {/* <!-- Menu Item Products --> */}
+              <li>
+                <NavLink
+                  to="/admin/products"
+                  className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                    pathname.includes('products') &&
+                    'bg-graydark dark:bg-meta-4'
+                  }`}
+                >
+                  <svg
+                    className="fill-current"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 18 18"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M9 0.75L1.5 4.125V13.875L9 17.25L16.5 13.875V4.125L9 0.75ZM9 2.355L14.529 4.813L9 7.271L3.471 4.813L9 2.355ZM2.625 5.707L8.438 8.295V15.713L2.625 13.125V5.707ZM9.563 15.713V8.295L15.375 5.707V13.125L9.563 15.713Z"
+                      fill=""
+                    />
+                  </svg>
+                  Продукция
+                </NavLink>
+              </li>
+              {/* <!-- Menu Item Products --> */}
+
               {/* <!-- Menu Item Calendar --> */}
               <li>
                 <NavLink
