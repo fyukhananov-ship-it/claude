@@ -139,7 +139,7 @@ export async function updateProduct(
     formData.append('data', JSON.stringify(updates))
     formData.append('files.image', imageFile)
     // Strapi v5: upload with entry update via upload endpoint
-    const uploadRes = await fetch(`${STRAPI_URL}/api/upload`, {
+    const uploadRes = await fetch(`${STRAPI_URL}/upload`, {
       method: 'POST',
       body: (() => {
         const fd = new FormData()
