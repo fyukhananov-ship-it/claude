@@ -57,9 +57,15 @@ export default function JournalPage() {
             className="block group"
           >
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-              <div className={`h-64 lg:h-80 rounded-2xl bg-gradient-to-br ${headerGradients[featured.categoryColor]} flex items-center justify-center`}>
-                <span className="font-serif text-6xl text-charcoal-200 opacity-30">01</span>
-              </div>
+              {featured.image ? (
+                <div className="h-64 lg:h-80 rounded-2xl overflow-hidden">
+                  <img src={featured.image} alt={featured.title} className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <div className={`h-64 lg:h-80 rounded-2xl bg-gradient-to-br ${headerGradients[featured.categoryColor]} flex items-center justify-center`}>
+                  <span className="font-serif text-6xl text-charcoal-200 opacity-30">01</span>
+                </div>
+              )}
               <div>
                 <div className="flex items-center gap-3 mb-4">
                   <span className={`inline-block px-3 py-1 rounded-full text-xs font-sans font-medium ${badgeColors[featured.categoryColor]}`}>
@@ -99,11 +105,17 @@ export default function JournalPage() {
                 to={`/journal/${article.id}`}
                 className="bg-white rounded-2xl border border-charcoal-100 hover:shadow-card-hover transition-all duration-300 overflow-hidden group"
               >
-                <div className={`h-32 bg-gradient-to-br ${headerGradients[article.categoryColor]} flex items-center justify-center`}>
-                  <span className="font-serif text-4xl text-charcoal-200 opacity-20">
-                    {String(i + 2).padStart(2, '0')}
-                  </span>
-                </div>
+                {article.image ? (
+                  <div className="h-40 overflow-hidden">
+                    <img src={article.image} alt={article.title} className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className={`h-32 bg-gradient-to-br ${headerGradients[article.categoryColor]} flex items-center justify-center`}>
+                    <span className="font-serif text-4xl text-charcoal-200 opacity-20">
+                      {String(i + 2).padStart(2, '0')}
+                    </span>
+                  </div>
+                )}
                 <div className="p-5">
                   <div className="flex items-center gap-2 mb-3">
                     <span className={`inline-block px-3 py-1 rounded-full text-xs font-sans font-medium ${badgeColors[article.categoryColor]}`}>

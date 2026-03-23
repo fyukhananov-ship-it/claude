@@ -18,6 +18,7 @@ const emptyForm = {
   date: '',
   readTime: '',
   content: [''],
+  image: '',
 };
 
 const Journal = () => {
@@ -37,6 +38,7 @@ const Journal = () => {
     setEditing({
       ...article,
       content: article.content.length > 0 ? article.content : [''],
+      image: article.image || '',
     });
     setIsNew(false);
   };
@@ -63,6 +65,7 @@ const Journal = () => {
       date: editing.date.trim(),
       readTime: editing.readTime.trim() || '3 мин',
       content: editing.content.filter((p) => p.trim() !== ''),
+      ...(editing.image.trim() ? { image: editing.image.trim() } : {}),
     };
 
     if (isNew) {
@@ -223,6 +226,30 @@ const Journal = () => {
                 />
               </div>
 
+              {/* Image */}
+              <div>
+                <label className="mb-2.5 block text-sm font-medium text-black dark:text-white">
+                  Изображение (URL)
+                </label>
+                <input
+                  type="text"
+                  value={editing.image}
+                  onChange={(e) => setEditing({ ...editing, image: e.target.value })}
+                  placeholder="https://example.com/image.jpg"
+                  className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                />
+                {editing.image.trim() && (
+                  <div className="mt-3 rounded-lg overflow-hidden border border-stroke dark:border-strokedark">
+                    <img
+                      src={editing.image}
+                      alt="Предпросмотр"
+                      className="w-full max-h-48 object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                    />
+                  </div>
+                )}
+              </div>
+
               {/* Content paragraphs */}
               <div>
                 <div className="mb-2.5 flex items-center justify-between">
@@ -315,13 +342,18 @@ const Journal = () => {
               key={article.id}
               className="grid grid-cols-12 items-center border-b border-stroke px-4 py-4 dark:border-strokedark sm:px-6 2xl:px-7.5 last:border-b-0"
             >
-              <div className="col-span-5">
-                <p className="text-sm font-medium text-black dark:text-white line-clamp-1">
-                  {article.title}
-                </p>
-                <p className="text-xs text-bodydark2 line-clamp-1 mt-0.5">
-                  {article.excerpt}
-                </p>
+              <div className="col-span-5 flex items-center gap-3">
+                {article.image && (
+                  <img src={article.image} alt="" className="h-10 w-14 rounded object-cover flex-shrink-0" />
+                )}
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-black dark:text-white line-clamp-1">
+                    {article.title}
+                  </p>
+                  <p className="text-xs text-bodydark2 line-clamp-1 mt-0.5">
+                    {article.excerpt}
+                  </p>
+                </div>
               </div>
               <div className="col-span-2">
                 <span className="text-sm text-bodydark2">{article.category}</span>

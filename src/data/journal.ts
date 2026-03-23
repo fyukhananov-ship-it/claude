@@ -7,6 +7,7 @@ export interface JournalArticle {
   date: string
   readTime: string
   content: string[]
+  image?: string
 }
 
 export const articles: JournalArticle[] = [
