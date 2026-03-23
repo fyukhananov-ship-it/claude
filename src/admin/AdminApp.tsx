@@ -35,7 +35,7 @@ function ProtectedRoutes() {
           index
           element={
             <>
-              <PageTitle title="Dashboard | Линия Вкуса" />
+              <PageTitle title="Панель управления | Линия Вкуса" />
               <ECommerce />
             </>
           }
@@ -62,7 +62,7 @@ function ProtectedRoutes() {
           path="calendar"
           element={
             <>
-              <PageTitle title="Calendar | Линия Вкуса" />
+              <PageTitle title="Календарь | Линия Вкуса" />
               <Calendar />
             </>
           }
@@ -80,7 +80,7 @@ function ProtectedRoutes() {
           path="forms/form-elements"
           element={
             <>
-              <PageTitle title="Form Elements | Линия Вкуса" />
+              <PageTitle title="Элементы форм | Линия Вкуса" />
               <FormElements />
             </>
           }
@@ -89,7 +89,7 @@ function ProtectedRoutes() {
           path="forms/form-layout"
           element={
             <>
-              <PageTitle title="Form Layout | Линия Вкуса" />
+              <PageTitle title="Макет форм | Линия Вкуса" />
               <FormLayout />
             </>
           }
@@ -98,7 +98,7 @@ function ProtectedRoutes() {
           path="tables"
           element={
             <>
-              <PageTitle title="Tables | Линия Вкуса" />
+              <PageTitle title="Таблицы | Линия Вкуса" />
               <Tables />
             </>
           }
@@ -116,7 +116,7 @@ function ProtectedRoutes() {
           path="chart"
           element={
             <>
-              <PageTitle title="Chart | Линия Вкуса" />
+              <PageTitle title="Графики | Линия Вкуса" />
               <Chart />
             </>
           }
@@ -125,7 +125,7 @@ function ProtectedRoutes() {
           path="ui/alerts"
           element={
             <>
-              <PageTitle title="Alerts | Линия Вкуса" />
+              <PageTitle title="Уведомления | Линия Вкуса" />
               <Alerts />
             </>
           }
@@ -134,7 +134,7 @@ function ProtectedRoutes() {
           path="ui/buttons"
           element={
             <>
-              <PageTitle title="Buttons | Линия Вкуса" />
+              <PageTitle title="Кнопки | Линия Вкуса" />
               <Buttons />
             </>
           }

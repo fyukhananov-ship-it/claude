@@ -63,7 +63,7 @@ const DropdownMessage = () => {
             className={`absolute -right-16 mt-2.5 flex h-90 w-75 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark sm:right-0 sm:w-80`}
           >
             <div className="px-4.5 py-3">
-              <h5 className="text-sm font-medium text-bodydark2">Messages</h5>
+              <h5 className="text-sm font-medium text-bodydark2">Сообщения</h5>
             </div>
 
             <ul className="flex h-auto flex-col overflow-y-auto">
@@ -81,7 +81,7 @@ const DropdownMessage = () => {
                       Mariya Desoja
                     </h6>
                     <p className="text-sm">I like your confidence 💪</p>
-                    <p className="text-xs">2min ago</p>
+                    <p className="text-xs">2 мин назад</p>
                   </div>
                 </Link>
               </li>
@@ -99,7 +99,7 @@ const DropdownMessage = () => {
                       Robert Jhon
                     </h6>
                     <p className="text-sm">Can you share your offer?</p>
-                    <p className="text-xs">10min ago</p>
+                    <p className="text-xs">10 мин назад</p>
                   </div>
                 </Link>
               </li>
@@ -117,7 +117,7 @@ const DropdownMessage = () => {
                       Henry Dholi
                     </h6>
                     <p className="text-sm">I cam across your profile and...</p>
-                    <p className="text-xs">1day ago</p>
+                    <p className="text-xs">1 день назад</p>
                   </div>
                 </Link>
               </li>
@@ -135,7 +135,7 @@ const DropdownMessage = () => {
                       Cody Fisher
                     </h6>
                     <p className="text-sm">I’m waiting for you response!</p>
-                    <p className="text-xs">5days ago</p>
+                    <p className="text-xs">5 дней назад</p>
                   </div>
                 </Link>
               </li>
@@ -153,7 +153,7 @@ const DropdownMessage = () => {
                       Mariya Desoja
                     </h6>
                     <p className="text-sm">I like your confidence 💪</p>
-                    <p className="text-xs">2min ago</p>
+                    <p className="text-xs">2 мин назад</p>
                   </div>
                 </Link>
               </li>
