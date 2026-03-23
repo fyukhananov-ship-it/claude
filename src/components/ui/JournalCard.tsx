@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import type { JournalArticle } from '../../data/journal'
 import { ArrowRight } from 'lucide-react'
 
@@ -20,8 +21,9 @@ interface JournalCardProps {
 
 export default function JournalCard({ article, delay = 0 }: JournalCardProps) {
   return (
-    <div
-      className="bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 overflow-hidden group"
+    <Link
+      to={`/journal/${article.id}`}
+      className="block bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 overflow-hidden group"
       style={{ transitionDelay: `${delay}ms` }}
     >
       <div className={`h-28 bg-gradient-to-br ${headerGradients[article.categoryColor]}`} />
@@ -42,6 +44,6 @@ export default function JournalCard({ article, delay = 0 }: JournalCardProps) {
           </span>
         </div>
       </div>
-    </div>
+    </Link>
   )
 }
