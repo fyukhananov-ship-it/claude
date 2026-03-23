@@ -2,28 +2,28 @@ import { Package } from '../../types/package';
 
 const packageData: Package[] = [
   {
-    name: 'Free package',
+    name: 'Базовый пакет',
     price: 0.0,
-    invoiceDate: `Jan 13,2023`,
-    status: 'Paid',
+    invoiceDate: `13 янв, 2023`,
+    status: 'Оплачено',
   },
   {
-    name: 'Standard Package',
+    name: 'Стандартный пакет',
     price: 59.0,
-    invoiceDate: `Jan 13,2023`,
-    status: 'Paid',
+    invoiceDate: `13 янв, 2023`,
+    status: 'Оплачено',
   },
   {
-    name: 'Business Package',
+    name: 'Бизнес пакет',
     price: 99.0,
-    invoiceDate: `Jan 13,2023`,
-    status: 'Unpaid',
+    invoiceDate: `13 янв, 2023`,
+    status: 'Не оплачено',
   },
   {
-    name: 'Standard Package',
+    name: 'Стандартный пакет',
     price: 59.0,
-    invoiceDate: `Jan 13,2023`,
-    status: 'Pending',
+    invoiceDate: `13 янв, 2023`,
+    status: 'В ожидании',
   },
 ];
 
@@ -35,16 +35,16 @@ const TableThree = () => {
           <thead>
             <tr className="bg-gray-2 text-left dark:bg-meta-4">
               <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
-                Package
+                Пакет
               </th>
               <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
-                Invoice date
+                Дата счёта
               </th>
               <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                Status
+                Статус
               </th>
               <th className="py-4 px-4 font-medium text-black dark:text-white">
-                Actions
+                Действия
               </th>
             </tr>
           </thead>
@@ -65,9 +65,9 @@ const TableThree = () => {
                 <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                   <p
                     className={`inline-flex rounded-full bg-opacity-10 py-1 px-3 text-sm font-medium ${
-                      packageItem.status === 'Paid'
+                      packageItem.status === 'Оплачено'
                         ? 'bg-success text-success'
-                        : packageItem.status === 'Unpaid'
+                        : packageItem.status === 'Не оплачено'
                         ? 'bg-danger text-danger'
                         : 'bg-warning text-warning'
                     }`}

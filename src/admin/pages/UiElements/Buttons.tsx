@@ -5,13 +5,13 @@ import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 const Buttons = () => {
   return (
     <>
-      <Breadcrumb pageName="Buttons" />
+      <Breadcrumb pageName="Кнопки" />
 
       {/* <!-- Normal Button Items --> */}
       <div className="mb-10 rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
         <div className="border-b border-stroke px-7 py-4 dark:border-strokedark">
           <h3 className="font-medium text-black dark:text-white">
-            Normal Button
+            Обычная кнопка
           </h3>
         </div>
 
@@ -112,7 +112,7 @@ const Buttons = () => {
       <div className="mb-10 rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
         <div className="border-b border-stroke px-7 py-4 dark:border-strokedark">
           <h3 className="font-medium text-black dark:text-white">
-            Button With Icon
+            Кнопка с иконкой
           </h3>
         </div>
 

@@ -7,32 +7,32 @@ import ProductFour from '../../images/product/product-04.png';
 const productData: Product[] = [
   {
     image: ProductOne,
-    name: 'Apple Watch Series 7',
-    category: 'Electronics',
+    name: 'Тирамису порционный',
+    category: 'Десерты',
     price: 296,
     sold: 22,
     profit: 45,
   },
   {
     image: ProductTwo,
-    name: 'Macbook Pro M1',
-    category: 'Electronics',
+    name: 'Наполеон классический',
+    category: 'Торты',
     price: 546,
     sold: 12,
     profit: 125,
   },
   {
     image: ProductThree,
-    name: 'Dell Inspiron 15',
-    category: 'Electronics',
+    name: 'Мини-эклеры набор',
+    category: 'Пирожные',
     price: 443,
     sold: 64,
     profit: 247,
   },
   {
     image: ProductFour,
-    name: 'HP Probook 450',
-    category: 'Electronics',
+    name: 'Печенье ассорти',
+    category: 'Выпечка',
     price: 499,
     sold: 72,
     profit: 103,
@@ -44,25 +44,25 @@ const TableTwo = () => {
     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
       <div className="py-6 px-4 md:px-6 xl:px-7.5">
         <h4 className="text-xl font-semibold text-black dark:text-white">
-          Top Products
+          Топ продукция
         </h4>
       </div>
 
       <div className="grid grid-cols-6 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5">
         <div className="col-span-3 flex items-center">
-          <p className="font-medium">Product Name</p>
+          <p className="font-medium">Название</p>
         </div>
         <div className="col-span-2 hidden items-center sm:flex">
-          <p className="font-medium">Category</p>
+          <p className="font-medium">Категория</p>
         </div>
         <div className="col-span-1 flex items-center">
-          <p className="font-medium">Price</p>
+          <p className="font-medium">Цена</p>
         </div>
         <div className="col-span-1 flex items-center">
-          <p className="font-medium">Sold</p>
+          <p className="font-medium">Продано</p>
         </div>
         <div className="col-span-1 flex items-center">
-          <p className="font-medium">Profit</p>
+          <p className="font-medium">Прибыль</p>
         </div>
       </div>
 

@@ -3,7 +3,7 @@ import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 const Alerts = () => {
   return (
     <>
-      <Breadcrumb pageName="Alerts" />
+      <Breadcrumb pageName="Уведомления" />
 
       <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6 xl:p-9">
         <div className="flex flex-col gap-7.5">
@@ -25,12 +25,11 @@ const Alerts = () => {
             </div>
             <div className="w-full">
               <h5 className="mb-3 text-lg font-semibold text-[#9D5425]">
-                Attention needed
+                Требуется внимание
               </h5>
               <p className="leading-relaxed text-[#D0915C]">
-                Lorem Ipsum is simply dummy text of the printing and typesetting
-                industry. Lorem Ipsum has been the industry's standard dummy
-                text ever since the 1500s, when
+                Пожалуйста, проверьте введённые данные и убедитесь, что все
+                обязательные поля заполнены корректно перед отправкой формы.
               </p>
             </div>
           </div>
@@ -53,11 +52,11 @@ const Alerts = () => {
             </div>
             <div className="w-full">
               <h5 className="mb-3 text-lg font-semibold text-black dark:text-[#34D399] ">
-                Message Sent Successfully
+                Сообщение успешно отправлено
               </h5>
               <p className="text-base leading-relaxed text-body">
-                Lorem Ipsum is simply dummy text of the printing and typesetting
-                industry.
+                Ваше сообщение было успешно отправлено. Мы свяжемся с вами
+                в ближайшее время.
               </p>
             </div>
           </div>
@@ -80,11 +79,11 @@ const Alerts = () => {
             </div>
             <div className="w-full">
               <h5 className="mb-3 font-semibold text-[#B45454]">
-                There were 1 errors with your submission
+                При отправке обнаружена 1 ошибка
               </h5>
               <ul>
                 <li className="leading-relaxed text-[#CD5D5D]">
-                  Lorem Ipsum is simply dummy text of the printing
+                  Пожалуйста, заполните все обязательные поля формы
                 </li>
               </ul>
             </div>

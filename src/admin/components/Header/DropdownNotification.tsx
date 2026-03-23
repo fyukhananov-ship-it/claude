@@ -46,7 +46,7 @@ const DropdownNotification = () => {
           >
             <div className="px-4.5 py-3">
               <h5 className="text-sm font-medium text-bodydark2">
-                Notification
+                Уведомления
               </h5>
             </div>
 
@@ -58,13 +58,13 @@ const DropdownNotification = () => {
                 >
                   <p className="text-sm">
                     <span className="text-black dark:text-white">
-                      Edit your information in a swipe
+                      Обновите информацию в профиле
                     </span>{' '}
-                    Sint occaecat cupidatat non proident, sunt in culpa qui
-                    officia deserunt mollit anim.
+                    Проверьте и обновите ваши контактные данные
+                    в настройках аккаунта.
                   </p>
 
-                  <p className="text-xs">12 May, 2025</p>
+                  <p className="text-xs">12 мая, 2025</p>
                 </Link>
               </li>
               <li>
@@ -74,12 +74,12 @@ const DropdownNotification = () => {
                 >
                   <p className="text-sm">
                     <span className="text-black dark:text-white">
-                      It is a long established fact
+                      Новый заказ поступил
                     </span>{' '}
-                    that a reader will be distracted by the readable.
+                    Проверьте детали заказа в разделе заказов.
                   </p>
 
-                  <p className="text-xs">24 Feb, 2025</p>
+                  <p className="text-xs">24 фев, 2025</p>
                 </Link>
               </li>
               <li>
@@ -89,13 +89,13 @@ const DropdownNotification = () => {
                 >
                   <p className="text-sm">
                     <span className="text-black dark:text-white">
-                      There are many variations
+                      Обновление ассортимента
                     </span>{' '}
-                    of passages of Lorem Ipsum available, but the majority have
-                    suffered
+                    Добавлены новые позиции в каталог продукции.
+                    Проверьте актуальность цен.
                   </p>
 
-                  <p className="text-xs">04 Jan, 2025</p>
+                  <p className="text-xs">04 янв, 2025</p>
                 </Link>
               </li>
               <li>
@@ -105,13 +105,13 @@ const DropdownNotification = () => {
                 >
                   <p className="text-sm">
                     <span className="text-black dark:text-white">
-                      There are many variations
+                      Доставка завершена
                     </span>{' '}
-                    of passages of Lorem Ipsum available, but the majority have
-                    suffered
+                    Все заказы за сегодня успешно доставлены.
+                    Отчёт доступен в разделе аналитики.
                   </p>
 
-                  <p className="text-xs">01 Dec, 2024</p>
+                  <p className="text-xs">01 дек, 2024</p>
                 </Link>
               </li>
             </ul>
