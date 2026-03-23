@@ -1,7 +1,7 @@
 import { useParams, Link, Navigate } from 'react-router-dom'
 import Header from '../components/layout/Header'
 import Footer from '../components/layout/Footer'
-import { articles } from '../data/journal'
+import { useJournal } from '../store/JournalContext'
 import { ArrowLeft, ArrowRight, Clock } from 'lucide-react'
 
 const badgeColors: Record<string, string> = {
@@ -18,6 +18,7 @@ const headerGradients: Record<string, string> = {
 
 export default function ArticlePage() {
   const { id } = useParams<{ id: string }>()
+  const { articles } = useJournal()
   const article = articles.find((a) => a.id === id)
 
   if (!article) {

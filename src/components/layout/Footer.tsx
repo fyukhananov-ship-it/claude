@@ -1,10 +1,10 @@
+import { Link } from 'react-router-dom'
 import logoImg from '/logo.png'
 
-const navLinks = [
+const scrollLinks = [
   { label: 'О компании', href: '#about' },
   { label: 'Продукция', href: '#products' },
   { label: 'Преимущества', href: '#advantages' },
-  { label: 'Журнал', href: '#journal' },
   { label: 'Контакты', href: '#contacts' },
 ]
 
@@ -44,7 +44,7 @@ export default function Footer() {
               Навигация
             </h4>
             <ul className="space-y-2">
-              {navLinks.map((link) => (
+              {scrollLinks.map((link) => (
                 <li key={link.href}>
                   <a
                     href={link.href}
@@ -55,6 +55,11 @@ export default function Footer() {
                   </a>
                 </li>
               ))}
+              <li>
+                <Link to="/journal" className="text-sm hover:text-white transition-colors duration-200">
+                  Журнал
+                </Link>
+              </li>
             </ul>
           </div>
 
