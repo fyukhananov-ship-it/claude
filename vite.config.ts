@@ -13,37 +13,48 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/admin': {
+      // Strapi admin panel (served at /claude/admin)
+      '/claude/admin': {
         target: 'http://localhost:1337',
         changeOrigin: true,
       },
-      '/api': {
+      // Strapi REST API
+      '/claude/api': {
         target: 'http://localhost:1337',
         changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/claude/, ''),
       },
-      '/uploads': {
+      // Strapi uploads (images)
+      '/claude/uploads': {
         target: 'http://localhost:1337',
         changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/claude/, ''),
       },
-      '/i18n': {
+      // Strapi internal routes used by admin panel
+      '/claude/content-manager': {
         target: 'http://localhost:1337',
         changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/claude/, ''),
       },
-      '/content-manager': {
+      '/claude/content-type-builder': {
         target: 'http://localhost:1337',
         changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/claude/, ''),
       },
-      '/content-type-builder': {
+      '/claude/users-permissions': {
         target: 'http://localhost:1337',
         changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/claude/, ''),
       },
-      '/users-permissions': {
+      '/claude/upload': {
         target: 'http://localhost:1337',
         changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/claude/, ''),
       },
-      '/upload': {
+      '/claude/i18n': {
         target: 'http://localhost:1337',
         changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/claude/, ''),
       },
     },
   },
