@@ -52,7 +52,7 @@ const Header = (props: {
             </span>
           </button>
 
-          <Link className="block flex-shrink-0 lg:hidden" to="/admin">
+          <Link className="block flex-shrink-0 lg:hidden" to="/">
             <img src={LogoIcon} alt="Logo" />
           </Link>
         </div>
