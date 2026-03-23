@@ -1,0 +1,196 @@
+/**
+ * Seed script: imports catalog data from src/data/catalog.ts into Strapi.
+ *
+ * Usage:
+ *   1. Start Strapi: cd backend && npm run develop
+ *   2. Create an admin user in the Strapi admin panel
+ *   3. Generate an API token: Settings → API Tokens → Create new
+ *   4. Run: STRAPI_TOKEN=<your-token> npx tsx scripts/seed-strapi.ts
+ *
+ * Prerequisites:
+ *   - Enable public access for Category and Product in Strapi:
+ *     Settings → Users & Permissions → Roles → Public → enable find/findOne
+ *   - Or use an API token with full access
+ */
+
+const STRAPI_URL = process.env.STRAPI_URL || 'http://localhost:1337'
+const STRAPI_TOKEN = process.env.STRAPI_TOKEN || ''
+
+interface CatalogProduct {
+  id: string
+  name: string
+  description: string
+  weight: string
+  image?: string
+}
+
+interface CatalogCategory {
+  id: string
+  name: string
+  icon: string
+  products: CatalogProduct[]
+}
+
+// Inline catalog data (copied from src/data/catalog.ts to avoid import issues)
+const catalog: CatalogCategory[] = [
+  {
+    id: 'cookie',
+    name: 'Печенье, кексы, маффины',
+    icon: 'Cookie',
+    products: [
+      { id: 'cookie-1', name: 'Творожно-кокосовое печенье', description: 'Нежное печенье из натурального творога с кокосовой стружкой', weight: '50 г' },
+      { id: 'cookie-2', name: 'Амареттини', description: 'Классическое итальянское миндальное печенье с хрустящей корочкой и мягкой серединкой', weight: '30 г' },
+      { id: 'cookie-3', name: 'Фруктовый таллер', description: 'Хрустящее песочное печенье с кусочками сушёных фруктов', weight: '40 г' },
+      { id: 'cookie-4', name: 'Шоколадный таллер', description: 'Тонкое хрустящее печенье с какао и кусочками тёмного шоколада', weight: '40 г' },
+      { id: 'cookie-5', name: 'Залетти', description: 'Венецианское кукурузное печенье с изюмом и цедрой лимона', weight: '45 г' },
+      { id: 'cookie-6', name: 'Печенье Спа с мюсли', description: 'Лёгкое печенье с овсяными хлопьями, семечками и злаками', weight: '50 г' },
+      { id: 'cookie-7', name: 'Печенье линц с вишней', description: 'Австрийское песочное печенье с вишнёвой прослойкой и миндальной мукой', weight: '55 г' },
+      { id: 'cookie-8', name: 'Печенье линц с лимоном', description: 'Австрийское песочное печенье с лимонным курдом и сахарной пудрой', weight: '55 г' },
+      { id: 'cookie-9', name: 'Печенье Шоколадное Ритц', description: 'Насыщенное шоколадное печенье с хрустящей текстурой и какао Callebaut', weight: '60 г' },
+      { id: 'cookie-10', name: 'Финансье', description: 'Французский миндальный кекс на коричневом масле с золотистой корочкой', weight: '40 г' },
+      { id: 'cookie-11', name: 'Коломбина', description: 'Итальянское сдобное печенье с миндалём и сахарной глазурью', weight: '45 г' },
+      { id: 'cookie-12', name: 'Бруно Кагер', description: 'Швейцарское сливочное печенье с тонким шоколадным слоем', weight: '35 г' },
+      { id: 'cookie-13', name: 'Мини маффины', description: 'Порционные мини маффины с разнообразными начинками для фуршетов', weight: '35 г' },
+      { id: 'cookie-14', name: 'Маффины', description: 'Классические маффины с нежной текстурой, идеальны для завтраков и кофе-брейков', weight: '110 г' },
+      { id: 'cookie-15', name: 'Банановый кекс', description: 'Влажный кекс из спелых бананов с грецким орехом и корицей', weight: '120 г' },
+      { id: 'cookie-16', name: 'Кекс зебра', description: 'Двухцветный кекс с чередованием ванильного и шоколадного теста', weight: '120 г' },
+      { id: 'cookie-17', name: 'Кекс английский с цукатами и изюмом', description: 'Традиционный английский кекс с цукатами, изюмом и пряностями', weight: '150 г' },
+    ],
+  },
+  {
+    id: 'cupcake',
+    name: 'Ягодные пироги, бескремовые торты',
+    icon: 'CakeSlice',
+    products: [
+      { id: 'cupcake-1', name: 'Брауни с карамелью и орешками', description: 'Шоколадный брауни с прослойкой солёной карамели и дроблёными орехами', weight: '100 г' },
+      { id: 'cupcake-2', name: 'Брауни с вишней', description: 'Насыщенный шоколадный брауни с кусочками спелой вишни', weight: '100 г' },
+      { id: 'cupcake-3', name: 'Брауни с заварным кремом', description: 'Шоколадный брауни с нежной прослойкой классического заварного крема', weight: '110 г' },
+      { id: 'cupcake-4', name: 'Клафути с вишней', description: 'Французский запечённый десерт из нежного теста со спелой вишней', weight: '120 г' },
+      { id: 'cupcake-5', name: 'Клафути ягодный', description: 'Классический клафути с ассорти из сезонных ягод', weight: '120 г' },
+      { id: 'cupcake-6', name: 'Клафути персиковый', description: 'Нежный клафути с дольками спелого персика и ванилью', weight: '120 г' },
+      { id: 'cupcake-7', name: 'Пирог Пиноклада', description: 'Тропический пирог с ананасом, кокосом и сливочным тестом', weight: '1.0 кг' },
+      { id: 'cupcake-8', name: 'Пирог слоёный с яблоком и заварным кремом', description: 'Слоёная полоска с карамелизированным яблоком и кремом патисьер', weight: '150 г' },
+      { id: 'cupcake-9', name: 'Торт финиковый с пряностями', description: 'Влажный торт из фиников с корицей, кардамоном и мускатным орехом', weight: '1.2 кг' },
+      { id: 'cupcake-10', name: 'Штрейзель яблочный со сливой', description: 'Яблочный пирог со сливой и хрустящей штрейзельной крошкой', weight: '1.0 кг' },
+      { id: 'cupcake-11', name: 'Торт творожный с ягодой или фруктами', description: 'Нежный творожный торт с прослойкой из сезонных ягод или фруктов', weight: '1.2 кг' },
+    ],
+  },
+  {
+    id: 'cake',
+    name: 'Торты пластовые',
+    icon: 'Cake',
+    products: [
+      { id: 'cake-1', name: '«Наполеон»', description: 'Пластовый торт из многослойного слоёного теста с заварным кремом на натуральной ванили', weight: '2.0 кг' },
+      { id: 'cake-2', name: '«Красный бархат»', description: 'Бархатные красные коржи со сливочно-сырным кремом. Для нарезки на 12–16 порций', weight: '2.5 кг' },
+      { id: 'cake-3', name: '«Морковный»', description: 'Пряный морковный торт с грецким орехом и кремом из маскарпоне', weight: '2.0 кг' },
+      { id: 'cake-4', name: '«Три шоколада»', description: 'Три слоя муссов — из тёмного, молочного и белого бельгийского шоколада', weight: '2.2 кг' },
+      { id: 'cake-5', name: '«Чизкейк Нью-Йорк»', description: 'Классический чизкейк на сливочном сыре с песочной основой. Подходит для шведского стола', weight: '1.8 кг' },
+      { id: 'cake-6', name: '«Эстерхази»', description: 'Ореховые коржи дакуаз с нежным сливочным кремом и характерным узором', weight: '2.0 кг' },
+    ],
+  },
+  {
+    id: 'cake-piece',
+    name: 'Торты порционные',
+    icon: 'Slice',
+    products: [
+      { id: 'piece-1', name: '«Тирамису»', description: 'Классический итальянский десерт с савоярди, маскарпоне и кофейной пропиткой', weight: '130 г' },
+      { id: 'piece-2', name: '«Дживара Лактэ»', description: 'Мусс из молочного шоколада Jivara 40% с карамельным бисквитом', weight: '120 г' },
+      { id: 'piece-3', name: '«Будапешт»', description: 'Безе-меренга с фундуком, сливочный крем и карамельный хруст', weight: '140 г' },
+      { id: 'piece-4', name: '«Манго-маракуйя»', description: 'Тропический мусс из манго с конфи маракуйи на миндальном бисквите', weight: '125 г' },
+      { id: 'piece-5', name: '«Захер»', description: 'Венский шоколадный торт с абрикосовым конфитюром и зеркальной глазурью', weight: '130 г' },
+      { id: 'piece-6', name: '«Ягодный мильфёй»', description: 'Хрустящее слоёное тесто, крем дипломат и свежие сезонные ягоды', weight: '150 г' },
+    ],
+  },
+  {
+    id: 'mini-cupcake',
+    name: 'Мини пирожные',
+    icon: 'Cherry',
+    products: [
+      { id: 'mini-1', name: 'Птифур «Малина-роза»', description: 'Мусс из малины с розовой водой на фисташковом бисквите. Размер 4×4 см', weight: '40 г' },
+      { id: 'mini-2', name: 'Птифур «Лимон-базилик»', description: 'Лимонный курд с ноткой базилика в белом шоколаде', weight: '35 г' },
+      { id: 'mini-3', name: 'Эклер классический', description: 'Заварное тесто с кремом пралине и шоколадной глазурью', weight: '45 г' },
+      { id: 'mini-4', name: 'Тарталетка «Карамель-орех»', description: 'Песочная тарталетка с солёной карамелью и дроблёным фундуком', weight: '50 г' },
+      { id: 'mini-5', name: 'Канеле бордоское', description: 'Традиционный французский десерт с хрустящей карамельной корочкой и нежной сердцевиной', weight: '55 г' },
+      { id: 'mini-6', name: 'Макарон ассорти', description: 'Набор из 6 макарон: ваниль, шоколад, фисташка, малина, манго, лаванда', weight: '6×12 г' },
+    ],
+  },
+  {
+    id: 'custom-cake',
+    name: 'Выпечка',
+    icon: 'ChefHat',
+    products: [
+      { id: 'custom-1', name: 'Круассан классический', description: 'Слоёный круассан из французского масла 82%. 48-часовая ферментация теста', weight: '75 г' },
+      { id: 'custom-2', name: 'Круассан «Миндальный»', description: 'Круассан с миндальным франжипаном и сахарной пудрой', weight: '95 г' },
+      { id: 'custom-3', name: 'Дениш с заварным кремом', description: 'Датская слойка с кремом патисьер и абрикосовым напажем', weight: '100 г' },
+      { id: 'custom-4', name: 'Синнабон', description: 'Булочка с корицей и сливочной глазурью. Идеальна для завтраков и бранчей', weight: '130 г' },
+      { id: 'custom-5', name: 'Хлеб фокачча с розмарином', description: 'Итальянская фокачча с розмарином, морской солью и оливковым маслом', weight: '250 г' },
+      { id: 'custom-6', name: 'Пирожок слоёный с яблоком', description: 'Воздушное слоёное тесто с начинкой из карамелизированных яблок с корицей', weight: '90 г' },
+    ],
+  },
+]
+
+const headers: Record<string, string> = {
+  'Content-Type': 'application/json',
+}
+if (STRAPI_TOKEN) {
+  headers['Authorization'] = `Bearer ${STRAPI_TOKEN}`
+}
+
+async function apiFetch(path: string, options?: RequestInit) {
+  const res = await fetch(`${STRAPI_URL}/api${path}`, {
+    headers,
+    ...options,
+  })
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Strapi ${res.status}: ${text}`)
+  }
+  return res.json()
+}
+
+async function seed() {
+  console.log('Seeding Strapi with catalog data...\n')
+
+  for (let i = 0; i < catalog.length; i++) {
+    const cat = catalog[i]
+
+    // Create category
+    const catRes = await apiFetch('/categories', {
+      method: 'POST',
+      body: JSON.stringify({
+        data: {
+          name: cat.name,
+          icon: cat.icon,
+          sortOrder: i,
+        },
+      }),
+    })
+
+    const categoryDocumentId = catRes.data.documentId
+    console.log(`  Category: ${cat.name} (${categoryDocumentId})`)
+
+    // Create products
+    for (const prod of cat.products) {
+      await apiFetch('/products', {
+        method: 'POST',
+        body: JSON.stringify({
+          data: {
+            name: prod.name,
+            description: prod.description,
+            weight: prod.weight,
+            category: categoryDocumentId,
+          },
+        }),
+      })
+      console.log(`    Product: ${prod.name}`)
+    }
+  }
+
+  console.log('\nDone! Seeded', catalog.length, 'categories with',
+    catalog.reduce((s, c) => s + c.products.length, 0), 'products.')
+}
+
+seed().catch((err) => {
+  console.error('Seed failed:', err.message)
+  process.exit(1)
+})

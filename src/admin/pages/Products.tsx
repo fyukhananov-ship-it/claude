@@ -1,13 +1,9 @@
 import { useState } from 'react';
 import Breadcrumb from '../components/Breadcrumbs/Breadcrumb';
 import { useProducts } from '../../store/ProductContext';
-import type { CatalogCategory, CatalogProduct } from '../../store/productStore';
+import type { CatalogProduct } from '../../store/productStore';
 
 const ICON_OPTIONS = ['Cookie', 'CakeSlice', 'Cake', 'Slice', 'Cherry', 'ChefHat'];
-
-function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-}
 
 const emptyProduct: Omit<CatalogProduct, 'id'> = {
   name: '',
@@ -19,6 +15,7 @@ const emptyProduct: Omit<CatalogProduct, 'id'> = {
 const Products = () => {
   const {
     catalog,
+    loading,
     addCategory,
     updateCategory,
     deleteCategory,
@@ -29,8 +26,10 @@ const Products = () => {
 
   const [selectedCatId, setSelectedCatId] = useState<string>(catalog[0]?.id || '');
   const [editingProduct, setEditingProduct] = useState<(CatalogProduct & { isNew?: boolean }) | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [showCatForm, setShowCatForm] = useState(false);
   const [catForm, setCatForm] = useState({ name: '', icon: 'Cookie', editId: '' });
+  const [saving, setSaving] = useState(false);
 
   const selectedCategory = catalog.find((c) => c.id === selectedCatId);
 
@@ -40,60 +39,87 @@ const Products = () => {
     setShowCatForm(true);
   };
 
-  const handleEditCategory = (cat: CatalogCategory) => {
+  const handleEditCategory = (cat: { id: string; name: string; icon: string }) => {
     setCatForm({ name: cat.name, icon: cat.icon, editId: cat.id });
     setShowCatForm(true);
   };
 
-  const handleSaveCategory = () => {
+  const handleSaveCategory = async () => {
     if (!catForm.name.trim()) return;
-    if (catForm.editId) {
-      updateCategory(catForm.editId, { name: catForm.name, icon: catForm.icon });
-    } else {
-      const newCat: CatalogCategory = {
-        id: generateId(),
-        name: catForm.name,
-        icon: catForm.icon,
-        products: [],
-      };
-      addCategory(newCat);
-      setSelectedCatId(newCat.id);
+    setSaving(true);
+    try {
+      if (catForm.editId) {
+        await updateCategory(catForm.editId, { name: catForm.name, icon: catForm.icon });
+      } else {
+        await addCategory({ name: catForm.name, icon: catForm.icon });
+      }
+      setShowCatForm(false);
+    } finally {
+      setSaving(false);
     }
-    setShowCatForm(false);
   };
 
-  const handleDeleteCategory = (id: string) => {
+  const handleDeleteCategory = async (id: string) => {
     if (!confirm('Удалить категорию и все её товары?')) return;
-    deleteCategory(id);
-    if (selectedCatId === id) {
-      setSelectedCatId(catalog.find((c) => c.id !== id)?.id || '');
+    setSaving(true);
+    try {
+      await deleteCategory(id);
+      if (selectedCatId === id) {
+        setSelectedCatId(catalog.find((c) => c.id !== id)?.id || '');
+      }
+    } finally {
+      setSaving(false);
     }
   };
 
   // Product handlers
   const handleAddProduct = () => {
-    setEditingProduct({ id: generateId(), ...emptyProduct, isNew: true });
+    setEditingProduct({ id: '', ...emptyProduct, isNew: true });
+    setImageFile(null);
   };
 
   const handleEditProduct = (product: CatalogProduct) => {
     setEditingProduct({ ...product });
+    setImageFile(null);
   };
 
-  const handleSaveProduct = () => {
+  const handleSaveProduct = async () => {
     if (!editingProduct || !selectedCatId || !editingProduct.name.trim()) return;
-    const { isNew, ...productData } = editingProduct as CatalogProduct & { isNew?: boolean };
-    if (isNew) {
-      addProduct(selectedCatId, productData);
-    } else {
-      updateProduct(selectedCatId, productData.id, productData);
+    setSaving(true);
+    try {
+      const { isNew, id, image: _image, ...productData } = editingProduct as CatalogProduct & { isNew?: boolean };
+      if (isNew) {
+        await addProduct(selectedCatId, productData, imageFile || undefined);
+      } else {
+        await updateProduct(selectedCatId, id, productData, imageFile || undefined);
+      }
+      setEditingProduct(null);
+      setImageFile(null);
+    } finally {
+      setSaving(false);
     }
-    setEditingProduct(null);
   };
 
-  const handleDeleteProduct = (productId: string) => {
+  const handleDeleteProduct = async (productId: string) => {
     if (!confirm('Удалить товар?')) return;
-    deleteProduct(selectedCatId, productId);
+    setSaving(true);
+    try {
+      await deleteProduct(selectedCatId, productId);
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <>
+        <Breadcrumb pageName="Продукция" />
+        <div className="flex items-center justify-center py-20">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -107,7 +133,8 @@ const Products = () => {
           </h4>
           <button
             onClick={handleAddCategory}
-            className="inline-flex items-center justify-center rounded-md bg-primary py-2 px-6 text-center font-medium text-white hover:bg-opacity-90"
+            disabled={saving}
+            className="inline-flex items-center justify-center rounded-md bg-primary py-2 px-6 text-center font-medium text-white hover:bg-opacity-90 disabled:opacity-50"
           >
             + Добавить категорию
           </button>
@@ -193,9 +220,10 @@ const Products = () => {
               <div className="flex gap-2">
                 <button
                   onClick={handleSaveCategory}
-                  className="rounded bg-primary py-2 px-6 text-white hover:bg-opacity-90"
+                  disabled={saving}
+                  className="rounded bg-primary py-2 px-6 text-white hover:bg-opacity-90 disabled:opacity-50"
                 >
-                  Сохранить
+                  {saving ? 'Сохранение...' : 'Сохранить'}
                 </button>
                 <button
                   onClick={() => setShowCatForm(false)}
@@ -221,7 +249,8 @@ const Products = () => {
             </h4>
             <button
               onClick={handleAddProduct}
-              className="inline-flex items-center justify-center rounded-md bg-primary py-2 px-6 text-center font-medium text-white hover:bg-opacity-90"
+              disabled={saving}
+              className="inline-flex items-center justify-center rounded-md bg-primary py-2 px-6 text-center font-medium text-white hover:bg-opacity-90 disabled:opacity-50"
             >
               + Добавить товар
             </button>
@@ -282,16 +311,19 @@ const Products = () => {
                   </label>
                   <div className="flex items-start gap-4">
                     {/* Preview */}
-                    {editingProduct.image && (
+                    {(editingProduct.image || imageFile) && (
                       <div className="relative flex-shrink-0">
                         <img
-                          src={editingProduct.image}
+                          src={imageFile ? URL.createObjectURL(imageFile) : editingProduct.image}
                           alt="Preview"
                           className="h-24 w-24 rounded-lg object-cover border border-stroke dark:border-strokedark"
                         />
                         <button
                           type="button"
-                          onClick={() => setEditingProduct({ ...editingProduct, image: '' })}
+                          onClick={() => {
+                            setEditingProduct({ ...editingProduct, image: '' });
+                            setImageFile(null);
+                          }}
                           className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-danger text-white text-xs"
                           title="Удалить фото"
                         >
@@ -306,7 +338,7 @@ const Products = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                         </svg>
                         <span className="text-sm text-bodydark2">
-                          {editingProduct.image ? 'Заменить фото' : 'Загрузить фото'}
+                          {editingProduct.image || imageFile ? 'Заменить фото' : 'Загрузить фото'}
                         </span>
                         <input
                           type="file"
@@ -315,30 +347,15 @@ const Products = () => {
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (!file) return;
-                            if (file.size > 2 * 1024 * 1024) {
-                              alert('Файл слишком большой. Максимум 2 МБ.');
+                            if (file.size > 5 * 1024 * 1024) {
+                              alert('Файл слишком большой. Максимум 5 МБ.');
                               return;
                             }
-                            const reader = new FileReader();
-                            reader.onload = (ev) => {
-                              const result = ev.target?.result as string;
-                              setEditingProduct({ ...editingProduct, image: result });
-                            };
-                            reader.readAsDataURL(file);
+                            setImageFile(file);
                           }}
                         />
                       </label>
-                      <p className="mt-1 text-xs text-bodydark2">JPG, PNG, WebP. Макс. 2 МБ</p>
-                      {/* Or paste URL */}
-                      <input
-                        type="text"
-                        value={editingProduct.image?.startsWith('data:') ? '' : (editingProduct.image || '')}
-                        onChange={(e) =>
-                          setEditingProduct({ ...editingProduct, image: e.target.value })
-                        }
-                        className="mt-2 w-full rounded border border-stroke bg-white py-2 px-4 text-sm outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                        placeholder="или вставьте URL: https://..."
-                      />
+                      <p className="mt-1 text-xs text-bodydark2">JPG, PNG, WebP. Макс. 5 МБ</p>
                     </div>
                   </div>
                 </div>
@@ -346,12 +363,13 @@ const Products = () => {
               <div className="mt-4 flex gap-2">
                 <button
                   onClick={handleSaveProduct}
-                  className="rounded bg-primary py-2 px-6 text-white hover:bg-opacity-90"
+                  disabled={saving}
+                  className="rounded bg-primary py-2 px-6 text-white hover:bg-opacity-90 disabled:opacity-50"
                 >
-                  Сохранить
+                  {saving ? 'Сохранение...' : 'Сохранить'}
                 </button>
                 <button
-                  onClick={() => setEditingProduct(null)}
+                  onClick={() => { setEditingProduct(null); setImageFile(null); }}
                   className="rounded border border-stroke py-2 px-6 hover:bg-gray dark:border-strokedark"
                 >
                   Отмена
