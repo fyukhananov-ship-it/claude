@@ -13,22 +13,12 @@ const categoryIconComponents: Record<string, typeof Cookie> = {
 
 export default function Products() {
   const { ref, isVisible } = useScrollReveal({ threshold: 0.02, rootMargin: '200px' })
-  const { catalog, loading } = useProducts()
+  const { catalog } = useProducts()
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
 
   const displayedCategories = activeCategory
     ? catalog.filter(c => c.id === activeCategory)
     : catalog
-
-  if (loading) {
-    return (
-      <section id="products" className="section-padding bg-white">
-        <div className="max-w-[1200px] mx-auto text-center py-20">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-warm-300 border-t-warm-600" />
-        </div>
-      </section>
-    )
-  }
 
   return (
     <section id="products" className="section-padding bg-white">
