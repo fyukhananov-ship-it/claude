@@ -58,6 +58,17 @@ export default function ArticlePage() {
           </div>
         </section>
 
+        {/* Article image */}
+        {article.image && (
+          <div className="max-w-[760px] mx-auto px-6 pt-10">
+            <img
+              src={article.image}
+              alt={article.title}
+              className="w-full rounded-2xl object-cover max-h-[420px]"
+            />
+          </div>
+        )}
+
         {/* Article body */}
         <section className="max-w-[760px] mx-auto px-6 py-12 lg:py-16">
           <div className="space-y-6">

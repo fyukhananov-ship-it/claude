@@ -26,7 +26,13 @@ export default function JournalCard({ article, delay = 0 }: JournalCardProps) {
       className="block bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 overflow-hidden group"
       style={{ transitionDelay: `${delay}ms` }}
     >
-      <div className={`h-28 bg-gradient-to-br ${headerGradients[article.categoryColor]}`} />
+      {article.image ? (
+        <div className="h-40 overflow-hidden">
+          <img src={article.image} alt={article.title} className="w-full h-full object-cover" />
+        </div>
+      ) : (
+        <div className={`h-28 bg-gradient-to-br ${headerGradients[article.categoryColor]}`} />
+      )}
       <div className="p-5 -mt-4 relative">
         <span className={`inline-block px-3 py-1 rounded-full text-xs font-sans font-medium mb-3 ${badgeColors[article.categoryColor]}`}>
           {article.category}
