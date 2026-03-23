@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { Menu } from 'lucide-react'
 import logoImg from '/logo.png'
 import Button from '../ui/Button'
@@ -66,9 +67,17 @@ export default function Header() {
               ))}
             </div>
           </div>
-          <Button size="sm" onClick={() => setIsRequestOpen(true)}>
-            Оставить заявку
-          </Button>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/admin"
+              className="inline-flex h-10 items-center justify-center rounded-md px-4 py-2 font-sans text-sm font-medium text-charcoal-500 transition-colors hover:bg-charcoal-100 hover:text-charcoal-900"
+            >
+              Админ-панель
+            </Link>
+            <Button size="sm" onClick={() => setIsRequestOpen(true)}>
+              Оставить заявку
+            </Button>
+          </div>
         </nav>
 
         {/* Mobile nav */}
@@ -112,10 +121,17 @@ export default function Header() {
                     {link.label}
                   </a>
                 ))}
-                <div className="mt-4 border-t border-charcoal-100 pt-6">
+                <div className="mt-4 border-t border-charcoal-100 pt-6 flex flex-col gap-3">
                   <Button size="lg" className="w-full" onClick={() => { setIsMobileOpen(false); setIsRequestOpen(true) }}>
                     Оставить заявку
                   </Button>
+                  <Link
+                    to="/admin"
+                    onClick={() => setIsMobileOpen(false)}
+                    className="flex items-center justify-center rounded-md px-3 py-2.5 font-sans text-sm font-medium text-charcoal-500 transition-colors hover:bg-charcoal-100 hover:text-charcoal-900"
+                  >
+                    Админ-панель
+                  </Link>
                 </div>
               </div>
             </SheetContent>
