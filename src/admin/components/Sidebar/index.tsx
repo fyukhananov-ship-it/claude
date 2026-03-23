@@ -223,6 +223,36 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               </li>
               {/* <!-- Menu Item Products --> */}
 
+              {/* <!-- Menu Item Journal --> */}
+              <li>
+                <NavLink
+                  to="/admin/journal"
+                  className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                    pathname.includes('journal') &&
+                    'bg-graydark dark:bg-meta-4'
+                  }`}
+                >
+                  <svg
+                    className="fill-current"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 18 18"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M15.75 0H5.25C4.42 0 3.75 0.67 3.75 1.5V2.25H2.25C1.42 2.25 0.75 2.92 0.75 3.75V16.5C0.75 17.33 1.42 18 2.25 18H12.75C13.58 18 14.25 17.33 14.25 16.5V15.75H15.75C16.58 15.75 17.25 15.08 17.25 14.25V1.5C17.25 0.67 16.58 0 15.75 0ZM12.75 16.5H2.25V3.75H12.75V16.5ZM15.75 14.25H14.25V3.75C14.25 2.92 13.58 2.25 12.75 2.25H5.25V1.5H15.75V14.25Z"
+                      fill=""
+                    />
+                    <path d="M4.5 7.5H10.5V9H4.5V7.5Z" fill="" />
+                    <path d="M4.5 10.5H10.5V12H4.5V10.5Z" fill="" />
+                    <path d="M4.5 13.5H8.25V15H4.5V13.5Z" fill="" />
+                  </svg>
+                  Журнал
+                </NavLink>
+              </li>
+              {/* <!-- Menu Item Journal --> */}
+
               {/* <!-- Menu Item Calendar --> */}
               <li>
                 <NavLink

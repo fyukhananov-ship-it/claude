@@ -13,6 +13,7 @@ import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Tables from './pages/Tables';
 import Products from './pages/Products';
+import AdminJournal from './pages/Journal';
 import Alerts from './pages/UiElements/Alerts';
 import Buttons from './pages/UiElements/Buttons';
 import DefaultLayout from './layout/DefaultLayout';
@@ -45,6 +46,15 @@ function ProtectedRoutes() {
             <>
               <PageTitle title="Продукция | Линия Вкуса" />
               <Products />
+            </>
+          }
+        />
+        <Route
+          path="journal"
+          element={
+            <>
+              <PageTitle title="Журнал | Линия Вкуса" />
+              <AdminJournal />
             </>
           }
         />

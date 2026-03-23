@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import Header from '../components/layout/Header'
 import Footer from '../components/layout/Footer'
-import { articles } from '../data/journal'
+import { useJournal } from '../store/JournalContext'
 import { ArrowRight, ArrowLeft } from 'lucide-react'
 
 const badgeColors: Record<string, string> = {
@@ -17,6 +17,7 @@ const headerGradients: Record<string, string> = {
 }
 
 export default function JournalPage() {
+  const { articles } = useJournal()
   const featured = articles[0]
   const rest = articles.slice(1)
 

@@ -2,11 +2,13 @@ import { Link } from 'react-router-dom'
 import { useScrollReveal } from '../../hooks/useScrollReveal'
 import SectionHeading from '../ui/SectionHeading'
 import JournalCard from '../ui/JournalCard'
-import { articles } from '../../data/journal'
+import { useJournal } from '../../store/JournalContext'
 import { ArrowRight } from 'lucide-react'
 
 export default function Journal() {
   const { ref, isVisible } = useScrollReveal()
+  const { articles } = useJournal()
+  const displayed = articles.slice(0, 3)
 
   return (
     <section id="journal" className="bg-cream section-padding">
@@ -16,7 +18,7 @@ export default function Journal() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-          {articles.map((article, i) => (
+          {displayed.map((article, i) => (
             <div
               key={article.id}
               className={`transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
