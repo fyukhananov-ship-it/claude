@@ -278,17 +278,69 @@ const Products = () => {
                 </div>
                 <div className="sm:col-span-2">
                   <label className="mb-1 block text-sm font-medium text-black dark:text-white">
-                    URL изображения (необязательно)
+                    Изображение
                   </label>
-                  <input
-                    type="text"
-                    value={editingProduct.image || ''}
-                    onChange={(e) =>
-                      setEditingProduct({ ...editingProduct, image: e.target.value })
-                    }
-                    className="w-full rounded border border-stroke bg-white py-2 px-4 outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                    placeholder="/claude/image.jpg или https://..."
-                  />
+                  <div className="flex items-start gap-4">
+                    {/* Preview */}
+                    {editingProduct.image && (
+                      <div className="relative flex-shrink-0">
+                        <img
+                          src={editingProduct.image}
+                          alt="Preview"
+                          className="h-24 w-24 rounded-lg object-cover border border-stroke dark:border-strokedark"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setEditingProduct({ ...editingProduct, image: '' })}
+                          className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-danger text-white text-xs"
+                          title="Удалить фото"
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      {/* File upload */}
+                      <label className="flex cursor-pointer items-center justify-center gap-2 rounded border-2 border-dashed border-stroke bg-white py-4 px-4 hover:border-primary dark:border-form-strokedark dark:bg-form-input dark:hover:border-primary transition-colors">
+                        <svg className="h-5 w-5 text-bodydark2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                        </svg>
+                        <span className="text-sm text-bodydark2">
+                          {editingProduct.image ? 'Заменить фото' : 'Загрузить фото'}
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            if (file.size > 2 * 1024 * 1024) {
+                              alert('Файл слишком большой. Максимум 2 МБ.');
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                              const result = ev.target?.result as string;
+                              setEditingProduct({ ...editingProduct, image: result });
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                        />
+                      </label>
+                      <p className="mt-1 text-xs text-bodydark2">JPG, PNG, WebP. Макс. 2 МБ</p>
+                      {/* Or paste URL */}
+                      <input
+                        type="text"
+                        value={editingProduct.image?.startsWith('data:') ? '' : (editingProduct.image || '')}
+                        onChange={(e) =>
+                          setEditingProduct({ ...editingProduct, image: e.target.value })
+                        }
+                        className="mt-2 w-full rounded border border-stroke bg-white py-2 px-4 text-sm outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+                        placeholder="или вставьте URL: https://..."
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="mt-4 flex gap-2">
