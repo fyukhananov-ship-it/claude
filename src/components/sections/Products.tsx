@@ -5,7 +5,7 @@ import {
 import { useScrollReveal } from '../../hooks/useScrollReveal'
 import SectionHeading from '../ui/SectionHeading'
 import CategoryCarousel from '../ui/CategoryCarousel'
-import { catalog } from '../../data/catalog'
+import { useProducts } from '../../store/ProductContext'
 
 const categoryIconComponents: Record<string, typeof Cookie> = {
   Cookie, CakeSlice, Cake, Slice: IceCreamCone, Cherry, ChefHat,
@@ -13,6 +13,7 @@ const categoryIconComponents: Record<string, typeof Cookie> = {
 
 export default function Products() {
   const { ref, isVisible } = useScrollReveal({ threshold: 0.02, rootMargin: '200px' })
+  const { catalog } = useProducts()
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
 
   const displayedCategories = activeCategory
