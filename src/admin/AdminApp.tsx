@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Route, Routes, Navigate, useLocation } from 'react-router-dom';
 
 import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
 import SignIn from './pages/Authentication/SignIn';
-import SignUp from './pages/Authentication/SignUp';
 import Calendar from './pages/Calendar';
 import Chart from './pages/Chart';
 import ECommerce from './pages/Dashboard/ECommerce';
@@ -17,8 +16,124 @@ import Products from './pages/Products';
 import Alerts from './pages/UiElements/Alerts';
 import Buttons from './pages/UiElements/Buttons';
 import DefaultLayout from './layout/DefaultLayout';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import './css/satoshi.css';
 import './css/style.css';
+
+function ProtectedRoutes() {
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/admin/auth/signin" replace />;
+  }
+
+  return (
+    <DefaultLayout>
+      <Routes>
+        <Route
+          index
+          element={
+            <>
+              <PageTitle title="Dashboard | Линия Вкуса" />
+              <ECommerce />
+            </>
+          }
+        />
+        <Route
+          path="products"
+          element={
+            <>
+              <PageTitle title="Продукция | Линия Вкуса" />
+              <Products />
+            </>
+          }
+        />
+        <Route
+          path="calendar"
+          element={
+            <>
+              <PageTitle title="Calendar | Линия Вкуса" />
+              <Calendar />
+            </>
+          }
+        />
+        <Route
+          path="profile"
+          element={
+            <>
+              <PageTitle title="Профиль | Линия Вкуса" />
+              <Profile />
+            </>
+          }
+        />
+        <Route
+          path="forms/form-elements"
+          element={
+            <>
+              <PageTitle title="Form Elements | Линия Вкуса" />
+              <FormElements />
+            </>
+          }
+        />
+        <Route
+          path="forms/form-layout"
+          element={
+            <>
+              <PageTitle title="Form Layout | Линия Вкуса" />
+              <FormLayout />
+            </>
+          }
+        />
+        <Route
+          path="tables"
+          element={
+            <>
+              <PageTitle title="Tables | Линия Вкуса" />
+              <Tables />
+            </>
+          }
+        />
+        <Route
+          path="settings"
+          element={
+            <>
+              <PageTitle title="Настройки | Линия Вкуса" />
+              <Settings />
+            </>
+          }
+        />
+        <Route
+          path="chart"
+          element={
+            <>
+              <PageTitle title="Chart | Линия Вкуса" />
+              <Chart />
+            </>
+          }
+        />
+        <Route
+          path="ui/alerts"
+          element={
+            <>
+              <PageTitle title="Alerts | Линия Вкуса" />
+              <Alerts />
+            </>
+          }
+        />
+        <Route
+          path="ui/buttons"
+          element={
+            <>
+              <PageTitle title="Buttons | Линия Вкуса" />
+              <Buttons />
+            </>
+          }
+        />
+        <Route path="*" element={<Navigate to="/admin" replace />} />
+      </Routes>
+    </DefaultLayout>
+  );
+}
 
 function AdminApp() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -32,130 +147,23 @@ function AdminApp() {
     setTimeout(() => setLoading(false), 1000);
   }, []);
 
-  return loading ? (
-    <Loader />
-  ) : (
-    <DefaultLayout>
+  if (loading) return <Loader />;
+
+  return (
+    <AuthProvider>
       <Routes>
-        <Route
-          index
-          element={
-            <>
-              <PageTitle title="Dashboard | Admin Panel" />
-              <ECommerce />
-            </>
-          }
-        />
-        <Route
-          path="products"
-          element={
-            <>
-              <PageTitle title="Продукция | Admin Panel" />
-              <Products />
-            </>
-          }
-        />
-        <Route
-          path="calendar"
-          element={
-            <>
-              <PageTitle title="Calendar | Admin Panel" />
-              <Calendar />
-            </>
-          }
-        />
-        <Route
-          path="profile"
-          element={
-            <>
-              <PageTitle title="Profile | Admin Panel" />
-              <Profile />
-            </>
-          }
-        />
-        <Route
-          path="forms/form-elements"
-          element={
-            <>
-              <PageTitle title="Form Elements | Admin Panel" />
-              <FormElements />
-            </>
-          }
-        />
-        <Route
-          path="forms/form-layout"
-          element={
-            <>
-              <PageTitle title="Form Layout | Admin Panel" />
-              <FormLayout />
-            </>
-          }
-        />
-        <Route
-          path="tables"
-          element={
-            <>
-              <PageTitle title="Tables | Admin Panel" />
-              <Tables />
-            </>
-          }
-        />
-        <Route
-          path="settings"
-          element={
-            <>
-              <PageTitle title="Settings | Admin Panel" />
-              <Settings />
-            </>
-          }
-        />
-        <Route
-          path="chart"
-          element={
-            <>
-              <PageTitle title="Chart | Admin Panel" />
-              <Chart />
-            </>
-          }
-        />
-        <Route
-          path="ui/alerts"
-          element={
-            <>
-              <PageTitle title="Alerts | Admin Panel" />
-              <Alerts />
-            </>
-          }
-        />
-        <Route
-          path="ui/buttons"
-          element={
-            <>
-              <PageTitle title="Buttons | Admin Panel" />
-              <Buttons />
-            </>
-          }
-        />
         <Route
           path="auth/signin"
           element={
             <>
-              <PageTitle title="Sign In | Admin Panel" />
+              <PageTitle title="Вход | Линия Вкуса" />
               <SignIn />
             </>
           }
         />
-        <Route
-          path="auth/signup"
-          element={
-            <>
-              <PageTitle title="Sign Up | Admin Panel" />
-              <SignUp />
-            </>
-          }
-        />
+        <Route path="*" element={<ProtectedRoutes />} />
       </Routes>
-    </DefaultLayout>
+    </AuthProvider>
   );
 }
 
