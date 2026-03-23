@@ -11,4 +11,13 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    proxy: {
+      '/strapi': {
+        target: 'http://localhost:1337',
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/strapi/, ''),
+      },
+    },
+  },
 })

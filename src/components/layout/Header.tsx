@@ -68,7 +68,7 @@ export default function Header() {
           </div>
           <div className="flex items-center gap-3">
             <a
-              href={`${import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337'}/admin`}
+              href={`/strapi/admin`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex h-10 items-center justify-center rounded-md px-4 py-2 font-sans text-sm font-medium text-charcoal-500 transition-colors hover:bg-charcoal-100 hover:text-charcoal-900"
@@ -127,7 +127,7 @@ export default function Header() {
                     Оставить заявку
                   </Button>
                   <a
-                    href={`${import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337'}/admin`}
+                    href={`/strapi/admin`}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => setIsMobileOpen(false)}
