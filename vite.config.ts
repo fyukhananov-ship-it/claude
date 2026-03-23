@@ -13,10 +13,37 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/strapi': {
+      '/admin': {
         target: 'http://localhost:1337',
         changeOrigin: true,
-        rewrite: (p) => p.replace(/^\/strapi/, ''),
+      },
+      '/api': {
+        target: 'http://localhost:1337',
+        changeOrigin: true,
+      },
+      '/uploads': {
+        target: 'http://localhost:1337',
+        changeOrigin: true,
+      },
+      '/i18n': {
+        target: 'http://localhost:1337',
+        changeOrigin: true,
+      },
+      '/content-manager': {
+        target: 'http://localhost:1337',
+        changeOrigin: true,
+      },
+      '/content-type-builder': {
+        target: 'http://localhost:1337',
+        changeOrigin: true,
+      },
+      '/users-permissions': {
+        target: 'http://localhost:1337',
+        changeOrigin: true,
+      },
+      '/upload': {
+        target: 'http://localhost:1337',
+        changeOrigin: true,
       },
     },
   },

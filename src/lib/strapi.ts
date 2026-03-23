@@ -1,4 +1,6 @@
-const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337'
+// In dev: Vite proxies /api → localhost:1337/api
+// In prod: set VITE_STRAPI_URL to the Strapi server URL
+const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || ''
 
 interface StrapiResponse<T> {
   data: T
