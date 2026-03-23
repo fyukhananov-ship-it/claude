@@ -1,33 +1,83 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
 import * as store from './productStore'
 import type { CatalogCategory, CatalogProduct } from './productStore'
 
 interface ProductContextType {
   catalog: CatalogCategory[]
-  addCategory: (category: CatalogCategory) => void
-  updateCategory: (id: string, updates: Partial<CatalogCategory>) => void
-  deleteCategory: (id: string) => void
-  addProduct: (categoryId: string, product: CatalogProduct) => void
-  updateProduct: (categoryId: string, productId: string, updates: Partial<CatalogProduct>) => void
-  deleteProduct: (categoryId: string, productId: string) => void
-  refreshCatalog: () => void
+  loading: boolean
+  error: string | null
+  addCategory: (category: Pick<CatalogCategory, 'name' | 'icon'>) => Promise<void>
+  updateCategory: (id: string, updates: Partial<Pick<CatalogCategory, 'name' | 'icon'>>) => Promise<void>
+  deleteCategory: (id: string) => Promise<void>
+  addProduct: (categoryId: string, product: Pick<CatalogProduct, 'name' | 'description' | 'weight'>, imageFile?: File) => Promise<void>
+  updateProduct: (categoryId: string, productId: string, updates: Partial<Pick<CatalogProduct, 'name' | 'description' | 'weight'>>, imageFile?: File) => Promise<void>
+  deleteProduct: (categoryId: string, productId: string) => Promise<void>
+  refreshCatalog: () => Promise<void>
 }
 
 const ProductContext = createContext<ProductContextType | null>(null)
 
 export function ProductProvider({ children }: { children: ReactNode }) {
-  const [catalog, setCatalog] = useState<CatalogCategory[]>(() => store.getCatalog())
+  const [catalog, setCatalog] = useState<CatalogCategory[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const refreshCatalog = () => setCatalog(store.getCatalog())
+  const refreshCatalog = useCallback(async () => {
+    try {
+      setError(null)
+      const data = await store.getCatalog()
+      setCatalog(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load catalog')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    refreshCatalog()
+  }, [refreshCatalog])
+
+  const addCategory = async (category: Pick<CatalogCategory, 'name' | 'icon'>) => {
+    await store.addCategory(category)
+    await refreshCatalog()
+  }
+
+  const updateCategory = async (id: string, updates: Partial<Pick<CatalogCategory, 'name' | 'icon'>>) => {
+    await store.updateCategory(id, updates)
+    await refreshCatalog()
+  }
+
+  const deleteCategory = async (id: string) => {
+    await store.deleteCategory(id)
+    await refreshCatalog()
+  }
+
+  const addProduct = async (categoryId: string, product: Pick<CatalogProduct, 'name' | 'description' | 'weight'>, imageFile?: File) => {
+    await store.addProduct(categoryId, product, imageFile)
+    await refreshCatalog()
+  }
+
+  const updateProduct = async (categoryId: string, productId: string, updates: Partial<Pick<CatalogProduct, 'name' | 'description' | 'weight'>>, imageFile?: File) => {
+    await store.updateProduct(categoryId, productId, updates, imageFile)
+    await refreshCatalog()
+  }
+
+  const deleteProduct = async (categoryId: string, productId: string) => {
+    await store.deleteProduct(categoryId, productId)
+    await refreshCatalog()
+  }
 
   const value: ProductContextType = {
     catalog,
-    addCategory: (category) => setCatalog(store.addCategory(category)),
-    updateCategory: (id, updates) => setCatalog(store.updateCategory(id, updates)),
-    deleteCategory: (id) => setCatalog(store.deleteCategory(id)),
-    addProduct: (categoryId, product) => setCatalog(store.addProduct(categoryId, product)),
-    updateProduct: (categoryId, productId, updates) => setCatalog(store.updateProduct(categoryId, productId, updates)),
-    deleteProduct: (categoryId, productId) => setCatalog(store.deleteProduct(categoryId, productId)),
+    loading,
+    error,
+    addCategory,
+    updateCategory,
+    deleteCategory,
+    addProduct,
+    updateProduct,
+    deleteProduct,
     refreshCatalog,
   }
 
