@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import { Menu } from 'lucide-react'
 import logoImg from '/logo.png'
 import Button from '../ui/Button'
@@ -68,12 +67,14 @@ export default function Header() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Link
-              to="/admin"
+            <a
+              href={`${import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337'}/admin`}
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex h-10 items-center justify-center rounded-md px-4 py-2 font-sans text-sm font-medium text-charcoal-500 transition-colors hover:bg-charcoal-100 hover:text-charcoal-900"
             >
               Админ-панель
-            </Link>
+            </a>
             <Button size="sm" onClick={() => setIsRequestOpen(true)}>
               Оставить заявку
             </Button>
@@ -125,13 +126,15 @@ export default function Header() {
                   <Button size="lg" className="w-full" onClick={() => { setIsMobileOpen(false); setIsRequestOpen(true) }}>
                     Оставить заявку
                   </Button>
-                  <Link
-                    to="/admin"
+                  <a
+                    href={`${import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337'}/admin`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     onClick={() => setIsMobileOpen(false)}
                     className="flex items-center justify-center rounded-md px-3 py-2.5 font-sans text-sm font-medium text-charcoal-500 transition-colors hover:bg-charcoal-100 hover:text-charcoal-900"
                   >
                     Админ-панель
-                  </Link>
+                  </a>
                 </div>
               </div>
             </SheetContent>
