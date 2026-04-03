@@ -2,8 +2,13 @@ import { mockApiCall } from './mockData'
 
 const API_BASE = '/api/v1'
 
-// Use mocks when no backend available (GitHub Pages)
-const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true' || !import.meta.env.DEV && typeof window !== 'undefined'
+function shouldUseMocks(): boolean {
+  try {
+    // In dev mode with backend running, don't use mocks
+    if (location.hostname === 'localhost' && !location.pathname.startsWith('/claude')) return false
+  } catch {}
+  return true
+}
 
 interface RequestOptions extends RequestInit {
   params?: Record<string, string>
@@ -18,7 +23,7 @@ class ApiClient {
     const { params, ...init } = options
 
     // Mock mode — return demo data
-    if (USE_MOCKS) {
+    if (shouldUseMocks()) {
       await new Promise(r => setTimeout(r, 150 + Math.random() * 200))
       const body = init.body ? JSON.parse(init.body as string) : undefined
       let mockPath = path
@@ -112,7 +117,7 @@ class ApiClient {
   }
 
   async uploadFile<T>(path: string, file: File, fieldName = 'file'): Promise<T> {
-    if (USE_MOCKS) {
+    if (shouldUseMocks()) {
       await new Promise(r => setTimeout(r, 500))
       return mockApiCall('POST', path, { filename: file.name }) as T
     }
