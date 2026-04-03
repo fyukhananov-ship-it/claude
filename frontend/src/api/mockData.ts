@@ -292,9 +292,72 @@ export const DEMO_USERS: Record<string, { password: string; role: string; partne
   'partner@magnit.ru': { password: 'partner123', role: 'partner_admin', partner_id: 'p-магнит' },
 }
 
-// --- Mock API handler (uses reactive store) ---
+// --- Reactive in-memory store (shared between admin and client) ---
 
-import { store } from './mockStore'
+class MockStore {
+  offers: Array<typeof DEMO_OFFERS[0]>
+  partners: Array<typeof DEMO_PARTNERS[0]>
+
+  constructor() {
+    this.offers = [...DEMO_OFFERS]
+    this.partners = [...DEMO_PARTNERS]
+  }
+
+  getActiveOffers() { return this.offers.filter(o => o.status === 'active') }
+  getOffersByPartner(pid: string) { return this.offers.filter(o => o.partner_id === pid) }
+  getOffersByStatus(s: string) { return s === 'all' ? this.offers : this.offers.filter(o => o.status === s) }
+  getOffer(id: string) { return this.offers.find(o => o.id === id) }
+
+  addOffer(data: Record<string, unknown>) {
+    const offer = {
+      ...DEMO_OFFERS[0],
+      id: `offer-${Date.now()}`,
+      ...data,
+      status: 'draft',
+      budget_spent: '0.00',
+      created_at: new Date().toISOString(),
+      terminals_count: 0,
+      placements: [],
+    }
+    this.offers.unshift(offer as typeof DEMO_OFFERS[0])
+    return offer
+  }
+
+  moderateOffer(id: string, action: 'approve' | 'reject') {
+    const o = this.offers.find(o => o.id === id)
+    if (!o) return null
+    o.status = action === 'approve' ? 'active' : 'draft'
+    return o
+  }
+
+  updateOfferStatus(id: string, status: string) {
+    const o = this.offers.find(o => o.id === id)
+    if (o) o.status = status
+    return o
+  }
+
+  getPartners() { return this.partners }
+
+  addPartner(data: { name: string; contact_email: string; contact_phone?: string }) {
+    const p = {
+      id: `partner-${Date.now()}`, name: data.name, logo_url: null,
+      contact_email: data.contact_email, contact_phone: data.contact_phone || '',
+      balance: '0.00', status: 'active', created_at: new Date().toISOString(), offers_count: 0,
+    }
+    this.partners.unshift(p)
+    return p
+  }
+
+  topUpBalance(pid: string, amount: number) {
+    const p = this.partners.find(p => p.id === pid)
+    if (p) p.balance = (parseFloat(p.balance) + amount).toFixed(2)
+    return p
+  }
+}
+
+const store = new MockStore()
+
+// --- Mock API handler ---
 
 export function mockApiCall(method: string, path: string, body?: unknown): unknown {
   // Auth
