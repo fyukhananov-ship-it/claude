@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -23,8 +23,7 @@
     "@radix-ui/react-tabs": "^1.1.2",
     "@radix-ui/react-dropdown-menu": "^2.1.4",
     "@radix-ui/react-label": "^2.1.1",
-    "@radix-ui/react-separator": "^1.1.1",
-    "@radix-ui/react-badge": "^1.0.0"
+    "@radix-ui/react-separator": "^1.1.1"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
