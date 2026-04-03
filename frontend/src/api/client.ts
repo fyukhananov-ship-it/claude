@@ -1,4 +1,9 @@
+import { mockApiCall } from './mockData'
+
 const API_BASE = '/api/v1'
+
+// Use mocks when no backend available (GitHub Pages)
+const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true' || !import.meta.env.DEV && typeof window !== 'undefined'
 
 interface RequestOptions extends RequestInit {
   params?: Record<string, string>
@@ -11,6 +16,14 @@ class ApiClient {
 
   private async request<T>(path: string, options: RequestOptions = {}): Promise<T> {
     const { params, ...init } = options
+
+    // Mock mode — return demo data
+    if (USE_MOCKS) {
+      await new Promise(r => setTimeout(r, 200 + Math.random() * 300)) // simulate latency
+      const body = init.body ? JSON.parse(init.body as string) : undefined
+      return mockApiCall(init.method || 'GET', path, body) as T
+    }
+
     let url = `${API_BASE}${path}`
 
     if (params) {
@@ -44,7 +57,7 @@ class ApiClient {
       }
       localStorage.removeItem('access_token')
       localStorage.removeItem('refresh_token')
-      window.location.href = '/login'
+      window.location.href = import.meta.env.BASE_URL + 'login'
       throw new Error('Unauthorized')
     }
 
@@ -97,6 +110,11 @@ class ApiClient {
   }
 
   async uploadFile<T>(path: string, file: File, fieldName = 'file'): Promise<T> {
+    if (USE_MOCKS) {
+      await new Promise(r => setTimeout(r, 500))
+      return mockApiCall('POST', path, { filename: file.name }) as T
+    }
+
     const formData = new FormData()
     formData.append(fieldName, file)
 
