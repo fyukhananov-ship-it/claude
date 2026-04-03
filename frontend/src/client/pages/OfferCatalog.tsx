@@ -23,24 +23,24 @@ interface OfferItem {
 
 // Category icons (emoji-style for clean mobile look)
 const categoryIcons: Record<string, string> = {
-  'Продуктовые сети': '\u{1F6D2}',
-  'Товары для дома / DIY': '\u{1F528}',
-  'Одежда / обувь': '\u{1F45A}',
-  'Косметика / уход': '\u{2728}',
-  'Спорт / outdoor': '\u{26BD}',
-  'QSR / фастфуд': '\u{1F354}',
-  'Кофейни': '\u{2615}',
-  'Casual / fine dining': '\u{1F37D}',
-  'Доставка еды': '\u{1F6F5}',
-  'Электроника / техника': '\u{1F4F1}',
-  'Товары для детей': '\u{1F9F8}',
-  'Книги / хобби / подписки': '\u{1F4DA}',
-  'АЗС / топливо': '\u{26FD}',
-  'Отели / авиабилеты': '\u{2708}',
-  'Кино / развлечения / фитнес': '\u{1F3AC}',
-  'Локальные сети / франшизы': '\u{1F3EA}',
-  'Сервисы': '\u{1F527}',
-  'Онлайн-сервисы / SaaS': '\u{1F4BB}',
+  'Продуктовые сети': '🛒',
+  'Товары для дома / DIY': '🔨',
+  'Одежда / обувь': '👚',
+  'Косметика / уход': '✨',
+  'Спорт / outdoor': '⚽',
+  'QSR / фастфуд': '🍔',
+  'Кофейни': '☕',
+  'Casual / fine dining': '🍽',
+  'Доставка еды': '🛵',
+  'Электроника / техника': '📱',
+  'Товары для детей': '🧸',
+  'Книги / хобби / подписки': '📚',
+  'АЗС / топливо': '⛽',
+  'Отели / авиабилеты': '✈',
+  'Кино / развлечения / фитнес': '🎬',
+  'Локальные сети / франшизы': '🏪',
+  'Сервисы': '🔧',
+  'Онлайн-сервисы / SaaS': '💻',
 }
 
 // Partner avatar colors based on first letter
@@ -120,7 +120,7 @@ export default function OfferCatalog() {
   const formatRate = (o: OfferItem) =>
     o.cashback_type === 'percent'
       ? `${(parseFloat(o.cashback_rate) * 100).toFixed(0)}%`
-      : `${parseFloat(o.cashback_rate).toFixed(0)}\u00A0\u20BD`
+      : `${parseFloat(o.cashback_rate).toFixed(0)} ₽`
 
   const showMainContent = !search && category === 'Все'
 
@@ -134,8 +134,8 @@ export default function OfferCatalog() {
               <span className="text-[11px] font-extrabold text-beeline-black tracking-tight">CLO</span>
             </div>
             <div>
-              <p className="text-[15px] font-semibold leading-tight">\u041F\u043E\u0434\u0430\u0440\u043A\u0438 \u0438 \u0430\u043A\u0446\u0438\u0438</p>
-              <p className="text-[11px] text-gray-400 leading-tight">\u0411\u0438\u043B\u0430\u0439\u043D \u00D7 \u041D\u0421\u041F\u041A</p>
+              <p className="text-[15px] font-semibold leading-tight">Подарки и акции</p>
+              <p className="text-[11px] text-gray-400 leading-tight">Билайн × НСПК</p>
             </div>
           </div>
           <button
@@ -160,7 +160,7 @@ export default function OfferCatalog() {
             onChange={e => setSearch(e.target.value)}
             onFocus={() => setSearchFocused(true)}
             onBlur={() => setTimeout(() => setSearchFocused(false), 150)}
-            placeholder="\u041F\u043E\u0438\u0441\u043A \u043F\u0430\u0440\u0442\u043D\u0451\u0440\u0430 \u0438\u043B\u0438 \u043A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u0438..."
+            placeholder="Поиск партнёра или категории..."
             className="w-full pl-11 pr-10 py-3 bg-white/[0.08] text-white placeholder-gray-500 rounded-2xl text-[14px] focus:outline-none focus:bg-white/[0.14] focus:ring-1 focus:ring-beeline-yellow/50 border border-white/[0.06] transition-all"
           />
           {search && (
@@ -177,8 +177,8 @@ export default function OfferCatalog() {
       {showMainContent && !loading && (
         <div className="pt-5 pb-1">
           <div className="px-5 flex items-center justify-between mb-3">
-            <h2 className="text-[17px] font-bold text-beeline-black">\u0414\u043B\u044F \u0432\u0430\u0441</h2>
-            <span className="text-[12px] text-beeline-gray">\u041F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u044C\u043D\u044B\u0435 \u043F\u0440\u0435\u0434\u043B\u043E\u0436\u0435\u043D\u0438\u044F</span>
+            <h2 className="text-[17px] font-bold text-beeline-black">Для вас</h2>
+            <span className="text-[12px] text-beeline-gray">Персональные предложения</span>
           </div>
           <div className="pl-5 overflow-x-auto scrollbar-none">
             <div className="flex gap-3 pr-5">
@@ -199,7 +199,7 @@ export default function OfferCatalog() {
                   </div>
                   <div className="p-3">
                     <p className="text-[13px] font-semibold text-beeline-black leading-tight line-clamp-2">{offer.partner_name}</p>
-                    <p className="text-[11px] text-beeline-gray mt-1 line-clamp-1">\u043E\u0442 {parseFloat(offer.min_check).toFixed(0)}\u00A0\u20BD</p>
+                    <p className="text-[11px] text-beeline-gray mt-1 line-clamp-1">от {parseFloat(offer.min_check).toFixed(0)} ₽</p>
                   </div>
                 </button>
               ))}
@@ -211,7 +211,7 @@ export default function OfferCatalog() {
       {/* ===== Categories Grid — only on main screen ===== */}
       {showMainContent && !loading && (
         <div className="px-5 pt-5 pb-2">
-          <h2 className="text-[17px] font-bold text-beeline-black mb-3">\u041A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u0438</h2>
+          <h2 className="text-[17px] font-bold text-beeline-black mb-3">Категории</h2>
           <div className="grid grid-cols-4 gap-2">
             {CATEGORIES.map(cat => (
               <button
@@ -219,7 +219,7 @@ export default function OfferCatalog() {
                 onClick={() => setCategory(cat)}
                 className="flex flex-col items-center gap-1 py-2.5 px-1 rounded-2xl bg-white border border-gray-100/80 hover:border-beeline-yellow/50 hover:shadow-sm transition-all active:scale-[0.96]"
               >
-                <span className="text-[22px] leading-none">{categoryIcons[cat] || '\u{1F381}'}</span>
+                <span className="text-[22px] leading-none">{categoryIcons[cat] || '🎁'}</span>
                 <span className="text-[10px] text-beeline-dark font-medium text-center leading-tight line-clamp-2">{cat.split(' / ')[0]}</span>
                 <span className="text-[9px] text-beeline-gray">{categoryCounts[cat] || 0}</span>
               </button>
@@ -236,7 +236,7 @@ export default function OfferCatalog() {
               onClick={() => { setCategory('Все'); setSearch('') }}
               className="px-3.5 py-1.5 rounded-full text-[12px] font-medium bg-beeline-black text-white"
             >
-              \u2190 \u0412\u0441\u0435
+              ← Все
             </button>
             {CATEGORIES.map(c => (
               <button
@@ -260,26 +260,26 @@ export default function OfferCatalog() {
       <div className="px-5 pt-4 pb-1">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-[17px] font-bold text-beeline-black">
-            {showMainContent ? '\u0412\u0441\u0435 \u043E\u0444\u0444\u0435\u0440\u044B' : category !== 'Все' ? `${categoryIcons[category] || ''} ${category}` : `\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B`}
+            {showMainContent ? 'Все офферы' : category !== 'Все' ? `${categoryIcons[category] || ''} ${category}` : `Результаты`}
           </h2>
           <div className="flex items-center gap-1.5 bg-white rounded-full px-2 py-1 border border-gray-100">
             <button
               onClick={() => setSort('cashback')}
               className={cn('text-[11px] px-2 py-0.5 rounded-full transition-colors', sort === 'cashback' ? 'bg-beeline-yellow text-beeline-black font-semibold' : 'text-beeline-gray')}
             >
-              \u041A\u044D\u0448\u0431\u044D\u043A
+              Кэшбэк
             </button>
             <button
               onClick={() => setSort('new')}
               className={cn('text-[11px] px-2 py-0.5 rounded-full transition-colors', sort === 'new' ? 'bg-beeline-yellow text-beeline-black font-semibold' : 'text-beeline-gray')}
             >
-              \u041D\u043E\u0432\u044B\u0435
+              Новые
             </button>
           </div>
         </div>
         {!showMainContent && (
           <p className="text-[12px] text-beeline-gray -mt-1.5 mb-3">
-            {filtered.length} {filtered.length === 1 ? '\u043E\u0444\u0444\u0435\u0440' : '\u043E\u0444\u0444\u0435\u0440\u043E\u0432'}
+            {filtered.length} {filtered.length === 1 ? 'оффер' : 'офферов'}
           </p>
         )}
       </div>
@@ -289,7 +289,7 @@ export default function OfferCatalog() {
         {loading ? (
           <div className="flex flex-col items-center py-16">
             <div className="w-10 h-10 border-3 border-beeline-yellow border-t-transparent rounded-full animate-spin" />
-            <p className="text-[13px] text-beeline-gray mt-4">\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 \u043E\u0444\u0444\u0435\u0440\u043E\u0432...</p>
+            <p className="text-[13px] text-beeline-gray mt-4">Загрузка офферов...</p>
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-16">
@@ -299,12 +299,12 @@ export default function OfferCatalog() {
               </svg>
             </div>
             <p className="text-[14px] text-beeline-dark font-medium">
-              {search ? `\u041D\u0438\u0447\u0435\u0433\u043E \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u043E` : '\u041D\u0435\u0442 \u043E\u0444\u0444\u0435\u0440\u043E\u0432'}
+              {search ? `Ничего не найдено` : 'Нет офферов'}
             </p>
             {search && (
               <>
-                <p className="text-[12px] text-beeline-gray mt-1">\u041F\u043E \u0437\u0430\u043F\u0440\u043E\u0441\u0443 \u00AB{search}\u00BB</p>
-                <button onClick={() => setSearch('')} className="text-[13px] text-blue-600 font-medium mt-3">\u0421\u0431\u0440\u043E\u0441\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A</button>
+                <p className="text-[12px] text-beeline-gray mt-1">По запросу «{search}»</p>
+                <button onClick={() => setSearch('')} className="text-[13px] text-blue-600 font-medium mt-3">Сбросить поиск</button>
               </>
             )}
           </div>
@@ -334,7 +334,7 @@ export default function OfferCatalog() {
               {/* Cashback badge */}
               <div className="shrink-0 bg-beeline-yellow/10 rounded-xl px-3 py-2 text-center">
                 <p className="text-[16px] font-bold text-brand-800 leading-none">{formatRate(offer)}</p>
-                <p className="text-[10px] text-beeline-gray mt-1">\u043E\u0442 {parseFloat(offer.min_check).toFixed(0)}\u20BD</p>
+                <p className="text-[10px] text-beeline-gray mt-1">от {parseFloat(offer.min_check).toFixed(0)}₽</p>
               </div>
             </button>
           ))
@@ -348,7 +348,7 @@ export default function OfferCatalog() {
             <svg className="w-6 h-6 text-beeline-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
             </svg>
-            <span className="text-[10px] font-semibold text-beeline-black mt-0.5">\u041E\u0444\u0444\u0435\u0440\u044B</span>
+            <span className="text-[10px] font-semibold text-beeline-black mt-0.5">Офферы</span>
             <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-beeline-yellow rounded-full" />
           </button>
           <button
@@ -358,7 +358,7 @@ export default function OfferCatalog() {
             <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-[10px] text-gray-400 mt-0.5">\u041A\u044D\u0448\u0431\u044D\u043A</span>
+            <span className="text-[10px] text-gray-400 mt-0.5">Кэшбэк</span>
           </button>
         </div>
       </div>
