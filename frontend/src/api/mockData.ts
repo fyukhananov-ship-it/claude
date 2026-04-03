@@ -359,7 +359,10 @@ const store = new MockStore()
 
 // --- Mock API handler ---
 
-export function mockApiCall(method: string, path: string, body?: unknown): unknown {
+export function mockApiCall(method: string, rawPath: string, body?: unknown): unknown {
+  // Strip query params for pattern matching
+  const path = rawPath.split('?')[0]
+
   // Auth
   if (method === 'POST' && path === '/auth/login') {
     const { email, password } = body as { email: string; password: string }
