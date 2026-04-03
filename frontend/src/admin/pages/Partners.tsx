@@ -1,259 +1,138 @@
 import { useState, useEffect, useCallback } from 'react'
 import { formatCurrency } from '@/lib/utils'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Badge } from '@/components/ui/Badge'
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card'
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from '@/components/ui/Table'
+import { cn } from '@/lib/utils'
 import { api } from '@/api/client'
 
 interface Partner {
-  id: string
-  name: string
-  email: string
-  balance: number
-  status: string
-  offers_count: number
+  id: string; name: string; contact_email: string; contact_phone: string
+  balance: string; status: string; offers_count: number; created_at: string
 }
 
 export default function Partners() {
   const [partners, setPartners] = useState<Partner[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [modal, setModal] = useState<'create' | 'topup' | null>(null)
+  const [topupId, setTopupId] = useState('')
+  const [form, setForm] = useState({ name: '', contact_email: '', contact_phone: '' })
+  const [topupAmount, setTopupAmount] = useState('')
+  const [saving, setSaving] = useState(false)
 
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [createForm, setCreateForm] = useState({ name: '', email: '', phone: '' })
-  const [creating, setCreating] = useState(false)
-
-  const [topUpPartnerId, setTopUpPartnerId] = useState<string | null>(null)
-  const [topUpAmount, setTopUpAmount] = useState('')
-  const [topping, setTopping] = useState(false)
-
-  const fetchPartners = useCallback(() => {
+  const load = useCallback(() => {
     setLoading(true)
-    api
-      .get<Partner[]>('/admin/partners')
-      .then(setPartners)
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false))
+    api.get<Partner[]>('/admin/partners')
+      .then(d => setPartners(Array.isArray(d) ? d : []))
+      .catch(() => {}).finally(() => setLoading(false))
   }, [])
-
-  useEffect(() => {
-    fetchPartners()
-  }, [fetchPartners])
+  useEffect(() => { load() }, [load])
 
   const handleCreate = async () => {
-    setCreating(true)
-    try {
-      await api.post('/admin/partners', createForm)
-      setShowCreateModal(false)
-      setCreateForm({ name: '', email: '', phone: '' })
-      fetchPartners()
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Ошибка создания'
-      setError(message)
-    } finally {
-      setCreating(false)
-    }
+    setSaving(true)
+    try { await api.post('/admin/partners', form); setModal(null); setForm({ name: '', contact_email: '', contact_phone: '' }); load() }
+    catch {} finally { setSaving(false) }
   }
 
-  const handleTopUp = async () => {
-    if (!topUpPartnerId || !topUpAmount) return
-    setTopping(true)
-    try {
-      await api.put(`/admin/partners/${topUpPartnerId}/balance`, {
-        amount: parseFloat(topUpAmount),
-      })
-      setTopUpPartnerId(null)
-      setTopUpAmount('')
-      fetchPartners()
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Ошибка пополнения'
-      setError(message)
-    } finally {
-      setTopping(false)
-    }
+  const handleTopup = async () => {
+    if (!topupId || !topupAmount) return
+    setSaving(true)
+    try { await api.put(`/admin/partners/${topupId}/balance`, { amount: parseFloat(topupAmount) }); setModal(null); setTopupAmount(''); load() }
+    catch {} finally { setSaving(false) }
   }
 
-  const statusVariant = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'success'
-      case 'blocked':
-        return 'error'
-      default:
-        return 'default'
-    }
-  }
-
-  const statusLabel = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'Активен'
-      case 'blocked':
-        return 'Заблокирован'
-      default:
-        return status
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-beeline-gray">Загрузка...</p>
-      </div>
-    )
-  }
+  if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-[3px] border-[#FFD500] border-t-transparent rounded-full animate-spin" /></div>
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-beeline-black">Партнёры</h1>
-        <Button onClick={() => setShowCreateModal(true)}>Добавить партнёра</Button>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-[28px] font-extrabold text-[#111] tracking-[-0.03em]">Партнёры</h1>
+          <p className="text-[13px] text-[#999] mt-1 font-medium">{partners.length} зарегистрировано</p>
+        </div>
+        <button onClick={() => setModal('create')} className="px-4 py-2.5 rounded-xl bg-[#FFD500] text-[#111] text-[13px] font-bold press-scale shadow-[0_2px_12px_rgba(255,213,0,0.25)]">
+          Добавить партнёра
+        </button>
       </div>
 
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
-          {error}
-        </div>
-      )}
+      {/* Table */}
+      <div className="bg-white rounded-2xl border border-[#f0f0f0] overflow-hidden">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-[#f5f5f5]">
+              {['Партнёр', 'Email', 'Баланс', 'Статус', 'Офферов', ''].map(h => (
+                <th key={h} className="px-5 py-3.5 text-left text-[11px] font-bold text-[#999] uppercase tracking-[0.08em]">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {partners.map(p => (
+              <tr key={p.id} className="border-b border-[#fafafa] last:border-0 hover:bg-[#fafafa] transition-colors">
+                <td className="px-5 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center text-white text-[13px] font-extrabold">{p.name[0]}</div>
+                    <span className="text-[14px] font-bold text-[#111]">{p.name}</span>
+                  </div>
+                </td>
+                <td className="px-5 py-4 text-[13px] text-[#666]">{p.contact_email}</td>
+                <td className="px-5 py-4 font-mono-cash text-[14px] font-bold text-[#111]">{formatCurrency(p.balance)}</td>
+                <td className="px-5 py-4">
+                  <span className={cn('text-[11px] font-bold px-2.5 py-1 rounded-full', p.status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600')}>
+                    {p.status === 'active' ? 'Активен' : 'Заблокирован'}
+                  </span>
+                </td>
+                <td className="px-5 py-4 font-mono-cash text-[14px] font-bold text-[#111]">{p.offers_count}</td>
+                <td className="px-5 py-4">
+                  <button onClick={() => { setTopupId(p.id); setModal('topup') }} className="text-[12px] font-bold text-[#FFD500] hover:text-[#B8960A] transition-colors">
+                    Пополнить
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Название</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Баланс</TableHead>
-                <TableHead>Статус</TableHead>
-                <TableHead>Офферов</TableHead>
-                <TableHead>Действия</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {partners.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-beeline-gray">
-                    Нет партнёров
-                  </TableCell>
-                </TableRow>
-              ) : (
-                partners.map((partner) => (
-                  <TableRow key={partner.id}>
-                    <TableCell className="font-medium">{partner.name}</TableCell>
-                    <TableCell>{partner.email}</TableCell>
-                    <TableCell>{formatCurrency(partner.balance)}</TableCell>
-                    <TableCell>
-                      <Badge variant={statusVariant(partner.status)}>
-                        {statusLabel(partner.status)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{partner.offers_count}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setTopUpPartnerId(partner.id)}
-                      >
-                        Пополнить баланс
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      {/* Create Partner Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle>Добавить партнёра</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Input
-                label="Название компании"
-                value={createForm.name}
-                onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-                placeholder="ООО Магазин"
-              />
-              <Input
-                label="Email"
-                type="email"
-                value={createForm.email}
-                onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
-                placeholder="partner@example.com"
-              />
-              <Input
-                label="Телефон"
-                type="tel"
-                value={createForm.phone}
-                onChange={(e) => setCreateForm({ ...createForm, phone: e.target.value })}
-                placeholder="+7 (999) 123-45-67"
-              />
-              <div className="flex justify-end gap-3 pt-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    setShowCreateModal(false)
-                    setCreateForm({ name: '', email: '', phone: '' })
-                  }}
-                >
-                  Отмена
-                </Button>
-                <Button onClick={handleCreate} disabled={creating || !createForm.name || !createForm.email}>
-                  {creating ? 'Создание...' : 'Создать'}
-                </Button>
+      {/* Modal */}
+      {modal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setModal(null)}>
+          <div className="bg-white rounded-2xl border border-[#f0f0f0] w-full max-w-md p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <h2 className="text-[18px] font-extrabold text-[#111] mb-5">
+              {modal === 'create' ? 'Новый партнёр' : 'Пополнить баланс'}
+            </h2>
+            {modal === 'create' ? (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-[11px] font-bold text-[#999] uppercase tracking-[0.08em] mb-1.5">Название</label>
+                  <input value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-[#eee] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#FFD500]/40" placeholder="ООО Магазин" />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-[#999] uppercase tracking-[0.08em] mb-1.5">Email</label>
+                  <input type="email" value={form.contact_email} onChange={e => setForm({...form, contact_email: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-[#eee] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#FFD500]/40" placeholder="partner@example.com" />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-[#999] uppercase tracking-[0.08em] mb-1.5">Телефон</label>
+                  <input value={form.contact_phone} onChange={e => setForm({...form, contact_phone: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-[#eee] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#FFD500]/40" placeholder="+7 (999) 123-45-67" />
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button onClick={() => setModal(null)} className="flex-1 py-3 rounded-xl bg-[#f0f0f0] text-[#666] text-[13px] font-bold press-scale">Отмена</button>
+                  <button onClick={handleCreate} disabled={saving || !form.name || !form.contact_email} className="flex-1 py-3 rounded-xl bg-[#FFD500] text-[#111] text-[13px] font-bold press-scale disabled:opacity-50 shadow-[0_2px_12px_rgba(255,213,0,0.25)]">
+                    {saving ? 'Создание...' : 'Создать'}
+                  </button>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Top Up Balance Modal */}
-      {topUpPartnerId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <Card className="w-full max-w-sm">
-            <CardHeader>
-              <CardTitle>Пополнить баланс</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Input
-                label="Сумма (руб.)"
-                type="number"
-                min="0"
-                step="0.01"
-                value={topUpAmount}
-                onChange={(e) => setTopUpAmount(e.target.value)}
-                placeholder="10000"
-              />
-              <div className="flex justify-end gap-3 pt-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    setTopUpPartnerId(null)
-                    setTopUpAmount('')
-                  }}
-                >
-                  Отмена
-                </Button>
-                <Button onClick={handleTopUp} disabled={topping || !topUpAmount}>
-                  {topping ? 'Пополнение...' : 'Пополнить'}
-                </Button>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-[11px] font-bold text-[#999] uppercase tracking-[0.08em] mb-1.5">Сумма (&#8381;)</label>
+                  <input type="number" value={topupAmount} onChange={e => setTopupAmount(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-[#eee] text-[14px] font-mono-cash focus:outline-none focus:ring-2 focus:ring-[#FFD500]/40" placeholder="100000" />
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button onClick={() => setModal(null)} className="flex-1 py-3 rounded-xl bg-[#f0f0f0] text-[#666] text-[13px] font-bold press-scale">Отмена</button>
+                  <button onClick={handleTopup} disabled={saving || !topupAmount} className="flex-1 py-3 rounded-xl bg-[#FFD500] text-[#111] text-[13px] font-bold press-scale disabled:opacity-50">
+                    {saving ? 'Пополнение...' : 'Пополнить'}
+                  </button>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            )}
+          </div>
         </div>
       )}
     </div>

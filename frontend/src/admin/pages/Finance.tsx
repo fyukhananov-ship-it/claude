@@ -1,205 +1,126 @@
 import { useState } from 'react'
 import { formatCurrency } from '@/lib/utils'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card'
-import { StatCard } from '@/components/ui/StatCard'
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from '@/components/ui/Table'
 import { api } from '@/api/client'
 
-interface RevShareData {
-  gmv: number
-  commission: number
-  revshare_beeline_platform: number
-  revshare_nspk: number
-  revshare_beeline_invest: number
-  net_platform: number
-}
-
-interface PnlRow {
-  partner_name: string
-  gmv: number
-  commission: number
-  cashback: number
-  net: number
-}
+interface RevShare { total_gmv: string; total_commission: string; revshare_traffic_holder: string; revshare_nspk: string; revshare_beeline: string; net_platform: string }
+interface Pnl { partner_id: string; partner_name: string; gmv: string; commission: string; cashback: string; net: string }
 
 export default function Finance() {
   const today = new Date()
-  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
-  const formatDate = (d: Date) => d.toISOString().split('T')[0]
-
-  const [periodStart, setPeriodStart] = useState(formatDate(monthStart))
-  const [periodEnd, setPeriodEnd] = useState(formatDate(today))
-  const [revShare, setRevShare] = useState<RevShareData | null>(null)
-  const [pnl, setPnl] = useState<PnlRow[]>([])
+  const fmt = (d: Date) => d.toISOString().split('T')[0]
+  const [start, setStart] = useState(fmt(new Date(today.getFullYear(), today.getMonth(), 1)))
+  const [end, setEnd] = useState(fmt(today))
+  const [rev, setRev] = useState<RevShare | null>(null)
+  const [pnl, setPnl] = useState<Pnl[]>([])
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
 
-  const fetchData = async () => {
-    if (!periodStart || !periodEnd) return
+  const fetch = async () => {
     setLoading(true)
-    setError('')
     try {
-      const params = { period_start: periodStart, period_end: periodEnd }
-      const [revShareData, pnlData] = await Promise.all([
-        api.get<RevShareData>('/admin/finance/revshare', params),
-        api.get<PnlRow[]>('/admin/finance/pnl', params),
+      const [r, p] = await Promise.all([
+        api.get<RevShare>('/admin/finance/revshare', { period_start: start, period_end: end }),
+        api.get<Pnl[]>('/admin/finance/pnl', { period_start: start, period_end: end }),
       ])
-      setRevShare(revShareData)
-      setPnl(pnlData)
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Ошибка загрузки'
-      setError(message)
-    } finally {
-      setLoading(false)
-    }
+      setRev(r); setPnl(Array.isArray(p) ? p : [])
+    } catch {} finally { setLoading(false) }
   }
 
-  const handleExportCsv = () => {
-    if (pnl.length === 0) return
-    const headers = ['Партнёр', 'GMV', 'Комиссия', 'Кэшбэк', 'NET']
-    const rows = pnl.map((row) => [
-      row.partner_name,
-      row.gmv.toString(),
-      row.commission.toString(),
-      row.cashback.toString(),
-      row.net.toString(),
-    ])
-    const csvContent = [headers, ...rows].map((r) => r.join(',')).join('\n')
-    const blob = new Blob(['\uFEFF' + csvContent], {
-      type: 'text/csv;charset=utf-8;',
-    })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `pnl_${periodStart}_${periodEnd}.csv`
-    link.click()
-    URL.revokeObjectURL(url)
+  const exportCsv = () => {
+    if (!pnl.length) return
+    const csv = '\uFEFF' + ['Партнёр,GMV,Комиссия,Кэшбэк,NET', ...pnl.map(r => `${r.partner_name},${r.gmv},${r.commission},${r.cashback},${r.net}`)].join('\n')
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }))
+    a.download = `pnl_${start}_${end}.csv`; a.click()
   }
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-beeline-black mb-6">Финансы</h1>
+      <div className="mb-8">
+        <h1 className="text-[28px] font-extrabold text-[#111] tracking-[-0.03em]">Финансы</h1>
+        <p className="text-[13px] text-[#999] mt-1 font-medium">Rev share и P&L по партнёрам</p>
+      </div>
 
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
-          {error}
+      {/* Period */}
+      <div className="bg-white rounded-2xl border border-[#f0f0f0] p-5 mb-6 flex flex-wrap items-end gap-4">
+        <div>
+          <label className="block text-[11px] font-bold text-[#999] uppercase tracking-[0.08em] mb-1.5">Начало</label>
+          <input type="date" value={start} onChange={e => setStart(e.target.value)} className="px-4 py-2.5 rounded-xl border border-[#eee] text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-[#FFD500]/40" />
+        </div>
+        <div>
+          <label className="block text-[11px] font-bold text-[#999] uppercase tracking-[0.08em] mb-1.5">Конец</label>
+          <input type="date" value={end} onChange={e => setEnd(e.target.value)} className="px-4 py-2.5 rounded-xl border border-[#eee] text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-[#FFD500]/40" />
+        </div>
+        <button onClick={fetch} disabled={loading} className="px-5 py-2.5 rounded-xl bg-[#FFD500] text-[#111] text-[13px] font-bold press-scale disabled:opacity-50 shadow-[0_2px_12px_rgba(255,213,0,0.25)]">
+          {loading ? 'Загрузка...' : 'Сформировать'}
+        </button>
+      </div>
+
+      {/* Rev share */}
+      {rev && (
+        <div className="mb-6">
+          <h2 className="text-[18px] font-extrabold text-[#111] mb-4">Rev Share</h2>
+          <div className="grid grid-cols-3 gap-4 mb-4">
+            {[
+              { label: 'GMV', value: formatCurrency(rev.total_gmv) },
+              { label: 'Комиссия (3.6%)', value: formatCurrency(rev.total_commission) },
+              { label: 'NET платформы', value: formatCurrency(rev.net_platform), accent: true },
+            ].map(m => (
+              <div key={m.label} className={`bg-white rounded-2xl border ${m.accent ? 'border-[#FFD500]/30' : 'border-[#f0f0f0]'} p-5`}>
+                <p className="text-[11px] font-bold text-[#999] uppercase tracking-[0.1em]">{m.label}</p>
+                <p className="font-mono-cash text-[24px] font-extrabold text-[#111] mt-2">{m.value}</p>
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              { label: 'Билайн (площадка) 20%', value: formatCurrency(rev.revshare_traffic_holder) },
+              { label: 'НСПК 17%', value: formatCurrency(rev.revshare_nspk) },
+              { label: 'Билайн (инвестиции) 10%', value: formatCurrency(rev.revshare_beeline) },
+            ].map(m => (
+              <div key={m.label} className="bg-[#fafafa] rounded-xl p-4">
+                <p className="text-[10px] font-bold text-[#999] uppercase tracking-[0.08em]">{m.label}</p>
+                <p className="font-mono-cash text-[18px] font-extrabold text-[#111] mt-1">{m.value}</p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Период отчёта</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap items-end gap-4">
-            <Input
-              label="Начало периода"
-              type="date"
-              value={periodStart}
-              onChange={(e) => setPeriodStart(e.target.value)}
-            />
-            <Input
-              label="Конец периода"
-              type="date"
-              value={periodEnd}
-              onChange={(e) => setPeriodEnd(e.target.value)}
-            />
-            <Button onClick={fetchData} disabled={loading}>
-              {loading ? 'Загрузка...' : 'Сформировать'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {revShare && (
-        <>
-          <h2 className="text-lg font-semibold text-beeline-black mb-4">
-            Rev Share
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            <StatCard title="GMV" value={formatCurrency(revShare.gmv)} />
-            <StatCard
-              title="Комиссия"
-              value={formatCurrency(revShare.commission)}
-            />
-            <StatCard
-              title="Rev share Билайн (площадка)"
-              value={formatCurrency(revShare.revshare_beeline_platform)}
-            />
-            <StatCard
-              title="Rev share НСПК"
-              value={formatCurrency(revShare.revshare_nspk)}
-            />
-            <StatCard
-              title="Rev share Билайн (инвестиции)"
-              value={formatCurrency(revShare.revshare_beeline_invest)}
-            />
-            <StatCard
-              title="NET платформы"
-              value={formatCurrency(revShare.net_platform)}
-              className="border-beeline-yellow/30 bg-beeline-yellow/5"
-            />
-          </div>
-        </>
-      )}
-
+      {/* P&L */}
       {pnl.length > 0 && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>P&L по партнёрам</CardTitle>
-              <Button variant="outline" size="sm" onClick={handleExportCsv}>
-                Выгрузить CSV
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Партнёр</TableHead>
-                  <TableHead>GMV</TableHead>
-                  <TableHead>Комиссия</TableHead>
-                  <TableHead>Кэшбэк</TableHead>
-                  <TableHead>NET</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {pnl.map((row, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell className="font-medium">
-                      {row.partner_name}
-                    </TableCell>
-                    <TableCell>{formatCurrency(row.gmv)}</TableCell>
-                    <TableCell>{formatCurrency(row.commission)}</TableCell>
-                    <TableCell>{formatCurrency(row.cashback)}</TableCell>
-                    <TableCell
-                      className={row.net < 0 ? 'text-red-600 font-medium' : ''}
-                    >
-                      {formatCurrency(row.net)}
-                    </TableCell>
-                  </TableRow>
+        <div className="bg-white rounded-2xl border border-[#f0f0f0] overflow-hidden">
+          <div className="px-5 py-4 border-b border-[#f5f5f5] flex items-center justify-between">
+            <h2 className="text-[16px] font-extrabold text-[#111]">P&L по партнёрам</h2>
+            <button onClick={exportCsv} className="px-3 py-1.5 rounded-lg bg-[#f0f0f0] text-[#666] text-[11px] font-bold press-scale hover:bg-[#e5e5e5]">
+              Выгрузить CSV
+            </button>
+          </div>
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-[#f5f5f5]">
+                {['Партнёр', 'GMV', 'Комиссия', 'Кэшбэк', 'NET'].map(h => (
+                  <th key={h} className="px-5 py-3 text-left text-[11px] font-bold text-[#999] uppercase tracking-[0.08em]">{h}</th>
                 ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+              </tr>
+            </thead>
+            <tbody>
+              {pnl.map(r => (
+                <tr key={r.partner_id} className="border-b border-[#fafafa] last:border-0 hover:bg-[#fafafa]">
+                  <td className="px-5 py-3.5 text-[13px] font-bold text-[#111]">{r.partner_name}</td>
+                  <td className="px-5 py-3.5 font-mono-cash text-[13px] font-bold">{formatCurrency(r.gmv)}</td>
+                  <td className="px-5 py-3.5 font-mono-cash text-[13px]">{formatCurrency(r.commission)}</td>
+                  <td className="px-5 py-3.5 font-mono-cash text-[13px] text-red-500">{formatCurrency(r.cashback)}</td>
+                  <td className="px-5 py-3.5 font-mono-cash text-[13px] font-bold text-emerald-600">{formatCurrency(r.net)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
-      {!revShare && !loading && (
-        <div className="flex items-center justify-center h-32">
-          <p className="text-beeline-gray text-sm">
-            Выберите период и нажмите "Сформировать" для просмотра отчётов
-          </p>
+      {!rev && !loading && (
+        <div className="flex items-center justify-center h-40">
+          <p className="text-[13px] text-[#999]">Выберите период и нажмите &laquo;Сформировать&raquo;</p>
         </div>
       )}
     </div>

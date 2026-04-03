@@ -1,243 +1,94 @@
 import { useState, useRef } from 'react'
-import { Button } from '@/components/ui/Button'
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card'
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from '@/components/ui/Table'
-import { Badge } from '@/components/ui/Badge'
 import { api } from '@/api/client'
 
-interface UploadResult {
-  total_records: number
-  matched: number
-  errors: number
-  antifraud_blocked: number
-  uploaded_at: string
-}
+interface Result { batch_id: string; total: number; matched: number; errors: number }
 
 export default function RegistryUpload() {
   const [file, setFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
-  const [error, setError] = useState('')
-  const [result, setResult] = useState<UploadResult | null>(null)
-  const [generatingPayouts, setGeneratingPayouts] = useState(false)
-  const [payoutMessage, setPayoutMessage] = useState('')
+  const [result, setResult] = useState<Result | null>(null)
   const [dragOver, setDragOver] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const handleFileSelect = (selectedFile: File) => {
-    const ext = selectedFile.name.split('.').pop()?.toLowerCase()
-    if (ext !== 'csv' && ext !== 'json') {
-      setError('Поддерживаются только файлы CSV и JSON')
-      return
-    }
-    setFile(selectedFile)
-    setError('')
-  }
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    setDragOver(false)
-    const droppedFile = e.dataTransfer.files[0]
-    if (droppedFile) {
-      handleFileSelect(droppedFile)
-    }
-  }
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    setDragOver(true)
-  }
-
-  const handleDragLeave = () => {
-    setDragOver(false)
-  }
+  const ref = useRef<HTMLInputElement>(null)
 
   const handleUpload = async () => {
     if (!file) return
     setUploading(true)
-    setError('')
     try {
-      const uploadResult = await api.uploadFile<UploadResult>(
-        '/admin/registry/upload',
-        file
-      )
-      setResult(uploadResult)
-      setFile(null)
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Ошибка загрузки'
-      setError(message)
-    } finally {
-      setUploading(false)
-    }
+      const r = await api.uploadFile<Result>('/admin/registry/upload', file)
+      setResult(r); setFile(null)
+    } catch {} finally { setUploading(false) }
   }
 
-  const handleGeneratePayouts = async () => {
-    setGeneratingPayouts(true)
-    setPayoutMessage('')
-    try {
-      const res = await api.post<{ message: string }>('/payouts/generate')
-      setPayoutMessage(res.message || 'Реестр выплат сформирован')
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Ошибка формирования'
-      setError(message)
-    } finally {
-      setGeneratingPayouts(false)
-    }
+  const handlePayout = async () => {
+    try { await api.post('/payouts/generate', { period_start: '2026-03-01', period_end: '2026-04-03', type: 'client' }); alert('Реестр выплат сформирован') } catch {}
   }
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-beeline-black mb-6">
-        Реестры НСПК
-      </h1>
+      <div className="mb-8">
+        <h1 className="text-[28px] font-extrabold text-[#111] tracking-[-0.03em]">Реестры НСПК</h1>
+        <p className="text-[13px] text-[#999] mt-1 font-medium">Загрузка и обработка транзакционных реестров</p>
+      </div>
 
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
-          {error}
-        </div>
-      )}
-
-      {payoutMessage && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-          {payoutMessage}
-        </div>
-      )}
-
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Загрузка реестра</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
-              dragOver
-                ? 'border-beeline-yellow bg-beeline-yellow/5'
-                : 'border-gray-300 hover:border-gray-400'
-            }`}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv,.json"
-              className="hidden"
-              onChange={(e) => {
-                const selected = e.target.files?.[0]
-                if (selected) handleFileSelect(selected)
-              }}
-            />
-            <div className="text-4xl mb-3">📁</div>
-            {file ? (
-              <div>
-                <p className="text-sm font-medium text-beeline-black">
-                  {file.name}
-                </p>
-                <p className="text-xs text-beeline-gray mt-1">
-                  {(file.size / 1024).toFixed(1)} КБ
-                </p>
-              </div>
-            ) : (
-              <div>
-                <p className="text-sm font-medium text-beeline-black">
-                  Перетащите файл сюда или нажмите для выбора
-                </p>
-                <p className="text-xs text-beeline-gray mt-1">
-                  Поддерживаемые форматы: CSV, JSON
-                </p>
-              </div>
-            )}
+      {/* Upload zone */}
+      <div className="bg-white rounded-2xl border border-[#f0f0f0] p-6 mb-6">
+        <h2 className="text-[16px] font-extrabold text-[#111] mb-4">Загрузить реестр</h2>
+        <div
+          onDrop={e => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) setFile(f) }}
+          onDragOver={e => { e.preventDefault(); setDragOver(true) }}
+          onDragLeave={() => setDragOver(false)}
+          onClick={() => ref.current?.click()}
+          className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all ${dragOver ? 'border-[#FFD500] bg-[#FFD500]/5' : 'border-[#e0e0e0] hover:border-[#ccc]'}`}
+        >
+          <input ref={ref} type="file" accept=".csv,.json" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) setFile(f) }} />
+          <div className="w-14 h-14 rounded-2xl bg-[#f5f5f7] flex items-center justify-center mx-auto mb-4">
+            <svg className="w-7 h-7 text-[#999]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
           </div>
+          {file ? (
+            <div>
+              <p className="text-[14px] font-bold text-[#111]">{file.name}</p>
+              <p className="text-[12px] text-[#999] mt-1">{(file.size / 1024).toFixed(1)} КБ</p>
+            </div>
+          ) : (
+            <div>
+              <p className="text-[14px] font-bold text-[#111]">Перетащите файл или нажмите для выбора</p>
+              <p className="text-[12px] text-[#999] mt-1">CSV или JSON. Поля: transaction_id, phone_hash, terminal_id, mcc, amount, timestamp</p>
+            </div>
+          )}
+        </div>
 
-          <div className="flex gap-3 mt-4">
-            <Button
-              onClick={handleUpload}
-              disabled={!file || uploading}
-            >
-              {uploading ? 'Загрузка...' : 'Загрузить реестр'}
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={handleGeneratePayouts}
-              disabled={generatingPayouts}
-            >
-              {generatingPayouts
-                ? 'Формирование...'
-                : 'Сформировать реестр выплат'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+        <div className="flex gap-3 mt-4">
+          <button onClick={handleUpload} disabled={!file || uploading}
+            className="px-5 py-3 rounded-xl bg-[#FFD500] text-[#111] text-[13px] font-bold press-scale disabled:opacity-50 shadow-[0_2px_12px_rgba(255,213,0,0.25)]">
+            {uploading ? 'Обработка...' : 'Загрузить и обработать'}
+          </button>
+          <button onClick={handlePayout}
+            className="px-5 py-3 rounded-xl bg-[#111] text-white text-[13px] font-bold press-scale">
+            Сформировать выплаты
+          </button>
+        </div>
+      </div>
 
+      {/* Results */}
       {result && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Результат обработки</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Параметр</TableHead>
-                  <TableHead>Значение</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow>
-                  <TableCell className="font-medium">Всего записей</TableCell>
-                  <TableCell>
-                    <Badge variant="default">{result.total_records}</Badge>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">Сопоставлено</TableCell>
-                  <TableCell>
-                    <Badge variant="success">{result.matched}</Badge>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">Ошибки</TableCell>
-                  <TableCell>
-                    <Badge variant={result.errors > 0 ? 'error' : 'default'}>
-                      {result.errors}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">
-                    Заблокировано антифродом
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        result.antifraud_blocked > 0 ? 'warning' : 'default'
-                      }
-                    >
-                      {result.antifraud_blocked}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">Дата загрузки</TableCell>
-                  <TableCell>
-                    {new Date(result.uploaded_at).toLocaleString('ru-RU')}
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        <div className="bg-white rounded-2xl border border-[#f0f0f0] p-6">
+          <h2 className="text-[16px] font-extrabold text-[#111] mb-5">Результат обработки</h2>
+          <div className="grid grid-cols-4 gap-4">
+            {[
+              { label: 'Всего', value: result.total, color: 'text-[#111]' },
+              { label: 'Matched', value: result.matched, color: 'text-emerald-600' },
+              { label: 'Ошибки', value: result.errors, color: result.errors > 0 ? 'text-red-500' : 'text-[#111]' },
+              { label: 'Match rate', value: result.total > 0 ? `${((result.matched / result.total) * 100).toFixed(1)}%` : '0%', color: 'text-[#FFD500]' },
+            ].map(m => (
+              <div key={m.label} className="bg-[#fafafa] rounded-xl p-4 text-center">
+                <p className="text-[10px] font-bold text-[#999] uppercase tracking-[0.1em]">{m.label}</p>
+                <p className={`font-mono-cash text-[24px] font-extrabold ${m.color} mt-1`}>{typeof m.value === 'number' ? m.value.toLocaleString('ru') : m.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   )
