@@ -67,6 +67,7 @@ export default function OfferCatalog() {
   const [searchFocused, setSearchFocused] = useState(false)
   const [sort, setSort] = useState<'cashback' | 'new'>('cashback')
   const [loading, setLoading] = useState(true)
+  const [showAllCategories, setShowAllCategories] = useState(false)
 
   useEffect(() => {
     if (!phoneHash) return
@@ -208,25 +209,69 @@ export default function OfferCatalog() {
         </div>
       )}
 
-      {/* ===== Categories Grid — only on main screen ===== */}
-      {showMainContent && !loading && (
-        <div className="px-5 pt-5 pb-2">
-          <h2 className="text-[17px] font-bold text-beeline-black mb-3">Категории</h2>
-          <div className="grid grid-cols-4 gap-2">
-            {CATEGORIES.map(cat => (
+      {/* ===== Categories — marketplace style: top 3 + expand ===== */}
+      {showMainContent && !loading && (() => {
+        const sorted = [...CATEGORIES].sort((a, b) => (categoryCounts[b] || 0) - (categoryCounts[a] || 0))
+        const topCategories = sorted.slice(0, 3)
+        const restCategories = sorted.slice(3)
+        return (
+          <div className="px-5 pt-5 pb-2">
+            {/* Top 3 — large horizontal cards */}
+            <div className="flex gap-2.5 mb-2.5">
+              {topCategories.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setCategory(cat)}
+                  className="flex-1 bg-white rounded-2xl border border-gray-100/80 p-3 text-center hover:border-beeline-yellow/50 hover:shadow-sm transition-all active:scale-[0.97]"
+                >
+                  <span className="text-[28px] block">{categoryIcons[cat] || ''}</span>
+                  <p className="text-[11px] font-semibold text-beeline-dark mt-1.5 leading-tight">{cat.split(' / ')[0]}</p>
+                  <p className="text-[10px] text-beeline-gray mt-0.5">{categoryCounts[cat] || 0} {'офферов'}</p>
+                </button>
+              ))}
+            </div>
+
+            {/* Expand/collapse rest */}
+            {!showAllCategories ? (
               <button
-                key={cat}
-                onClick={() => setCategory(cat)}
-                className="flex flex-col items-center gap-1 py-2.5 px-1 rounded-2xl bg-white border border-gray-100/80 hover:border-beeline-yellow/50 hover:shadow-sm transition-all active:scale-[0.96]"
+                onClick={() => setShowAllCategories(true)}
+                className="w-full py-2.5 rounded-2xl bg-white border border-gray-100/80 text-[12px] font-medium text-beeline-gray hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5"
               >
-                <span className="text-[22px] leading-none">{categoryIcons[cat] || '🎁'}</span>
-                <span className="text-[10px] text-beeline-dark font-medium text-center leading-tight line-clamp-2">{cat.split(' / ')[0]}</span>
-                <span className="text-[9px] text-beeline-gray">{categoryCounts[cat] || 0}</span>
+                {'Все категории'}
+                <span className="text-beeline-gray/60">({CATEGORIES.length})</span>
+                <svg className="w-3.5 h-3.5 text-beeline-gray/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
               </button>
-            ))}
+            ) : (
+              <>
+                <div className="grid grid-cols-4 gap-2">
+                  {restCategories.map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => setCategory(cat)}
+                      className="flex flex-col items-center gap-1 py-2 px-1 rounded-xl bg-white border border-gray-100/80 hover:border-beeline-yellow/50 transition-all active:scale-[0.96]"
+                    >
+                      <span className="text-[18px] leading-none">{categoryIcons[cat] || ''}</span>
+                      <span className="text-[9px] text-beeline-dark font-medium text-center leading-tight line-clamp-2">{cat.split(' / ')[0]}</span>
+                      <span className="text-[8px] text-beeline-gray">{categoryCounts[cat] || 0}</span>
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setShowAllCategories(false)}
+                  className="w-full py-2 mt-2 rounded-xl text-[11px] font-medium text-beeline-gray hover:bg-gray-50 transition-colors flex items-center justify-center gap-1"
+                >
+                  {'Свернуть'}
+                  <svg className="w-3 h-3 text-beeline-gray/60 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+              </>
+            )}
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* ===== Category filter chips — when browsing a category ===== */}
       {!showMainContent && (
