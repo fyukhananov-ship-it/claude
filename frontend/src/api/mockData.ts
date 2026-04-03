@@ -454,9 +454,17 @@ export function mockApiCall(method: string, rawPath: string, body?: unknown): un
 
   // Admin — offers list (ALL offers from all partners)
   if (method === 'GET' && path === '/admin/offers') {
-    const params = new URLSearchParams(path.split('?')[1] || '')
-    const status = params.get('status')
-    return status ? store.getOffersByStatus(status) : store.offers
+    return store.offers
+  }
+
+  // Admin — create offer for any partner
+  if (method === 'POST' && path === '/admin/offers') {
+    const data = body as Record<string, unknown>
+    const partner = store.getPartners().find(p => p.id === data.partner_id)
+    return store.addOffer({
+      ...data,
+      partner_name: partner?.name || String(data.partner_name || ''),
+    })
   }
 
   // Admin — moderate offer

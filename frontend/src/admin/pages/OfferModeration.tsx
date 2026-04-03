@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { formatCurrency, formatPercent, cn } from '@/lib/utils'
+import { CATEGORIES } from '@/api/mockData'
 import { api } from '@/api/client'
 
 interface Offer {
@@ -8,6 +9,8 @@ interface Offer {
   max_cashback_per_client: string; budget: string; budget_spent: string
   start_date: string; end_date: string; status: string; segment: string; category: string; terminals_count: number
 }
+
+interface Partner { id: string; name: string }
 
 const tabs = [
   { v: 'all', l: 'Все' }, { v: 'active', l: 'Активные' },
@@ -22,19 +25,36 @@ const sts: Record<string, { l: string; c: string }> = {
   finished: { l: 'Завершён', c: 'bg-gray-100 text-gray-400' },
 }
 
+const today = new Date().toISOString().split('T')[0]
+const in90 = new Date(Date.now() + 90 * 86400000).toISOString().split('T')[0]
+
+const emptyForm = {
+  partner_id: '', name: '', description: '', cashback_type: 'percent', cashback_rate: '',
+  min_check: '', max_cashback_per_tx: '', max_cashback_per_client: '', budget: '',
+  start_date: today, end_date: in90, segment: 'all', category: '',
+}
+
 export default function OfferModeration() {
   const [offers, setOffers] = useState<Offer[]>([])
+  const [partners, setPartners] = useState<Partner[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState('all')
   const [search, setSearch] = useState('')
   const [acting, setActing] = useState<string | null>(null)
   const [expanded, setExpanded] = useState<string | null>(null)
+  const [showCreate, setShowCreate] = useState(false)
+  const [form, setForm] = useState(emptyForm)
+  const [saving, setSaving] = useState(false)
 
   const load = useCallback(() => {
     setLoading(true)
-    api.get<Offer[]>('/admin/offers')
-      .then(d => setOffers(Array.isArray(d) ? d : []))
-      .catch(() => {}).finally(() => setLoading(false))
+    Promise.all([
+      api.get<Offer[]>('/admin/offers'),
+      api.get<Partner[]>('/admin/partners'),
+    ]).then(([o, p]) => {
+      setOffers(Array.isArray(o) ? o : [])
+      setPartners(Array.isArray(p) ? p : [])
+    }).catch(() => {}).finally(() => setLoading(false))
   }, [])
   useEffect(() => { load() }, [load])
 
@@ -42,6 +62,21 @@ export default function OfferModeration() {
     setActing(id)
     try { await api.put(`/admin/offers/${id}/moderate`, { action }); load() }
     catch {} finally { setActing(null) }
+  }
+
+  const handleCreate = async () => {
+    setSaving(true)
+    try {
+      const rate = form.cashback_type === 'percent' ? (parseFloat(form.cashback_rate) / 100).toFixed(4) : parseFloat(form.cashback_rate).toFixed(4)
+      await api.post('/admin/offers', {
+        ...form, cashback_rate: rate,
+        min_check: parseFloat(form.min_check || '0').toFixed(2),
+        max_cashback_per_tx: parseFloat(form.max_cashback_per_tx || '0').toFixed(2),
+        max_cashback_per_client: parseFloat(form.max_cashback_per_client || '0').toFixed(2),
+        budget: parseFloat(form.budget || '0').toFixed(2),
+      })
+      setShowCreate(false); setForm(emptyForm); load()
+    } catch {} finally { setSaving(false) }
   }
 
   const filtered = offers.filter(o => {
@@ -57,6 +92,7 @@ export default function OfferModeration() {
   offers.forEach(o => { counts[o.status] = (counts[o.status] || 0) + 1 })
 
   const fmtRate = (o: Offer) => o.cashback_type === 'percent' ? formatPercent(o.cashback_rate) : formatCurrency(o.cashback_rate)
+  const upd = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-[3px] border-[#FFD500] border-t-transparent rounded-full animate-spin" /></div>
 
@@ -67,6 +103,10 @@ export default function OfferModeration() {
           <h1 className="text-[28px] font-extrabold text-[#111] tracking-[-0.03em]">Офферы</h1>
           <p className="text-[13px] text-[#999] mt-1 font-medium">{offers.length} всего, {counts.active || 0} активных</p>
         </div>
+        <button onClick={() => setShowCreate(true)}
+          className="px-4 py-2.5 rounded-xl bg-[#FFD500] text-[#111] text-[13px] font-bold press-scale shadow-[0_2px_12px_rgba(255,213,0,0.25)]">
+          Создать оффер
+        </button>
       </div>
 
       {/* Search */}
@@ -94,7 +134,7 @@ export default function OfferModeration() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-[#f5f5f5]">
-              {['Партнёр', 'Оффер', 'Категория', 'Кэшбэк', 'Мин. чек', 'Бюджет', 'Статус', 'Действия'].map(h => (
+              {['Партнёр', 'Оффер', 'Категория', 'Кэшбэк', 'Мин.чек', 'Бюджет', 'Статус', 'Действия'].map(h => (
                 <th key={h} className="px-4 py-3 text-left text-[10px] font-bold text-[#999] uppercase tracking-[0.08em]">{h}</th>
               ))}
             </tr>
@@ -128,12 +168,14 @@ export default function OfferModeration() {
                     {o.status === 'moderation' ? (
                       <div className="flex gap-1.5">
                         <button onClick={() => moderate(o.id, 'approve')} disabled={acting === o.id}
-                          className="px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-[11px] font-bold press-scale disabled:opacity-50">OK</button>
+                          className="px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-[11px] font-bold press-scale disabled:opacity-50">Одобрить</button>
                         <button onClick={() => moderate(o.id, 'reject')} disabled={acting === o.id}
-                          className="px-3 py-1.5 rounded-lg bg-red-500 text-white text-[11px] font-bold press-scale disabled:opacity-50">X</button>
+                          className="px-3 py-1.5 rounded-lg bg-red-500 text-white text-[11px] font-bold press-scale disabled:opacity-50">Отклонить</button>
                       </div>
                     ) : o.status === 'draft' ? (
                       <button onClick={() => moderate(o.id, 'approve')} className="text-[11px] font-bold text-[#FFD500] hover:text-[#B8960A] press-scale">Активировать</button>
+                    ) : o.status === 'active' ? (
+                      <span className="text-[11px] text-emerald-500 font-bold">Live</span>
                     ) : <span className="text-[11px] text-[#ddd]">&mdash;</span>}
                   </td>
                 </tr>
@@ -142,6 +184,115 @@ export default function OfferModeration() {
           </tbody>
         </table>
       </div>
+
+      {/* ===== Create Offer Modal ===== */}
+      {showCreate && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 bg-black/40 backdrop-blur-sm overflow-y-auto" onClick={() => setShowCreate(false)}>
+          <div className="bg-white rounded-2xl border border-[#f0f0f0] w-full max-w-2xl p-6 shadow-2xl mb-16" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-[20px] font-extrabold text-[#111]">Создать оффер</h2>
+              <button onClick={() => setShowCreate(false)} className="w-8 h-8 rounded-full bg-[#f0f0f0] flex items-center justify-center hover:bg-[#e5e5e5]">
+                <svg className="w-4 h-4 text-[#999]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <div className="space-y-5">
+              {/* Partner + Category */}
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="Партнёр">
+                  <select value={form.partner_id} onChange={e => upd('partner_id', e.target.value)} className="inp">
+                    <option value="">Выберите партнёра</option>
+                    {partners.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                </Field>
+                <Field label="Категория">
+                  <select value={form.category} onChange={e => upd('category', e.target.value)} className="inp">
+                    <option value="">Выберите категорию</option>
+                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </Field>
+              </div>
+
+              {/* Name + Description */}
+              <Field label="Название оффера">
+                <input value={form.name} onChange={e => upd('name', e.target.value)} className="inp" placeholder="Кэшбэк 10% в Пятёрочке" />
+              </Field>
+              <Field label="Описание">
+                <textarea value={form.description} onChange={e => upd('description', e.target.value)} rows={3} className="inp resize-none" placeholder="Условия и детали оффера..." />
+              </Field>
+
+              {/* Cashback */}
+              <div className="grid grid-cols-3 gap-4">
+                <Field label="Тип кэшбэка">
+                  <select value={form.cashback_type} onChange={e => upd('cashback_type', e.target.value)} className="inp">
+                    <option value="percent">Процент</option>
+                    <option value="fixed">Фикс. сумма</option>
+                  </select>
+                </Field>
+                <Field label={form.cashback_type === 'percent' ? 'Ставка (%)' : 'Сумма (руб.)'}>
+                  <input type="number" value={form.cashback_rate} onChange={e => upd('cashback_rate', e.target.value)} className="inp font-mono-cash" placeholder={form.cashback_type === 'percent' ? '10' : '300'} />
+                </Field>
+                <Field label="Мин. чек (руб.)">
+                  <input type="number" value={form.min_check} onChange={e => upd('min_check', e.target.value)} className="inp font-mono-cash" placeholder="500" />
+                </Field>
+              </div>
+
+              {/* Limits */}
+              <div className="grid grid-cols-3 gap-4">
+                <Field label="Макс./транзакция">
+                  <input type="number" value={form.max_cashback_per_tx} onChange={e => upd('max_cashback_per_tx', e.target.value)} className="inp font-mono-cash" placeholder="1000" />
+                </Field>
+                <Field label="Макс./клиент">
+                  <input type="number" value={form.max_cashback_per_client} onChange={e => upd('max_cashback_per_client', e.target.value)} className="inp font-mono-cash" placeholder="5000" />
+                </Field>
+                <Field label="Бюджет (руб.)">
+                  <input type="number" value={form.budget} onChange={e => upd('budget', e.target.value)} className="inp font-mono-cash" placeholder="500000" />
+                </Field>
+              </div>
+
+              {/* Dates + Segment */}
+              <div className="grid grid-cols-3 gap-4">
+                <Field label="Дата начала">
+                  <input type="date" value={form.start_date} onChange={e => upd('start_date', e.target.value)} className="inp" />
+                </Field>
+                <Field label="Дата окончания">
+                  <input type="date" value={form.end_date} onChange={e => upd('end_date', e.target.value)} className="inp" />
+                </Field>
+                <Field label="Сегмент">
+                  <select value={form.segment} onChange={e => upd('segment', e.target.value)} className="inp">
+                    <option value="all">Все клиенты</option>
+                    <option value="new">Новые</option>
+                    <option value="existing">Существующие</option>
+                  </select>
+                </Field>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-3 border-t border-[#f5f5f5]">
+                <button onClick={() => setShowCreate(false)} className="flex-1 py-3 rounded-xl bg-[#f0f0f0] text-[#666] text-[13px] font-bold press-scale">
+                  Отмена
+                </button>
+                <button onClick={handleCreate}
+                  disabled={saving || !form.partner_id || !form.name || !form.cashback_rate || !form.budget}
+                  className="flex-1 py-3 rounded-xl bg-[#FFD500] text-[#111] text-[13px] font-bold press-scale disabled:opacity-40 shadow-[0_2px_12px_rgba(255,213,0,0.25)]">
+                  {saving ? 'Создание...' : 'Создать и опубликовать'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`.inp { width: 100%; padding: 10px 14px; border-radius: 12px; border: 1px solid #eee; font-size: 13px; font-weight: 500; outline: none; transition: all 0.15s; } .inp:focus { border-color: #FFD500; box-shadow: 0 0 0 3px rgba(255,213,0,0.15); }`}</style>
+    </div>
+  )
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="block text-[11px] font-bold text-[#999] uppercase tracking-[0.08em] mb-1.5">{label}</label>
+      {children}
     </div>
   )
 }
