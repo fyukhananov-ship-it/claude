@@ -10,7 +10,6 @@ interface OfferItem {
   partner_logo: string | null
   name: string
   description: string
-  image_url: string | null
   cashback_type: string
   cashback_rate: string
   min_check: string
@@ -19,44 +18,41 @@ interface OfferItem {
   end_date: string
   status: string
   category: string | null
+  image_url: string | null
 }
 
-// Category icons (emoji-style for clean mobile look)
 const categoryIcons: Record<string, string> = {
-  'Продуктовые сети': '🛒',
-  'Товары для дома / DIY': '🔨',
-  'Одежда / обувь': '👚',
-  'Косметика / уход': '✨',
-  'Спорт / outdoor': '⚽',
-  'QSR / фастфуд': '🍔',
-  'Кофейни': '☕',
-  'Casual / fine dining': '🍽',
-  'Доставка еды': '🛵',
-  'Электроника / техника': '📱',
-  'Товары для детей': '🧸',
-  'Книги / хобби / подписки': '📚',
-  'АЗС / топливо': '⛽',
-  'Отели / авиабилеты': '✈',
-  'Кино / развлечения / фитнес': '🎬',
-  'Локальные сети / франшизы': '🏪',
-  'Сервисы': '🔧',
-  'Онлайн-сервисы / SaaS': '💻',
+  '\u041F\u0440\u043E\u0434\u0443\u043A\u0442\u043E\u0432\u044B\u0435 \u0441\u0435\u0442\u0438': '\u{1F6D2}',
+  '\u0422\u043E\u0432\u0430\u0440\u044B \u0434\u043B\u044F \u0434\u043E\u043C\u0430 / DIY': '\u{1F3E0}',
+  '\u041E\u0434\u0435\u0436\u0434\u0430 / \u043E\u0431\u0443\u0432\u044C': '\u{1F45C}',
+  '\u041A\u043E\u0441\u043C\u0435\u0442\u0438\u043A\u0430 / \u0443\u0445\u043E\u0434': '\u{2728}',
+  '\u0421\u043F\u043E\u0440\u0442 / outdoor': '\u{1F3C3}',
+  'QSR / \u0444\u0430\u0441\u0442\u0444\u0443\u0434': '\u{1F354}',
+  '\u041A\u043E\u0444\u0435\u0439\u043D\u0438': '\u{2615}',
+  'Casual / fine dining': '\u{1F37D}\u{FE0F}',
+  '\u0414\u043E\u0441\u0442\u0430\u0432\u043A\u0430 \u0435\u0434\u044B': '\u{1F4E6}',
+  '\u042D\u043B\u0435\u043A\u0442\u0440\u043E\u043D\u0438\u043A\u0430 / \u0442\u0435\u0445\u043D\u0438\u043A\u0430': '\u{1F4F1}',
+  '\u0422\u043E\u0432\u0430\u0440\u044B \u0434\u043B\u044F \u0434\u0435\u0442\u0435\u0439': '\u{1F9F8}',
+  '\u041A\u043D\u0438\u0433\u0438 / \u0445\u043E\u0431\u0431\u0438 / \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0438': '\u{1F4DA}',
+  '\u0410\u0417\u0421 / \u0442\u043E\u043F\u043B\u0438\u0432\u043E': '\u{26FD}',
+  '\u041E\u0442\u0435\u043B\u0438 / \u0430\u0432\u0438\u0430\u0431\u0438\u043B\u0435\u0442\u044B': '\u{2708}\u{FE0F}',
+  '\u041A\u0438\u043D\u043E / \u0440\u0430\u0437\u0432\u043B\u0435\u0447\u0435\u043D\u0438\u044F / \u0444\u0438\u0442\u043D\u0435\u0441': '\u{1F3AC}',
+  '\u041B\u043E\u043A\u0430\u043B\u044C\u043D\u044B\u0435 \u0441\u0435\u0442\u0438 / \u0444\u0440\u0430\u043D\u0448\u0438\u0437\u044B': '\u{1F3EA}',
+  '\u0421\u0435\u0440\u0432\u0438\u0441\u044B': '\u{1F6E0}\u{FE0F}',
+  '\u041E\u043D\u043B\u0430\u0439\u043D-\u0441\u0435\u0440\u0432\u0438\u0441\u044B / SaaS': '\u{1F4BB}',
 }
 
-// Partner avatar colors based on first letter
-const avatarColors = [
-  'bg-rose-100 text-rose-600',
-  'bg-sky-100 text-sky-600',
-  'bg-amber-100 text-amber-600',
-  'bg-emerald-100 text-emerald-600',
-  'bg-violet-100 text-violet-600',
-  'bg-fuchsia-100 text-fuchsia-600',
-  'bg-cyan-100 text-cyan-600',
-  'bg-orange-100 text-orange-600',
+const gradients = [
+  'from-amber-400 to-orange-500',
+  'from-rose-400 to-pink-600',
+  'from-violet-400 to-purple-600',
+  'from-sky-400 to-blue-600',
+  'from-emerald-400 to-teal-600',
+  'from-fuchsia-400 to-pink-600',
+  'from-cyan-400 to-blue-500',
+  'from-lime-400 to-green-600',
 ]
-function getAvatarColor(name: string) {
-  return avatarColors[name.charCodeAt(0) % avatarColors.length]
-}
+function getGradient(s: string) { return gradients[s.charCodeAt(0) % gradients.length] }
 
 export default function OfferCatalog() {
   const { phoneHash } = useParams<{ phoneHash: string }>()
@@ -64,144 +60,123 @@ export default function OfferCatalog() {
   const [offers, setOffers] = useState<OfferItem[]>([])
   const [category, setCategory] = useState('Все')
   const [search, setSearch] = useState('')
-  const [searchFocused, setSearchFocused] = useState(false)
   const [sort, setSort] = useState<'cashback' | 'new'>('cashback')
   const [loading, setLoading] = useState(true)
-  const [showAllCategories, setShowAllCategories] = useState(false)
+  const [showAllCats, setShowAllCats] = useState(false)
 
   useEffect(() => {
     if (!phoneHash) return
     setLoading(true)
     api.get<OfferItem[]>(`/client/${phoneHash}/offers`, { sort })
-      .then(setOffers)
-      .catch(() => {})
-      .finally(() => setLoading(false))
+      .then(setOffers).catch(() => {}).finally(() => setLoading(false))
   }, [phoneHash, sort])
 
-  // "Для вас" — personalized top picks: highest cashback across different categories
   const forYou = useMemo(() => {
     const seen = new Set<string>()
-    return offers
-      .filter(o => o.status !== 'draft')
+    return offers.filter(o => o.status !== 'draft')
       .sort((a, b) => {
         const rA = a.cashback_type === 'percent' ? parseFloat(a.cashback_rate) : 0.05
         const rB = b.cashback_type === 'percent' ? parseFloat(b.cashback_rate) : 0.05
         return rB - rA
       })
-      .filter(o => {
-        if (seen.has(o.category || '')) return false
-        seen.add(o.category || '')
-        return true
-      })
-      .slice(0, 8)
+      .filter(o => { if (seen.has(o.category || '')) return false; seen.add(o.category || ''); return true })
+      .slice(0, 6)
   }, [offers])
 
   const filtered = useMemo(() => {
-    let result = offers
-    if (category !== 'Все') result = result.filter(o => o.category === category)
+    let r = offers
+    if (category !== 'Все') r = r.filter(o => o.category === category)
     if (search.trim()) {
-      const q = search.toLowerCase().trim()
-      result = result.filter(o =>
-        o.partner_name.toLowerCase().includes(q) ||
-        o.name.toLowerCase().includes(q) ||
-        (o.category || '').toLowerCase().includes(q)
-      )
+      const q = search.toLowerCase()
+      r = r.filter(o => o.partner_name.toLowerCase().includes(q) || o.name.toLowerCase().includes(q) || (o.category || '').toLowerCase().includes(q))
     }
-    return result
+    return r
   }, [offers, category, search])
 
-  const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { 'Все': offers.length }
-    for (const o of offers) {
-      if (o.category) counts[o.category] = (counts[o.category] || 0) + 1
-    }
-    return counts
+  const catCounts = useMemo(() => {
+    const c: Record<string, number> = {}
+    offers.forEach(o => { if (o.category) c[o.category] = (c[o.category] || 0) + 1 })
+    return c
   }, [offers])
 
-  const formatRate = (o: OfferItem) =>
-    o.cashback_type === 'percent'
-      ? `${(parseFloat(o.cashback_rate) * 100).toFixed(0)}%`
-      : `${parseFloat(o.cashback_rate).toFixed(0)} ₽`
+  const sortedCats = useMemo(() =>
+    [...CATEGORIES].sort((a, b) => (catCounts[b] || 0) - (catCounts[a] || 0))
+  , [catCounts])
 
-  const showMainContent = !search && category === 'Все'
+  const topCats = sortedCats.slice(0, 3)
+  const restCats = sortedCats.slice(3)
+
+  const fmtRate = (o: OfferItem) => o.cashback_type === 'percent'
+    ? `${(parseFloat(o.cashback_rate) * 100).toFixed(0)}%`
+    : `${parseFloat(o.cashback_rate).toFixed(0)} \u20BD`
+
+  const isHome = !search && category === 'Все'
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7]">
-      {/* ===== Header ===== */}
-      <div className="bg-gradient-to-b from-beeline-black to-[#2a2a2a] text-white px-5 pt-14 pb-5">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-beeline-yellow rounded-xl flex items-center justify-center shadow-lg shadow-yellow-500/20">
-              <span className="text-[11px] font-extrabold text-beeline-black tracking-tight">CLO</span>
+    <div className="min-h-screen bg-[#fafafa]">
+      {/* ── Header ── */}
+      <div className="bg-[#111] noise-bg relative text-white px-5 pt-[max(52px,env(safe-area-inset-top,52px))] pb-5">
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-[#FFD500] rounded-2xl flex items-center justify-center shadow-[0_0_24px_rgba(255,213,0,0.3)]">
+                <span className="text-[11px] font-extrabold text-[#111] tracking-tight">CLO</span>
+              </div>
+              <div>
+                <p className="text-[16px] font-bold tracking-[-0.02em]">Подарки и акции</p>
+                <p className="text-[11px] text-white/40 font-medium tracking-wide">Билайн × НСПК</p>
+              </div>
             </div>
-            <div>
-              <p className="text-[15px] font-semibold leading-tight">Подарки и акции</p>
-              <p className="text-[11px] text-gray-400 leading-tight">Билайн × НСПК</p>
-            </div>
-          </div>
-          <button
-            onClick={() => navigate(`/client/${phoneHash}/cashback`)}
-            className="relative w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/15 transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-beeline-yellow rounded-full text-[9px] font-bold text-beeline-black flex items-center justify-center">7</span>
-          </button>
-        </div>
-
-        {/* Search */}
-        <div className="relative">
-          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            onFocus={() => setSearchFocused(true)}
-            onBlur={() => setTimeout(() => setSearchFocused(false), 150)}
-            placeholder="Поиск партнёра или категории..."
-            className="w-full pl-11 pr-10 py-3 bg-white/[0.08] text-white placeholder-gray-500 rounded-2xl text-[14px] focus:outline-none focus:bg-white/[0.14] focus:ring-1 focus:ring-beeline-yellow/50 border border-white/[0.06] transition-all"
-          />
-          {search && (
-            <button onClick={() => setSearch('')} className="absolute right-3.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
-              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            <button onClick={() => navigate(`/client/${phoneHash}/cashback`)}
+              className="relative w-10 h-10 rounded-2xl bg-white/[0.08] border border-white/[0.06] flex items-center justify-center">
+              <svg className="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#FFD500] rounded-full text-[10px] font-bold text-[#111] flex items-center justify-center shadow-lg">7</span>
             </button>
-          )}
+          </div>
+
+          {/* Search */}
+          <div className="relative">
+            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-[16px] h-[16px] text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Найти партнёра или категорию"
+              className="w-full pl-11 pr-10 py-3.5 bg-white/[0.06] text-white placeholder-white/25 rounded-2xl text-[14px] font-medium focus:outline-none focus:bg-white/[0.12] focus:ring-1 focus:ring-[#FFD500]/40 border border-white/[0.04] transition-all" />
+            {search && (
+              <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/10 flex items-center justify-center">
+                <svg className="w-3.5 h-3.5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* ===== "Для вас" Section — only on main screen ===== */}
-      {showMainContent && !loading && (
-        <div className="pt-5 pb-1">
-          <div className="px-5 flex items-center justify-between mb-3">
-            <h2 className="text-[17px] font-bold text-beeline-black">Для вас</h2>
-            <span className="text-[12px] text-beeline-gray">Персональные предложения</span>
+      {/* ── "Для вас" ── */}
+      {isHome && !loading && (
+        <div className="pt-6 pb-1">
+          <div className="px-5 flex items-baseline justify-between mb-4">
+            <h2 className="text-[20px] font-extrabold text-[#111] tracking-[-0.03em]">Для вас</h2>
+            <span className="text-[11px] text-[#999] font-medium uppercase tracking-[0.08em]">Персональное</span>
           </div>
-          <div className="pl-5 overflow-x-auto scrollbar-none">
-            <div className="flex gap-3 pr-5">
+          <div className="pl-5 overflow-x-auto no-scrollbar">
+            <div className="flex gap-3 pr-5 animate-stagger">
               {forYou.map(offer => (
-                <button
-                  key={offer.id}
-                  onClick={() => navigate(`/client/${phoneHash}/offer/${offer.id}`)}
-                  className="flex-shrink-0 w-[156px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/80 hover:shadow-md transition-shadow active:scale-[0.98]"
-                >
-                  {/* Gradient top */}
-                  <div className="h-[72px] bg-gradient-to-br from-beeline-yellow/90 via-brand-600/80 to-brand-800/70 flex items-center justify-center relative">
-                    <span className="text-[28px] font-extrabold text-white drop-shadow-sm">
-                      {formatRate(offer)}
+                <button key={offer.id} onClick={() => navigate(`/client/${phoneHash}/offer/${offer.id}`)}
+                  className="flex-shrink-0 w-[140px] press-scale group">
+                  <div className={cn('h-[100px] rounded-2xl bg-gradient-to-br flex flex-col items-center justify-center relative overflow-hidden', getGradient(offer.partner_name))}>
+                    <span className="font-mono-cash text-[32px] font-extrabold text-white drop-shadow-lg leading-none">
+                      {fmtRate(offer)}
                     </span>
-                    <span className="absolute top-2 right-2 text-[10px] bg-white/25 text-white px-1.5 py-0.5 rounded-full backdrop-blur-sm">
+                    <span className="absolute top-2 right-2 text-[9px] bg-black/20 text-white/90 px-2 py-0.5 rounded-full backdrop-blur-sm font-medium">
                       {(offer.category || '').split(' / ')[0].split(' ')[0]}
                     </span>
                   </div>
-                  <div className="p-3">
-                    <p className="text-[13px] font-semibold text-beeline-black leading-tight line-clamp-2">{offer.partner_name}</p>
-                    <p className="text-[11px] text-beeline-gray mt-1 line-clamp-1">от {parseFloat(offer.min_check).toFixed(0)} ₽</p>
-                  </div>
+                  <p className="text-[13px] font-bold text-[#111] mt-2 leading-tight truncate">{offer.partner_name}</p>
+                  <p className="text-[11px] text-[#999] mt-0.5">от {parseFloat(offer.min_check).toFixed(0)} &#8381;</p>
                 </button>
               ))}
             </div>
@@ -209,91 +184,71 @@ export default function OfferCatalog() {
         </div>
       )}
 
-      {/* ===== Categories — marketplace style: top 3 + expand ===== */}
-      {showMainContent && !loading && (() => {
-        const sorted = [...CATEGORIES].sort((a, b) => (categoryCounts[b] || 0) - (categoryCounts[a] || 0))
-        const topCategories = sorted.slice(0, 3)
-        const restCategories = sorted.slice(3)
-        return (
-          <div className="px-5 pt-5 pb-2">
-            {/* Top 3 — large horizontal cards */}
-            <div className="flex gap-2.5 mb-2.5">
-              {topCategories.map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => setCategory(cat)}
-                  className="flex-1 bg-white rounded-2xl border border-gray-100/80 p-3 text-center hover:border-beeline-yellow/50 hover:shadow-sm transition-all active:scale-[0.97]"
-                >
-                  <span className="text-[28px] block">{categoryIcons[cat] || ''}</span>
-                  <p className="text-[11px] font-semibold text-beeline-dark mt-1.5 leading-tight">{cat.split(' / ')[0]}</p>
-                  <p className="text-[10px] text-beeline-gray mt-0.5">{categoryCounts[cat] || 0} {'офферов'}</p>
-                </button>
-              ))}
-            </div>
+      {/* ── Categories ── */}
+      {isHome && !loading && (
+        <div className="px-5 pt-5 pb-2">
+          <div className="flex items-baseline justify-between mb-3">
+            <h2 className="text-[20px] font-extrabold text-[#111] tracking-[-0.03em]">Категории</h2>
+            <span className="text-[11px] text-[#999] font-medium">{CATEGORIES.length} шт</span>
+          </div>
 
-            {/* Expand/collapse rest */}
-            {!showAllCategories ? (
-              <button
-                onClick={() => setShowAllCategories(true)}
-                className="w-full py-2.5 rounded-2xl bg-white border border-gray-100/80 text-[12px] font-medium text-beeline-gray hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5"
-              >
-                {'Все категории'}
-                <span className="text-beeline-gray/60">({CATEGORIES.length})</span>
-                <svg className="w-3.5 h-3.5 text-beeline-gray/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          {/* Top 3 large */}
+          <div className="grid grid-cols-3 gap-2.5 mb-2.5">
+            {topCats.map(cat => (
+              <button key={cat} onClick={() => setCategory(cat)}
+                className="bg-white rounded-2xl border border-[#f0f0f0] p-3 text-center press-scale hover:border-[#FFD500]/40 hover:shadow-[0_2px_12px_rgba(255,213,0,0.1)] transition-all">
+                <span className="text-[26px] block">{categoryIcons[cat] || ''}</span>
+                <p className="text-[11px] font-bold text-[#111] mt-2 leading-tight">{cat.split(' / ')[0]}</p>
+                <p className="text-[10px] text-[#bbb] mt-0.5 font-medium">{catCounts[cat] || 0}</p>
+              </button>
+            ))}
+          </div>
+
+          {/* Expand */}
+          {!showAllCats ? (
+            <button onClick={() => setShowAllCats(true)}
+              className="w-full py-3 rounded-2xl bg-[#111] text-white text-[12px] font-bold tracking-wide press-scale flex items-center justify-center gap-2">
+              Все категории
+              <svg className="w-3.5 h-3.5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          ) : (
+            <>
+              <div className="grid grid-cols-4 gap-2 animate-stagger">
+                {restCats.map(cat => (
+                  <button key={cat} onClick={() => setCategory(cat)}
+                    className="flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl bg-white border border-[#f0f0f0] press-scale hover:border-[#FFD500]/30 transition-all">
+                    <span className="text-[18px]">{categoryIcons[cat] || ''}</span>
+                    <span className="text-[9px] font-bold text-[#333] text-center leading-tight line-clamp-2">{cat.split(' / ')[0]}</span>
+                    <span className="text-[8px] text-[#bbb] font-medium">{catCounts[cat] || 0}</span>
+                  </button>
+                ))}
+              </div>
+              <button onClick={() => setShowAllCats(false)}
+                className="w-full py-2.5 mt-2 rounded-xl text-[11px] font-bold text-[#999] press-scale flex items-center justify-center gap-1">
+                Свернуть
+                <svg className="w-3 h-3 opacity-40 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
-            ) : (
-              <>
-                <div className="grid grid-cols-4 gap-2">
-                  {restCategories.map(cat => (
-                    <button
-                      key={cat}
-                      onClick={() => setCategory(cat)}
-                      className="flex flex-col items-center gap-1 py-2 px-1 rounded-xl bg-white border border-gray-100/80 hover:border-beeline-yellow/50 transition-all active:scale-[0.96]"
-                    >
-                      <span className="text-[18px] leading-none">{categoryIcons[cat] || ''}</span>
-                      <span className="text-[9px] text-beeline-dark font-medium text-center leading-tight line-clamp-2">{cat.split(' / ')[0]}</span>
-                      <span className="text-[8px] text-beeline-gray">{categoryCounts[cat] || 0}</span>
-                    </button>
-                  ))}
-                </div>
-                <button
-                  onClick={() => setShowAllCategories(false)}
-                  className="w-full py-2 mt-2 rounded-xl text-[11px] font-medium text-beeline-gray hover:bg-gray-50 transition-colors flex items-center justify-center gap-1"
-                >
-                  {'Свернуть'}
-                  <svg className="w-3 h-3 text-beeline-gray/60 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-              </>
-            )}
-          </div>
-        )
-      })()}
+            </>
+          )}
+        </div>
+      )}
 
-      {/* ===== Category filter chips — when browsing a category ===== */}
-      {!showMainContent && (
-        <div className="px-4 pt-3 pb-1 overflow-x-auto scrollbar-none">
+      {/* ── Category chips (browse mode) ── */}
+      {!isHome && (
+        <div className="px-4 pt-3 pb-1 overflow-x-auto no-scrollbar">
           <div className="flex gap-2 min-w-max">
-            <button
-              onClick={() => { setCategory('Все'); setSearch('') }}
-              className="px-3.5 py-1.5 rounded-full text-[12px] font-medium bg-beeline-black text-white"
-            >
-              ← Все
+            <button onClick={() => { setCategory('Все'); setSearch('') }}
+              className="px-4 py-2 rounded-full text-[12px] font-bold bg-[#111] text-white press-scale">
+              &#8592; Все
             </button>
             {CATEGORIES.map(c => (
-              <button
-                key={c}
-                onClick={() => setCategory(c)}
-                className={cn(
-                  'px-3 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap transition-all',
-                  category === c
-                    ? 'bg-beeline-yellow text-beeline-black shadow-sm'
-                    : 'bg-white text-beeline-gray border border-gray-200'
-                )}
-              >
+              <button key={c} onClick={() => setCategory(c)}
+                className={cn('px-3 py-2 rounded-full text-[11px] font-bold whitespace-nowrap transition-all press-scale',
+                  category === c ? 'bg-[#FFD500] text-[#111] shadow-[0_2px_8px_rgba(255,213,0,0.3)]' : 'bg-white text-[#999] border border-[#eee]')}>
                 {categoryIcons[c] || ''} {c.split(' / ')[0]}
               </button>
             ))}
@@ -301,109 +256,86 @@ export default function OfferCatalog() {
         </div>
       )}
 
-      {/* ===== All offers section ===== */}
-      <div className="px-5 pt-4 pb-1">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-[17px] font-bold text-beeline-black">
-            {showMainContent ? 'Все офферы' : category !== 'Все' ? `${categoryIcons[category] || ''} ${category}` : `Результаты`}
+      {/* ── Section header ── */}
+      <div className="px-5 pt-5 pb-2">
+        <div className="flex items-center justify-between">
+          <h2 className="text-[20px] font-extrabold text-[#111] tracking-[-0.03em]">
+            {isHome ? 'Все офферы' : category !== 'Все' ? category : 'Результаты'}
           </h2>
-          <div className="flex items-center gap-1.5 bg-white rounded-full px-2 py-1 border border-gray-100">
-            <button
-              onClick={() => setSort('cashback')}
-              className={cn('text-[11px] px-2 py-0.5 rounded-full transition-colors', sort === 'cashback' ? 'bg-beeline-yellow text-beeline-black font-semibold' : 'text-beeline-gray')}
-            >
-              Кэшбэк
-            </button>
-            <button
-              onClick={() => setSort('new')}
-              className={cn('text-[11px] px-2 py-0.5 rounded-full transition-colors', sort === 'new' ? 'bg-beeline-yellow text-beeline-black font-semibold' : 'text-beeline-gray')}
-            >
-              Новые
-            </button>
+          <div className="flex items-center bg-[#f0f0f0] rounded-full p-0.5">
+            {[['cashback', 'Кэшбэк'], ['new', 'Новые']].map(([val, label]) => (
+              <button key={val} onClick={() => setSort(val as 'cashback' | 'new')}
+                className={cn('text-[11px] px-3 py-1 rounded-full font-bold transition-all',
+                  sort === val ? 'bg-white text-[#111] shadow-sm' : 'text-[#999]')}>
+                {label}
+              </button>
+            ))}
           </div>
         </div>
-        {!showMainContent && (
-          <p className="text-[12px] text-beeline-gray -mt-1.5 mb-3">
-            {filtered.length} {filtered.length === 1 ? 'оффер' : 'офферов'}
-          </p>
-        )}
+        {!isHome && <p className="text-[12px] text-[#999] mt-1 font-medium">{filtered.length} офферов</p>}
       </div>
 
-      {/* ===== Offer Cards ===== */}
-      <div className="px-5 space-y-2.5 pb-28">
+      {/* ── Offer cards ── */}
+      <div className="px-5 pb-28 animate-stagger">
         {loading ? (
-          <div className="flex flex-col items-center py-16">
-            <div className="w-10 h-10 border-3 border-beeline-yellow border-t-transparent rounded-full animate-spin" />
-            <p className="text-[13px] text-beeline-gray mt-4">Загрузка офферов...</p>
+          <div className="flex flex-col items-center py-20">
+            <div className="w-10 h-10 border-[3px] border-[#FFD500] border-t-transparent rounded-full animate-spin" />
+            <p className="text-[13px] text-[#999] mt-4 font-medium">Загрузка офферов...</p>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <svg className="w-7 h-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <div className="text-center py-20">
+            <div className="w-16 h-16 bg-[#f0f0f0] rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg className="w-7 h-7 text-[#ccc]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-            <p className="text-[14px] text-beeline-dark font-medium">
-              {search ? `Ничего не найдено` : 'Нет офферов'}
-            </p>
-            {search && (
-              <>
-                <p className="text-[12px] text-beeline-gray mt-1">По запросу «{search}»</p>
-                <button onClick={() => setSearch('')} className="text-[13px] text-blue-600 font-medium mt-3">Сбросить поиск</button>
-              </>
-            )}
+            <p className="text-[14px] text-[#333] font-bold">{search ? 'Ничего не найдено' : 'Нет офферов'}</p>
+            {search && <>
+              <p className="text-[12px] text-[#999] mt-1">По запросу &laquo;{search}&raquo;</p>
+              <button onClick={() => setSearch('')} className="text-[13px] text-[#FFD500] font-bold mt-3">Сбросить</button>
+            </>}
           </div>
         ) : (
-          filtered.map(offer => (
-            <button
-              key={offer.id}
-              onClick={() => navigate(`/client/${phoneHash}/offer/${offer.id}`)}
-              className="w-full bg-white rounded-2xl p-4 text-left shadow-sm border border-gray-100/60 hover:shadow-md transition-all active:scale-[0.99] flex items-center gap-3.5"
-            >
-              {/* Avatar */}
-              <div className={cn('w-12 h-12 rounded-[14px] flex items-center justify-center shrink-0 text-[18px] font-bold', getAvatarColor(offer.partner_name))}>
-                {offer.partner_name[0]}
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <p className="text-[14px] font-semibold text-beeline-black truncate">{offer.partner_name}</p>
-                  {offer.category && (
-                    <span className="text-[13px] shrink-0">{categoryIcons[offer.category] || ''}</span>
-                  )}
+          <div className="space-y-2">
+            {filtered.map(offer => (
+              <button key={offer.id} onClick={() => navigate(`/client/${phoneHash}/offer/${offer.id}`)}
+                className="w-full bg-white rounded-2xl p-4 text-left border border-[#f0f0f0] hover:border-[#e0e0e0] press-scale flex items-center gap-3.5 transition-all">
+                {/* Gradient avatar */}
+                <div className={cn('w-12 h-12 rounded-2xl bg-gradient-to-br flex items-center justify-center shrink-0 text-white text-[17px] font-extrabold shadow-lg', getGradient(offer.partner_name))}>
+                  {offer.partner_name[0]}
                 </div>
-                <p className="text-[12px] text-beeline-gray mt-0.5 truncate">{offer.name}</p>
-              </div>
-
-              {/* Cashback badge */}
-              <div className="shrink-0 bg-beeline-yellow/10 rounded-xl px-3 py-2 text-center">
-                <p className="text-[16px] font-bold text-brand-800 leading-none">{formatRate(offer)}</p>
-                <p className="text-[10px] text-beeline-gray mt-1">от {parseFloat(offer.min_check).toFixed(0)}₽</p>
-              </div>
-            </button>
-          ))
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-[14px] font-bold text-[#111] truncate">{offer.partner_name}</p>
+                    {offer.category && <span className="text-[12px] shrink-0">{categoryIcons[offer.category] || ''}</span>}
+                  </div>
+                  <p className="text-[11px] text-[#999] mt-0.5 truncate font-medium">{offer.name}</p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="font-mono-cash text-[18px] font-extrabold text-[#111] leading-none">{fmtRate(offer)}</p>
+                  <p className="text-[10px] text-[#bbb] mt-1 font-medium">от {parseFloat(offer.min_check).toFixed(0)}&#8381;</p>
+                </div>
+              </button>
+            ))}
+          </div>
         )}
       </div>
 
-      {/* ===== Bottom Tab Bar ===== */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200/50 px-4 pb-[env(safe-area-inset-bottom,8px)] pt-2">
+      {/* ── Tab bar ── */}
+      <div className="fixed bottom-0 left-0 right-0 glass border-t border-black/[0.04] px-4 pb-[max(8px,env(safe-area-inset-bottom))] pt-2">
         <div className="flex justify-around max-w-md mx-auto">
-          <button className="flex flex-col items-center py-1 px-3 relative">
-            <svg className="w-6 h-6 text-beeline-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <button className="flex flex-col items-center py-1 px-4 relative">
+            <svg className="w-6 h-6 text-[#111]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
             </svg>
-            <span className="text-[10px] font-semibold text-beeline-black mt-0.5">Офферы</span>
-            <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-beeline-yellow rounded-full" />
+            <span className="text-[10px] font-bold text-[#111] mt-0.5">Офферы</span>
+            <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-6 h-[3px] bg-[#FFD500] rounded-full" />
           </button>
-          <button
-            onClick={() => navigate(`/client/${phoneHash}/cashback`)}
-            className="flex flex-col items-center py-1 px-3"
-          >
-            <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <button onClick={() => navigate(`/client/${phoneHash}/cashback`)} className="flex flex-col items-center py-1 px-4">
+            <svg className="w-6 h-6 text-[#bbb]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-[10px] text-gray-400 mt-0.5">Кэшбэк</span>
+            <span className="text-[10px] text-[#bbb] mt-0.5 font-medium">Кэшбэк</span>
           </button>
         </div>
       </div>
