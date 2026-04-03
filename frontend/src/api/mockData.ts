@@ -362,6 +362,7 @@ const store = new MockStore()
 export function mockApiCall(method: string, rawPath: string, body?: unknown): unknown {
   // Strip query params for pattern matching
   const path = rawPath.split('?')[0]
+  console.log('[MOCK]', method, path)
 
   // Auth
   if (method === 'POST' && path === '/auth/login') {
@@ -481,5 +482,6 @@ export function mockApiCall(method: string, rawPath: string, body?: unknown): un
   // Payouts
   if (method === 'POST' && path === '/payouts/generate') return { id: 'payout-demo', type: 'client', total_amount: '1243560.00', records_count: 3891, status: 'generated', created_at: new Date().toISOString() }
 
-  return {}
+  console.warn('[MOCK] Unmatched route:', method, path)
+  return []
 }

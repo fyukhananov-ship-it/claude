@@ -68,7 +68,9 @@ export default function OfferCatalog() {
     if (!phoneHash) return
     setLoading(true)
     api.get<OfferItem[]>(`/client/${phoneHash}/offers`, { sort })
-      .then(setOffers).catch(() => {}).finally(() => setLoading(false))
+      .then(data => setOffers(Array.isArray(data) ? data : []))
+      .catch(() => setOffers([]))
+      .finally(() => setLoading(false))
   }, [phoneHash, sort])
 
   const forYou = useMemo(() => {
