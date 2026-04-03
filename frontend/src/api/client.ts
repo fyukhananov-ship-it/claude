@@ -19,9 +19,11 @@ class ApiClient {
 
     // Mock mode — return demo data
     if (USE_MOCKS) {
-      await new Promise(r => setTimeout(r, 200 + Math.random() * 300)) // simulate latency
+      await new Promise(r => setTimeout(r, 150 + Math.random() * 200))
       const body = init.body ? JSON.parse(init.body as string) : undefined
-      return mockApiCall(init.method || 'GET', path, body) as T
+      let mockPath = path
+      if (params) mockPath += '?' + new URLSearchParams(params).toString()
+      return mockApiCall(init.method || 'GET', mockPath, body) as T
     }
 
     let url = `${API_BASE}${path}`

@@ -292,7 +292,9 @@ export const DEMO_USERS: Record<string, { password: string; role: string; partne
   'partner@magnit.ru': { password: 'partner123', role: 'partner_admin', partner_id: 'p-магнит' },
 }
 
-// --- Mock API handler ---
+// --- Mock API handler (uses reactive store) ---
+
+import { store } from './mockStore'
 
 export function mockApiCall(method: string, path: string, body?: unknown): unknown {
   // Auth
@@ -308,29 +310,39 @@ export function mockApiCall(method: string, path: string, body?: unknown): unkno
     return { access_token: makeFakeJwt('operator'), refresh_token: makeFakeJwt('operator') }
   }
 
-  // Client API
+  // === Client API (reads from store) ===
   if (method === 'GET' && path.match(/^\/client\/[^/]+\/offers$/)) {
-    return DEMO_OFFERS.filter(o => o.status === 'active').map(o => ({ ...o, status: 'new' }))
+    return store.getActiveOffers().map(o => ({ ...o, status: 'new' }))
   }
   if (method === 'GET' && path.match(/^\/client\/[^/]+\/offers\/[^/]+$/)) {
-    const offerId = path.split('/').pop()
-    return DEMO_OFFERS.find(o => o.id === offerId) || DEMO_OFFERS[0]
+    const id = path.split('/').pop()
+    return store.getOffer(id!) || store.offers[0]
   }
   if (method === 'POST' && path.match(/^\/client\/[^/]+\/activate\//)) {
-    return { offer_id: path.split('/').pop(), activated_at: ts(), status: 'active' }
+    return { offer_id: path.split('/').pop(), activated_at: new Date().toISOString(), status: 'active' }
   }
   if (method === 'GET' && path.match(/^\/client\/[^/]+\/cashback$/)) return DEMO_CASHBACK_HISTORY
   if (method === 'GET' && path.match(/^\/client\/[^/]+\/cashback\/total$/)) return { total: '2363.50' }
 
-  // Partner API
-  if (method === 'GET' && path === '/offers') return DEMO_OFFERS.filter(o => o.partner_id === 'p-пятёрочка')
-  if (method === 'POST' && path === '/offers') return { id: 'offer-new-' + Date.now(), ...body, status: 'draft', budget_spent: '0.00', created_at: ts() }
+  // === Partner API (reads/writes store) ===
+  if (method === 'GET' && path === '/offers') {
+    // Partner sees their own offers
+    return store.getOffersByPartner('p-пятёрочка')
+  }
+  if (method === 'POST' && path === '/offers') {
+    const data = body as Record<string, unknown>
+    return store.addOffer({ ...data, partner_id: 'p-пятёрочка', partner_name: 'Пятёрочка' } as never)
+  }
   if (method === 'GET' && path.match(/^\/offers\/[^/]+$/)) {
     const id = path.split('/').pop()
-    return DEMO_OFFERS.find(o => o.id === id) || DEMO_OFFERS[0]
+    return store.getOffer(id!) || store.offers[0]
   }
-  if (method === 'PUT' && path.match(/^\/offers\/[^/]+$/)) return { ...DEMO_OFFERS[0], ...body }
-  if (method === 'PUT' && path.match(/^\/offers\/[^/]+\/status$/)) return { ...DEMO_OFFERS[0], ...body }
+  if (method === 'PUT' && path.match(/^\/offers\/[^/]+$/)) return { ...store.offers[0], ...body }
+  if (method === 'PUT' && path.match(/^\/offers\/[^/]+\/status$/)) {
+    const id = path.split('/')[2]
+    const { status } = body as { status: string }
+    return store.updateOfferStatus(id, status)
+  }
   if (method === 'POST' && path.match(/\/terminals$/)) return { uploaded: 5 }
   if (method === 'POST' && path.match(/\/image$/)) return { image_url: '/uploads/demo.jpg' }
   if (method === 'POST' && path.match(/\/placements$/)) return body
@@ -348,19 +360,60 @@ export function mockApiCall(method: string, path: string, body?: unknown): unkno
   if (method === 'GET' && path === '/billing/balance') return { partner_id: 'p-пятёрочка', balance: '876600.00' }
   if (method === 'GET' && path === '/billing/transactions') return DEMO_BILLING_TRANSACTIONS
 
-  // Admin
-  if (method === 'GET' && path === '/admin/dashboard') return DEMO_DASHBOARD
-  if (method === 'GET' && path === '/admin/partners') return DEMO_PARTNERS
-  if (method === 'POST' && path === '/admin/partners') return { id: 'partner-new', ...body, balance: '0.00', status: 'active', created_at: ts(), offers_count: 0 }
-  if (method === 'PUT' && path.match(/\/admin\/partners\/[^/]+\/balance$/)) return { partner_id: path.split('/')[3], new_balance: '100000.00' }
-  if (method === 'PUT' && path.match(/\/admin\/offers\/[^/]+\/moderate$/)) return { offer_id: path.split('/')[3], status: 'active', comment: null }
+  // === Admin API (reads/writes store) ===
+  if (method === 'GET' && path === '/admin/dashboard') {
+    const offers = store.offers
+    return {
+      active_offers: offers.filter(o => o.status === 'active').length,
+      total_transactions_today: 4823,
+      total_transactions_week: 31547,
+      cashback_today: '187430.00',
+      cashback_week: '1243560.00',
+      partners_count: store.partners.length,
+      low_balance_partners: store.partners.filter(p => parseFloat(p.balance) < 10000).length,
+    }
+  }
+  if (method === 'GET' && path === '/admin/partners') return store.getPartners()
+  if (method === 'POST' && path === '/admin/partners') {
+    const data = body as { name: string; contact_email: string; contact_phone?: string }
+    return store.addPartner(data)
+  }
+  if (method === 'PUT' && path.match(/\/admin\/partners\/[^/]+\/balance$/)) {
+    const id = path.split('/')[3]
+    const { amount } = body as { amount: number }
+    const p = store.topUpBalance(id, amount)
+    return { partner_id: id, new_balance: p?.balance || '0' }
+  }
+
+  // Admin — offers list (ALL offers from all partners)
+  if (method === 'GET' && path === '/admin/offers') {
+    const params = new URLSearchParams(path.split('?')[1] || '')
+    const status = params.get('status')
+    return status ? store.getOffersByStatus(status) : store.offers
+  }
+
+  // Admin — moderate offer
+  if (method === 'PUT' && path.match(/\/admin\/offers\/[^/]+\/moderate$/)) {
+    const id = path.split('/')[3]
+    const { action } = body as { action: 'approve' | 'reject' }
+    return store.moderateOffer(id, action)
+  }
+
   if (method === 'POST' && path === '/admin/registry/upload') return { batch_id: 'batch-demo', total: 4823, matched: 3891, errors: 47 }
   if (method === 'GET' && path.match(/\/admin\/registry\//)) return { batch_id: 'batch-demo', filename: 'nspk_registry.csv', records_total: 4823, records_matched: 3891, records_errors: 47, records_antifraud: 112, status: 'completed' }
   if (method === 'GET' && path === '/admin/finance/revshare') return DEMO_REVSHARE
-  if (method === 'GET' && path === '/admin/finance/pnl') return DEMO_PNL
+  if (method === 'GET' && path === '/admin/finance/pnl') {
+    return store.getPartners().slice(0, 10).map(p => ({
+      partner_id: p.id, partner_name: p.name,
+      gmv: (500000 + Math.floor(Math.random() * 5000000)).toFixed(2),
+      commission: (18000 + Math.floor(Math.random() * 180000)).toFixed(2),
+      cashback: (15000 + Math.floor(Math.random() * 150000)).toFixed(2),
+      net: (9000 + Math.floor(Math.random() * 90000)).toFixed(2),
+    }))
+  }
 
   // Payouts
-  if (method === 'POST' && path === '/payouts/generate') return { id: 'payout-demo', type: 'client', total_amount: '1243560.00', records_count: 3891, status: 'generated', created_at: ts() }
+  if (method === 'POST' && path === '/payouts/generate') return { id: 'payout-demo', type: 'client', total_amount: '1243560.00', records_count: 3891, status: 'generated', created_at: new Date().toISOString() }
 
   return {}
 }
