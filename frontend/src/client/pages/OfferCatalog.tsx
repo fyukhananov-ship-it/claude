@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '@/api/client'
 import { CATEGORIES } from '@/api/mockData'
-import { Badge } from '@/components/ui/Badge'
 import { cn } from '@/lib/utils'
 
 interface OfferItem {
@@ -22,13 +21,42 @@ interface OfferItem {
   category: string | null
 }
 
-const statusMap: Record<string, { label: string; variant: 'info' | 'success' | 'warning' }> = {
-  new: { label: 'Новый', variant: 'info' },
-  activated: { label: 'Активирован', variant: 'success' },
-  cashback_received: { label: 'Кэшбэк получен', variant: 'warning' },
+// Category icons (emoji-style for clean mobile look)
+const categoryIcons: Record<string, string> = {
+  'Продуктовые сети': '\u{1F6D2}',
+  'Товары для дома / DIY': '\u{1F528}',
+  'Одежда / обувь': '\u{1F45A}',
+  'Косметика / уход': '\u{2728}',
+  'Спорт / outdoor': '\u{26BD}',
+  'QSR / фастфуд': '\u{1F354}',
+  'Кофейни': '\u{2615}',
+  'Casual / fine dining': '\u{1F37D}',
+  'Доставка еды': '\u{1F6F5}',
+  'Электроника / техника': '\u{1F4F1}',
+  'Товары для детей': '\u{1F9F8}',
+  'Книги / хобби / подписки': '\u{1F4DA}',
+  'АЗС / топливо': '\u{26FD}',
+  'Отели / авиабилеты': '\u{2708}',
+  'Кино / развлечения / фитнес': '\u{1F3AC}',
+  'Локальные сети / франшизы': '\u{1F3EA}',
+  'Сервисы': '\u{1F527}',
+  'Онлайн-сервисы / SaaS': '\u{1F4BB}',
 }
 
-const allCategories = ['Все', ...CATEGORIES] as const
+// Partner avatar colors based on first letter
+const avatarColors = [
+  'bg-rose-100 text-rose-600',
+  'bg-sky-100 text-sky-600',
+  'bg-amber-100 text-amber-600',
+  'bg-emerald-100 text-emerald-600',
+  'bg-violet-100 text-violet-600',
+  'bg-fuchsia-100 text-fuchsia-600',
+  'bg-cyan-100 text-cyan-600',
+  'bg-orange-100 text-orange-600',
+]
+function getAvatarColor(name: string) {
+  return avatarColors[name.charCodeAt(0) % avatarColors.length]
+}
 
 export default function OfferCatalog() {
   const { phoneHash } = useParams<{ phoneHash: string }>()
@@ -36,218 +64,303 @@ export default function OfferCatalog() {
   const [offers, setOffers] = useState<OfferItem[]>([])
   const [category, setCategory] = useState('Все')
   const [search, setSearch] = useState('')
+  const [searchFocused, setSearchFocused] = useState(false)
   const [sort, setSort] = useState<'cashback' | 'new'>('cashback')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!phoneHash) return
     setLoading(true)
-    api
-      .get<OfferItem[]>(`/client/${phoneHash}/offers`, { sort })
+    api.get<OfferItem[]>(`/client/${phoneHash}/offers`, { sort })
       .then(setOffers)
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [phoneHash, sort])
 
+  // "Для вас" — personalized top picks: highest cashback across different categories
+  const forYou = useMemo(() => {
+    const seen = new Set<string>()
+    return offers
+      .filter(o => o.status !== 'draft')
+      .sort((a, b) => {
+        const rA = a.cashback_type === 'percent' ? parseFloat(a.cashback_rate) : 0.05
+        const rB = b.cashback_type === 'percent' ? parseFloat(b.cashback_rate) : 0.05
+        return rB - rA
+      })
+      .filter(o => {
+        if (seen.has(o.category || '')) return false
+        seen.add(o.category || '')
+        return true
+      })
+      .slice(0, 8)
+  }, [offers])
+
   const filtered = useMemo(() => {
     let result = offers
-
-    // Filter by category
-    if (category !== 'Все') {
-      result = result.filter((o) => o.category === category)
-    }
-
-    // Search by partner name or offer name
+    if (category !== 'Все') result = result.filter(o => o.category === category)
     if (search.trim()) {
       const q = search.toLowerCase().trim()
-      result = result.filter(
-        (o) =>
-          o.partner_name.toLowerCase().includes(q) ||
-          o.name.toLowerCase().includes(q)
+      result = result.filter(o =>
+        o.partner_name.toLowerCase().includes(q) ||
+        o.name.toLowerCase().includes(q) ||
+        (o.category || '').toLowerCase().includes(q)
       )
     }
-
     return result
   }, [offers, category, search])
 
-  // Count offers per category for badges
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = { 'Все': offers.length }
     for (const o of offers) {
-      if (o.category) {
-        counts[o.category] = (counts[o.category] || 0) + 1
-      }
+      if (o.category) counts[o.category] = (counts[o.category] || 0) + 1
     }
     return counts
   }, [offers])
 
   const formatRate = (o: OfferItem) =>
     o.cashback_type === 'percent'
-      ? `до ${(parseFloat(o.cashback_rate) * 100).toFixed(0)}%`
-      : `${parseFloat(o.cashback_rate).toFixed(0)} ₽`
+      ? `${(parseFloat(o.cashback_rate) * 100).toFixed(0)}%`
+      : `${parseFloat(o.cashback_rate).toFixed(0)}\u00A0\u20BD`
+
+  const showMainContent = !search && category === 'Все'
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-beeline-black text-white px-4 pt-12 pb-4">
-        <div className="flex items-center gap-3 mb-1">
-          <div className="w-8 h-8 bg-beeline-yellow rounded-lg flex items-center justify-center">
-            <span className="text-xs font-bold text-beeline-black">CLO</span>
+    <div className="min-h-screen bg-[#f5f5f7]">
+      {/* ===== Header ===== */}
+      <div className="bg-gradient-to-b from-beeline-black to-[#2a2a2a] text-white px-5 pt-14 pb-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 bg-beeline-yellow rounded-xl flex items-center justify-center shadow-lg shadow-yellow-500/20">
+              <span className="text-[11px] font-extrabold text-beeline-black tracking-tight">CLO</span>
+            </div>
+            <div>
+              <p className="text-[15px] font-semibold leading-tight">\u041F\u043E\u0434\u0430\u0440\u043A\u0438 \u0438 \u0430\u043A\u0446\u0438\u0438</p>
+              <p className="text-[11px] text-gray-400 leading-tight">\u0411\u0438\u043B\u0430\u0439\u043D \u00D7 \u041D\u0421\u041F\u041A</p>
+            </div>
           </div>
-          <span className="text-sm text-gray-400">Билайн</span>
+          <button
+            onClick={() => navigate(`/client/${phoneHash}/cashback`)}
+            className="relative w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/15 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-beeline-yellow rounded-full text-[9px] font-bold text-beeline-black flex items-center justify-center">7</span>
+          </button>
         </div>
-        <h1 className="text-2xl font-bold mt-2">Подарки и акции</h1>
-        <p className="text-gray-400 text-sm mt-1">Кэшбэк за покупки через СБП</p>
 
         {/* Search */}
-        <div className="relative mt-4">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        <div className="relative">
+          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Поиск по партнёру или офферу..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white/10 text-white placeholder-gray-400 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-beeline-yellow border border-white/10"
+            onChange={e => setSearch(e.target.value)}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setTimeout(() => setSearchFocused(false), 150)}
+            placeholder="\u041F\u043E\u0438\u0441\u043A \u043F\u0430\u0440\u0442\u043D\u0451\u0440\u0430 \u0438\u043B\u0438 \u043A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u0438..."
+            className="w-full pl-11 pr-10 py-3 bg-white/[0.08] text-white placeholder-gray-500 rounded-2xl text-[14px] focus:outline-none focus:bg-white/[0.14] focus:ring-1 focus:ring-beeline-yellow/50 border border-white/[0.06] transition-all"
           />
           {search && (
-            <button
-              onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <button onClick={() => setSearch('')} className="absolute right-3.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           )}
         </div>
       </div>
 
-      {/* Categories — horizontal scroll */}
-      <div className="px-4 py-3 overflow-x-auto">
-        <div className="flex gap-2 min-w-max">
-          {allCategories.map((c) => (
-            <button
-              key={c}
-              onClick={() => setCategory(c)}
-              className={cn(
-                'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5',
-                category === c
-                  ? 'bg-beeline-yellow text-beeline-black'
-                  : 'bg-white text-beeline-gray border border-gray-200'
-              )}
-            >
-              {c}
-              {categoryCounts[c] ? (
-                <span className={cn(
-                  'text-[10px] px-1.5 py-0.5 rounded-full',
-                  category === c ? 'bg-beeline-black/10' : 'bg-gray-100'
-                )}>
-                  {categoryCounts[c]}
-                </span>
-              ) : null}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Sort + count */}
-      <div className="px-4 flex items-center justify-between mb-2">
-        <span className="text-xs text-beeline-gray">{filtered.length} офферов</span>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setSort('cashback')}
-            className={cn('text-xs', sort === 'cashback' ? 'font-bold text-beeline-black' : 'text-beeline-gray')}
-          >
-            По кэшбэку
-          </button>
-          <span className="text-gray-300">|</span>
-          <button
-            onClick={() => setSort('new')}
-            className={cn('text-xs', sort === 'new' ? 'font-bold text-beeline-black' : 'text-beeline-gray')}
-          >
-            По новизне
-          </button>
-        </div>
-      </div>
-
-      {/* Offers */}
-      <div className="px-4 space-y-3 pb-24">
-        {loading ? (
-          <div className="text-center py-12 text-beeline-gray">Загрузка...</div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-beeline-gray">
-              {search ? `Ничего не найдено по «${search}»` : 'Нет офферов в этой категории'}
-            </p>
-            {search && (
-              <button onClick={() => setSearch('')} className="text-sm text-blue-600 mt-2">
-                Сбросить поиск
-              </button>
-            )}
+      {/* ===== "Для вас" Section — only on main screen ===== */}
+      {showMainContent && !loading && (
+        <div className="pt-5 pb-1">
+          <div className="px-5 flex items-center justify-between mb-3">
+            <h2 className="text-[17px] font-bold text-beeline-black">\u0414\u043B\u044F \u0432\u0430\u0441</h2>
+            <span className="text-[12px] text-beeline-gray">\u041F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u044C\u043D\u044B\u0435 \u043F\u0440\u0435\u0434\u043B\u043E\u0436\u0435\u043D\u0438\u044F</span>
           </div>
-        ) : (
-          filtered.map((offer) => {
-            const st = statusMap[offer.status] || statusMap.new
-            return (
-              <button
-                key={offer.id}
-                onClick={() => navigate(`/client/${phoneHash}/offer/${offer.id}`)}
-                className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-left hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center shrink-0">
-                    <span className="text-lg font-bold text-beeline-gray">
-                      {offer.partner_name[0]}
+          <div className="pl-5 overflow-x-auto scrollbar-none">
+            <div className="flex gap-3 pr-5">
+              {forYou.map(offer => (
+                <button
+                  key={offer.id}
+                  onClick={() => navigate(`/client/${phoneHash}/offer/${offer.id}`)}
+                  className="flex-shrink-0 w-[156px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/80 hover:shadow-md transition-shadow active:scale-[0.98]"
+                >
+                  {/* Gradient top */}
+                  <div className="h-[72px] bg-gradient-to-br from-beeline-yellow/90 via-brand-600/80 to-brand-800/70 flex items-center justify-center relative">
+                    <span className="text-[28px] font-extrabold text-white drop-shadow-sm">
+                      {formatRate(offer)}
+                    </span>
+                    <span className="absolute top-2 right-2 text-[10px] bg-white/25 text-white px-1.5 py-0.5 rounded-full backdrop-blur-sm">
+                      {(offer.category || '').split(' / ')[0].split(' ')[0]}
                     </span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="font-semibold text-beeline-black text-sm">{offer.name}</p>
-                        <p className="text-xs text-beeline-gray mt-0.5">{offer.partner_name}</p>
-                      </div>
-                      <Badge variant={st.variant}>{st.label}</Badge>
-                    </div>
-                    <div className="flex items-center gap-3 mt-2">
-                      <span className="text-lg font-bold text-brand-800">
-                        {formatRate(offer)}
-                      </span>
-                      <span className="text-xs text-beeline-gray">
-                        от {parseFloat(offer.min_check).toFixed(0)} ₽
-                      </span>
-                      {offer.category && (
-                        <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full ml-auto">
-                          {offer.category}
-                        </span>
-                      )}
-                    </div>
+                  <div className="p-3">
+                    <p className="text-[13px] font-semibold text-beeline-black leading-tight line-clamp-2">{offer.partner_name}</p>
+                    <p className="text-[11px] text-beeline-gray mt-1 line-clamp-1">\u043E\u0442 {parseFloat(offer.min_check).toFixed(0)}\u00A0\u20BD</p>
                   </div>
-                </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== Categories Grid — only on main screen ===== */}
+      {showMainContent && !loading && (
+        <div className="px-5 pt-5 pb-2">
+          <h2 className="text-[17px] font-bold text-beeline-black mb-3">\u041A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u0438</h2>
+          <div className="grid grid-cols-4 gap-2">
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setCategory(cat)}
+                className="flex flex-col items-center gap-1 py-2.5 px-1 rounded-2xl bg-white border border-gray-100/80 hover:border-beeline-yellow/50 hover:shadow-sm transition-all active:scale-[0.96]"
+              >
+                <span className="text-[22px] leading-none">{categoryIcons[cat] || '\u{1F381}'}</span>
+                <span className="text-[10px] text-beeline-dark font-medium text-center leading-tight line-clamp-2">{cat.split(' / ')[0]}</span>
+                <span className="text-[9px] text-beeline-gray">{categoryCounts[cat] || 0}</span>
               </button>
-            )
-          })
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ===== Category filter chips — when browsing a category ===== */}
+      {!showMainContent && (
+        <div className="px-4 pt-3 pb-1 overflow-x-auto scrollbar-none">
+          <div className="flex gap-2 min-w-max">
+            <button
+              onClick={() => { setCategory('Все'); setSearch('') }}
+              className="px-3.5 py-1.5 rounded-full text-[12px] font-medium bg-beeline-black text-white"
+            >
+              \u2190 \u0412\u0441\u0435
+            </button>
+            {CATEGORIES.map(c => (
+              <button
+                key={c}
+                onClick={() => setCategory(c)}
+                className={cn(
+                  'px-3 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap transition-all',
+                  category === c
+                    ? 'bg-beeline-yellow text-beeline-black shadow-sm'
+                    : 'bg-white text-beeline-gray border border-gray-200'
+                )}
+              >
+                {categoryIcons[c] || ''} {c.split(' / ')[0]}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ===== All offers section ===== */}
+      <div className="px-5 pt-4 pb-1">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-[17px] font-bold text-beeline-black">
+            {showMainContent ? '\u0412\u0441\u0435 \u043E\u0444\u0444\u0435\u0440\u044B' : category !== 'Все' ? `${categoryIcons[category] || ''} ${category}` : `\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B`}
+          </h2>
+          <div className="flex items-center gap-1.5 bg-white rounded-full px-2 py-1 border border-gray-100">
+            <button
+              onClick={() => setSort('cashback')}
+              className={cn('text-[11px] px-2 py-0.5 rounded-full transition-colors', sort === 'cashback' ? 'bg-beeline-yellow text-beeline-black font-semibold' : 'text-beeline-gray')}
+            >
+              \u041A\u044D\u0448\u0431\u044D\u043A
+            </button>
+            <button
+              onClick={() => setSort('new')}
+              className={cn('text-[11px] px-2 py-0.5 rounded-full transition-colors', sort === 'new' ? 'bg-beeline-yellow text-beeline-black font-semibold' : 'text-beeline-gray')}
+            >
+              \u041D\u043E\u0432\u044B\u0435
+            </button>
+          </div>
+        </div>
+        {!showMainContent && (
+          <p className="text-[12px] text-beeline-gray -mt-1.5 mb-3">
+            {filtered.length} {filtered.length === 1 ? '\u043E\u0444\u0444\u0435\u0440' : '\u043E\u0444\u0444\u0435\u0440\u043E\u0432'}
+          </p>
         )}
       </div>
 
-      {/* Bottom Nav */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-3 flex justify-around">
-        <button className="flex flex-col items-center text-beeline-black">
-          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
-          </svg>
-          <span className="text-xs font-medium mt-1">Офферы</span>
-        </button>
-        <button
-          onClick={() => navigate(`/client/${phoneHash}/cashback`)}
-          className="flex flex-col items-center text-beeline-gray"
-        >
-          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span className="text-xs mt-1">Кэшбэк</span>
-        </button>
+      {/* ===== Offer Cards ===== */}
+      <div className="px-5 space-y-2.5 pb-28">
+        {loading ? (
+          <div className="flex flex-col items-center py-16">
+            <div className="w-10 h-10 border-3 border-beeline-yellow border-t-transparent rounded-full animate-spin" />
+            <p className="text-[13px] text-beeline-gray mt-4">\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 \u043E\u0444\u0444\u0435\u0440\u043E\u0432...</p>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg className="w-7 h-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <p className="text-[14px] text-beeline-dark font-medium">
+              {search ? `\u041D\u0438\u0447\u0435\u0433\u043E \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u043E` : '\u041D\u0435\u0442 \u043E\u0444\u0444\u0435\u0440\u043E\u0432'}
+            </p>
+            {search && (
+              <>
+                <p className="text-[12px] text-beeline-gray mt-1">\u041F\u043E \u0437\u0430\u043F\u0440\u043E\u0441\u0443 \u00AB{search}\u00BB</p>
+                <button onClick={() => setSearch('')} className="text-[13px] text-blue-600 font-medium mt-3">\u0421\u0431\u0440\u043E\u0441\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A</button>
+              </>
+            )}
+          </div>
+        ) : (
+          filtered.map(offer => (
+            <button
+              key={offer.id}
+              onClick={() => navigate(`/client/${phoneHash}/offer/${offer.id}`)}
+              className="w-full bg-white rounded-2xl p-4 text-left shadow-sm border border-gray-100/60 hover:shadow-md transition-all active:scale-[0.99] flex items-center gap-3.5"
+            >
+              {/* Avatar */}
+              <div className={cn('w-12 h-12 rounded-[14px] flex items-center justify-center shrink-0 text-[18px] font-bold', getAvatarColor(offer.partner_name))}>
+                {offer.partner_name[0]}
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-[14px] font-semibold text-beeline-black truncate">{offer.partner_name}</p>
+                  {offer.category && (
+                    <span className="text-[13px] shrink-0">{categoryIcons[offer.category] || ''}</span>
+                  )}
+                </div>
+                <p className="text-[12px] text-beeline-gray mt-0.5 truncate">{offer.name}</p>
+              </div>
+
+              {/* Cashback badge */}
+              <div className="shrink-0 bg-beeline-yellow/10 rounded-xl px-3 py-2 text-center">
+                <p className="text-[16px] font-bold text-brand-800 leading-none">{formatRate(offer)}</p>
+                <p className="text-[10px] text-beeline-gray mt-1">\u043E\u0442 {parseFloat(offer.min_check).toFixed(0)}\u20BD</p>
+              </div>
+            </button>
+          ))
+        )}
+      </div>
+
+      {/* ===== Bottom Tab Bar ===== */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200/50 px-4 pb-[env(safe-area-inset-bottom,8px)] pt-2">
+        <div className="flex justify-around max-w-md mx-auto">
+          <button className="flex flex-col items-center py-1 px-3 relative">
+            <svg className="w-6 h-6 text-beeline-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+            </svg>
+            <span className="text-[10px] font-semibold text-beeline-black mt-0.5">\u041E\u0444\u0444\u0435\u0440\u044B</span>
+            <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-beeline-yellow rounded-full" />
+          </button>
+          <button
+            onClick={() => navigate(`/client/${phoneHash}/cashback`)}
+            className="flex flex-col items-center py-1 px-3"
+          >
+            <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-[10px] text-gray-400 mt-0.5">\u041A\u044D\u0448\u0431\u044D\u043A</span>
+          </button>
+        </div>
       </div>
     </div>
   )

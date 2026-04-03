@@ -1,47 +1,58 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/Button'
 
 export default function ThankYou() {
   const { phoneHash } = useParams<{ phoneHash: string }>()
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6">
-      {/* Animated checkmark */}
-      <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6 animate-bounce">
-        <svg className="w-12 h-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-        </svg>
-      </div>
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 relative overflow-hidden">
+      {/* Decorative */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-emerald-100/50 rounded-full blur-3xl" />
 
-      <h1 className="text-2xl font-bold text-beeline-black text-center">
-        Выгода подключена!
-      </h1>
+      <div className="relative z-10 text-center max-w-xs">
+        {/* Success icon */}
+        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center mx-auto mb-5 shadow-xl shadow-emerald-400/30 animate-[bounce_1s_ease-in-out]">
+          <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
 
-      <p className="text-beeline-gray text-center mt-3 max-w-xs leading-relaxed">
-        Оплачивайте покупки через СБП у партнёра. Кэшбэк автоматически поступит на ваш счёт Билайн.
-      </p>
+        <h1 className="text-[24px] font-bold text-beeline-black">Выгода подключена!</h1>
+        <p className="text-[14px] text-beeline-gray mt-3 leading-relaxed">
+          Оплачивайте покупки через СБП у партнёра. Кэшбэк автоматически поступит на ваш счёт Билайн.
+        </p>
 
-      <div className="bg-beeline-yellow/10 rounded-2xl p-4 mt-6 max-w-xs w-full">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-beeline-yellow rounded-xl flex items-center justify-center shrink-0">
-            <svg className="w-5 h-5 text-beeline-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+        {/* Info card */}
+        <div className="bg-[#f5f5f7] rounded-2xl p-4 mt-6 text-left">
+          <div className="flex gap-3 items-start">
+            <div className="w-10 h-10 rounded-xl bg-beeline-yellow/20 flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-[13px] font-medium text-beeline-dark">Начисление 1-3 дня</p>
+              <p className="text-[11px] text-beeline-gray mt-0.5">После обработки реестра НСПК кэшбэк поступит на счёт</p>
+            </div>
           </div>
-          <p className="text-xs text-beeline-dark">
-            Начисление обычно происходит в течение 1-3 дней после покупки
-          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="mt-8 space-y-3 w-full">
+          <button
+            onClick={() => navigate(`/client/${phoneHash}`)}
+            className="w-full py-4 rounded-2xl bg-beeline-yellow text-beeline-black font-bold text-[15px] hover:bg-brand-600 active:scale-[0.98] transition-all shadow-lg shadow-yellow-400/25"
+          >
+            Смотреть другие офферы
+          </button>
+          <button
+            onClick={() => navigate(`/client/${phoneHash}/cashback`)}
+            className="w-full py-3.5 rounded-2xl bg-gray-100 text-beeline-dark font-medium text-[14px] hover:bg-gray-200 active:scale-[0.98] transition-all"
+          >
+            Мой кэшбэк
+          </button>
         </div>
       </div>
-
-      <Button
-        size="lg"
-        className="w-full max-w-xs mt-8"
-        onClick={() => navigate(`/client/${phoneHash}`)}
-      >
-        Вернуться к офферам
-      </Button>
     </div>
   )
 }
