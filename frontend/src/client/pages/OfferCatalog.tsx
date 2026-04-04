@@ -136,13 +136,45 @@ export default function OfferCatalog() {
                 <p className="text-[11px] text-white/40 font-medium">Билайн × НСПК</p>
               </div>
             </div>
-            <button onClick={() => navigate(`/client/${phoneHash}/cashback`)}
-              className="relative w-10 h-10 rounded-2xl bg-white/[0.08] border border-white/[0.06] flex items-center justify-center">
-              <svg className="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#FFD500] rounded-full text-[10px] font-bold text-[#111] flex items-center justify-center">7</span>
-            </button>
+            <div className="flex items-center gap-2">
+              {/* Push demo bell */}
+              <button onClick={async () => {
+                if (!('Notification' in window)) { alert('Push-уведомления не поддерживаются в этом браузере'); return }
+                const perm = await Notification.requestPermission()
+                if (perm !== 'granted') { alert('Разрешите уведомления в настройках браузера'); return }
+                const best = offers.length > 0 ? offers[Math.floor(Math.random() * Math.min(offers.length, 10))] : null
+                const reg = await navigator.serviceWorker?.ready
+                if (reg) {
+                  reg.showNotification('Новый кэшбэк ждёт вас!', {
+                    body: best ? `${fmtRate(best)} в ${best.partner_name} — активируйте прямо сейчас` : 'Откройте каталог офферов',
+                    icon: '/claude/icons/icon-192.png',
+                    badge: '/claude/icons/icon-192.png',
+                    tag: 'clo-demo',
+                    renotify: true,
+                    data: { url: `/claude/client/${phoneHash}` },
+                  } as NotificationOptions)
+                } else {
+                  new Notification('Новый кэшбэк ждёт вас!', {
+                    body: best ? `${fmtRate(best)} в ${best.partner_name}` : 'Откройте каталог',
+                    icon: '/claude/icons/icon-192.png',
+                  })
+                }
+              }}
+                className="relative w-10 h-10 rounded-2xl bg-white/[0.08] border border-white/[0.06] flex items-center justify-center press-scale">
+                <svg className="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
+              </button>
+              {/* Cashback */}
+              <button onClick={() => navigate(`/client/${phoneHash}/cashback`)}
+                className="relative w-10 h-10 rounded-2xl bg-white/[0.08] border border-white/[0.06] flex items-center justify-center">
+                <svg className="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#FFD500] rounded-full text-[10px] font-bold text-[#111] flex items-center justify-center">7</span>
+              </button>
+            </div>
           </div>
           <div className="relative">
             <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-[16px] h-[16px] text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

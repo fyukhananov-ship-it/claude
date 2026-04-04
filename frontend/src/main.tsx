@@ -21,7 +21,14 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { err
   }
 }
 
-console.log('[CLO] Mounting React app, basename=/claude')
+// Register service worker for PWA + push
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/claude/sw.js')
+      .then(reg => console.log('[CLO] SW registered, scope:', reg.scope))
+      .catch(err => console.log('[CLO] SW registration failed:', err))
+  })
+}
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

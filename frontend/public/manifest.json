@@ -1,0 +1,16 @@
+{
+  "name": "Билайн CLO — Подарки и акции",
+  "short_name": "CLO Билайн",
+  "description": "Кэшбэк за покупки через СБП",
+  "start_url": "/claude/client/demo",
+  "scope": "/claude/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#111111",
+  "theme_color": "#FFD500",
+  "icons": [
+    { "src": "/claude/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/claude/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/claude/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
