@@ -139,28 +139,14 @@ export default function OfferCatalog() {
             <div className="flex items-center gap-2">
               {/* Push demo bell */}
               <button onClick={async () => {
-                if (!('Notification' in window)) { alert('Push-уведомления не поддерживаются в этом браузере'); return }
+                if (!('Notification' in window)) { alert('Push не поддерживается'); return }
                 const perm = await Notification.requestPermission()
-                if (perm !== 'granted') { alert('Разрешите уведомления в настройках браузера'); return }
-                const lenta = offers.find(o => o.partner_name === 'Лента') || offers[0]
-                const offerUrl = `/claude/client/${phoneHash}/offer/${lenta?.id || 'offer-3'}`
-                const reg = await navigator.serviceWorker?.ready
-                if (reg) {
-                  reg.showNotification('Лента: кэшбэк 7% на продукты!', {
-                    body: 'Оплатите покупки через СБП и получите кэшбэк на счёт Билайн. Активируйте прямо сейчас →',
-                    icon: '/claude/icons/icon-192.png',
-                    badge: '/claude/icons/icon-192.png',
-                    tag: 'clo-lenta',
-                    renotify: true,
-                    data: { url: offerUrl },
-                  } as NotificationOptions)
-                } else {
-                  new Notification('Лента: кэшбэк 7% на продукты!', {
-                    body: 'Активируйте оффер прямо сейчас →',
-                    icon: '/claude/icons/icon-192.png',
-                  })
-                  setTimeout(() => navigate(`/client/${phoneHash}/offer/${lenta?.id || 'offer-3'}`), 500)
-                }
+                if (perm !== 'granted') { alert('Разрешите уведомления'); return }
+                // Always Lenta, hardcoded offer-3
+                const title = 'Лента: кэшбэк 7% на продукты!'
+                const body = 'Оплатите через СБП и получите кэшбэк на счёт Билайн'
+                const n = new Notification(title, { body, icon: '/claude/icons/icon-192.png' })
+                n.onclick = () => { window.focus(); navigate(`/client/${phoneHash}/offer/offer-3`) }
               }}
                 className="relative w-10 h-10 rounded-2xl bg-white/[0.08] border border-white/[0.06] flex items-center justify-center press-scale">
                 <svg className="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
