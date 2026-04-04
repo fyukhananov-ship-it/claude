@@ -219,6 +219,29 @@ export default function OfferCatalog() {
             </div>
           </div>
 
+          {/* Slot machine widget */}
+          <div className="px-5 mb-6">
+            <button onClick={() => navigate(`/client/${phoneHash}/spin/offer-1`)}
+              className="w-full bg-[#111] noise-bg relative rounded-2xl p-5 press-scale overflow-hidden text-left">
+              <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-[#FFD500]/[0.08]" />
+              <div className="absolute bottom-0 left-0 w-24 h-24 rounded-full bg-purple-500/[0.06]" />
+              <div className="relative z-10 flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#FFD500] to-[#F59E0B] flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(255,213,0,0.3)]">
+                  <svg className="w-7 h-7 text-[#111]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <p className="text-[15px] font-extrabold text-white">Испытай удачу!</p>
+                  <p className="text-[12px] text-white/40 mt-0.5 font-medium">Крути барабан и выиграй кэшбэк до 30%</p>
+                </div>
+                <svg className="w-5 h-5 text-white/30 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </button>
+          </div>
+
           {/* Collections */}
           {collections.map(col => (
             <div key={col.name} className="mb-6">
