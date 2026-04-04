@@ -32,10 +32,20 @@ export default function SpinWheel() {
 
   const items = [...SLOT_ITEMS, ...SLOT_ITEMS, ...SLOT_ITEMS, ...SLOT_ITEMS]
 
+  // Haptic feedback helper
+  const haptic = (style: 'light' | 'medium' | 'heavy' = 'medium') => {
+    try {
+      if ('vibrate' in navigator) {
+        navigator.vibrate(style === 'light' ? 10 : style === 'heavy' ? 50 : 25)
+      }
+    } catch {}
+  }
+
   const spin = useCallback(() => {
     if (phase === 'spinning') return
     setPhase('spinning')
     setConfetti(false)
+    haptic('medium')
 
     const win = Math.floor(Math.random() * SLOT_ITEMS.length)
     setWinIdx(win)
@@ -51,9 +61,17 @@ export default function SpinWheel() {
       slotRef.current.style.transform = `translateY(-${targetOffset}px)`
     }
 
+    // Haptic ticks during spinning
+    const ticks = [200, 400, 600, 900, 1200, 1600, 2000, 2400, 2700, 2900]
+    ticks.forEach(t => setTimeout(() => haptic('light'), t))
+
     setTimeout(() => {
+      haptic('heavy')
       setPhase('result')
       setConfetti(true)
+      // Save winner to localStorage for widget
+      const w = SLOT_ITEMS[win]
+      localStorage.setItem('clo_slot_result', JSON.stringify({ partner: w.partner, rate: w.rate, color: w.color, desc: w.desc, ts: Date.now() }))
       setTimeout(() => setConfetti(false), 3000)
     }, 3200)
   }, [phase])

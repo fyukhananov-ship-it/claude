@@ -221,25 +221,56 @@ export default function OfferCatalog() {
 
           {/* Slot machine widget */}
           <div className="px-5 mb-6">
-            <button onClick={() => navigate(`/client/${phoneHash}/spin/offer-1`)}
-              className="w-full bg-[#111] noise-bg relative rounded-2xl p-5 press-scale overflow-hidden text-left">
-              <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-[#FFD500]/[0.08]" />
-              <div className="absolute bottom-0 left-0 w-24 h-24 rounded-full bg-purple-500/[0.06]" />
-              <div className="relative z-10 flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#FFD500] to-[#F59E0B] flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(255,213,0,0.3)]">
-                  <svg className="w-7 h-7 text-[#111]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <p className="text-[15px] font-extrabold text-white">Испытай удачу!</p>
-                  <p className="text-[12px] text-white/40 mt-0.5 font-medium">Крути барабан и выиграй кэшбэк до 30%</p>
-                </div>
-                <svg className="w-5 h-5 text-white/30 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </button>
+            {(() => {
+              let slotResult: { partner: string; rate: string; color: string; desc: string } | null = null
+              try { const raw = localStorage.getItem('clo_slot_result'); if (raw) slotResult = JSON.parse(raw) } catch {}
+
+              return slotResult ? (
+                /* Won — show result */
+                <button onClick={() => navigate(`/client/${phoneHash}/spin/offer-1`)}
+                  className={cn('w-full relative rounded-2xl p-5 press-scale overflow-hidden text-left bg-gradient-to-br', slotResult.color)}>
+                  <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/10" />
+                  <div className="absolute bottom-0 left-0 w-20 h-20 rounded-full bg-black/5" />
+                  <div className="relative z-10 flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0">
+                      <span className="text-[22px] font-extrabold text-white">{slotResult.partner[0]}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-bold text-white/50 uppercase tracking-[0.1em]">Ваш кэшбэк</p>
+                      <div className="flex items-baseline gap-2 mt-0.5">
+                        <span className="font-mono-cash text-[28px] font-extrabold text-white leading-none">{slotResult.rate}</span>
+                        <span className="text-[14px] font-bold text-white/80 truncate">{slotResult.partner}</span>
+                      </div>
+                      <p className="text-[11px] text-white/40 mt-1 font-medium">Нажмите, чтобы крутить снова</p>
+                    </div>
+                    <svg className="w-5 h-5 text-white/40 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </div>
+                </button>
+              ) : (
+                /* Not played yet */
+                <button onClick={() => navigate(`/client/${phoneHash}/spin/offer-1`)}
+                  className="w-full bg-[#111] noise-bg relative rounded-2xl p-5 press-scale overflow-hidden text-left">
+                  <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-[#FFD500]/[0.08]" />
+                  <div className="absolute bottom-0 left-0 w-24 h-24 rounded-full bg-purple-500/[0.06]" />
+                  <div className="relative z-10 flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#FFD500] to-[#F59E0B] flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(255,213,0,0.3)]">
+                      <svg className="w-7 h-7 text-[#111]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[15px] font-extrabold text-white">Испытай удачу!</p>
+                      <p className="text-[12px] text-white/40 mt-0.5 font-medium">Крути барабан и выиграй кэшбэк до 30%</p>
+                    </div>
+                    <svg className="w-5 h-5 text-white/30 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </button>
+              )
+            })()}
           </div>
 
           {/* Collections */}
