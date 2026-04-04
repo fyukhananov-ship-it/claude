@@ -31,7 +31,7 @@ const in90 = new Date(Date.now() + 90 * 86400000).toISOString().split('T')[0]
 const emptyForm = {
   partner_id: '', name: '', description: '', cashback_type: 'percent', cashback_rate: '',
   min_check: '', max_cashback_per_tx: '', max_cashback_per_client: '', budget: '',
-  start_date: today, end_date: in90, segment: 'all', category: '',
+  start_date: today, end_date: in90, segment: 'all', category: '', image_url: '',
 }
 
 export default function OfferModeration() {
@@ -219,6 +219,29 @@ export default function OfferModeration() {
               </Field>
               <Field label="Описание">
                 <textarea value={form.description} onChange={e => upd('description', e.target.value)} rows={3} className="inp resize-none" placeholder="Условия и детали оффера..." />
+              </Field>
+              <Field label="Изображение (URL или загрузка)">
+                <div className="flex gap-3">
+                  <input value={form.image_url} onChange={e => upd('image_url', e.target.value)} className="inp flex-1" placeholder="https://... или перетащите файл" />
+                  <label className="px-4 py-2.5 rounded-xl bg-[#f0f0f0] text-[#666] text-[12px] font-bold cursor-pointer press-scale hover:bg-[#e5e5e5] flex items-center gap-1.5 shrink-0">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    Загрузить
+                    <input type="file" accept="image/*" className="hidden" onChange={e => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        const reader = new FileReader()
+                        reader.onload = () => upd('image_url', reader.result as string)
+                        reader.readAsDataURL(file)
+                      }
+                    }} />
+                  </label>
+                </div>
+                {form.image_url && (
+                  <div className="mt-2 relative inline-block">
+                    <img src={form.image_url} alt="" className="h-20 rounded-xl object-cover" />
+                    <button onClick={() => upd('image_url', '')} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center">×</button>
+                  </div>
+                )}
               </Field>
 
               {/* Cashback */}

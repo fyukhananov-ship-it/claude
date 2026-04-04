@@ -12,32 +12,32 @@ interface OfferItem {
 }
 
 const catIcons: Record<string, string> = {
-  'Продукты': '🛒',
-  'Шоппинг': '🛍️',
-  'Красота': '💄',
-  'Перекусить': '🍔',
-  'Кофе': '☕',
-  'Поесть': '🍽️',
-  'Заказать еду': '🛵',
-  'Спорт': '💪',
-  'Дом': '🏠',
-  'Техника': '📱',
-  'Детям': '🧸',
-  'Заправиться': '⛽',
-  'Путешествия': '✈️',
-  'Развлечения': '🎬',
-  'Рядом с домом': '🏪',
-  'Почитать': '📚',
-  'Авто и быт': '🔧',
-  'Подписки': '📲',
+  'Купить продукты': '🛒',
+  'Обновить гардероб': '🛍️',
+  'Позаботиться о себе': '💄',
+  'Поесть вне дома': '🍽️',
+  'Заказать доставку': '🛵',
+  'Заняться спортом': '💪',
+  'Обустроить дом': '🏠',
+  'Купить технику': '📱',
+  'Порадовать ребёнка': '🧸',
+  'Заправить авто': '⛽',
+  'Отдохнуть': '✈️',
+  'Подписаться': '📲',
 }
 
-const gradients = [
-  'from-amber-400 to-orange-500', 'from-rose-400 to-pink-600', 'from-violet-400 to-purple-600',
-  'from-sky-400 to-blue-600', 'from-emerald-400 to-teal-600', 'from-fuchsia-400 to-pink-600',
-  'from-cyan-400 to-blue-500', 'from-lime-400 to-green-600',
+// Deterministic gradient from partner name
+const grads = [
+  'from-amber-400 via-orange-400 to-red-400',
+  'from-rose-400 via-pink-500 to-fuchsia-500',
+  'from-violet-400 via-purple-500 to-indigo-500',
+  'from-sky-400 via-blue-500 to-indigo-500',
+  'from-emerald-400 via-teal-500 to-cyan-500',
+  'from-lime-400 via-green-500 to-emerald-500',
+  'from-yellow-300 via-amber-400 to-orange-500',
+  'from-pink-400 via-rose-500 to-red-500',
 ]
-function grad(s: string) { return gradients[s.charCodeAt(0) % gradients.length] }
+function grad(s: string) { return grads[s.charCodeAt(0) % grads.length] }
 
 export default function OfferCatalog() {
   const { phoneHash } = useParams<{ phoneHash: string }>()
@@ -56,7 +56,6 @@ export default function OfferCatalog() {
       .finally(() => setLoading(false))
   }, [phoneHash])
 
-  // "Для вас" — best from each category
   const forYou = useMemo(() => {
     const seen = new Set<string>()
     return offers.filter(o => o.status !== 'draft')
@@ -66,21 +65,17 @@ export default function OfferCatalog() {
         return rB - rA
       })
       .filter(o => { if (seen.has(o.category || '')) return false; seen.add(o.category || ''); return true })
-      .slice(0, 8)
+      .slice(0, 6)
   }, [offers])
 
-  // Collections by category (for main view)
   const collections = useMemo(() =>
     CATEGORIES.map(cat => ({
-      name: cat,
-      icon: catIcons[cat] || '',
-      offers: offers.filter(o => o.category === cat && o.status !== 'draft'),
+      name: cat, icon: catIcons[cat] || '', offers: offers.filter(o => o.category === cat && o.status !== 'draft'),
     })).filter(c => c.offers.length > 0)
   , [offers])
 
-  // Search/category filtered
   const filtered = useMemo(() => {
-    if (!search && !activeCategory) return null // show collections mode
+    if (!search && !activeCategory) return null
     let r = offers
     if (activeCategory) r = r.filter(o => o.category === activeCategory)
     if (search.trim()) {
@@ -91,24 +86,54 @@ export default function OfferCatalog() {
   }, [offers, activeCategory, search])
 
   const fmtRate = (o: OfferItem) => o.cashback_type === 'percent'
-    ? `${(parseFloat(o.cashback_rate) * 100).toFixed(0)}%`
-    : `${parseFloat(o.cashback_rate).toFixed(0)} ₽`
+    ? `${(parseFloat(o.cashback_rate) * 100).toFixed(0)}%` : `${parseFloat(o.cashback_rate).toFixed(0)} \u20bd`
 
   const isHome = !search && !activeCategory
 
+  // Offer image card component
+  const OfferCard = ({ o, size = 'md' }: { o: OfferItem; size?: 'lg' | 'md' }) => {
+    const w = size === 'lg' ? 'w-[200px]' : 'w-[170px]'
+    const h = size === 'lg' ? 'h-[140px]' : 'h-[110px]'
+    return (
+      <button onClick={() => navigate(`/client/${phoneHash}/offer/${o.id}`)}
+        className={cn('flex-shrink-0 press-scale text-left', w)}>
+        {/* Image area */}
+        <div className={cn('rounded-2xl overflow-hidden relative', h)}>
+          {o.image_url ? (
+            <img src={o.image_url} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <div className={cn('w-full h-full bg-gradient-to-br', grad(o.partner_name))}>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-[42px] font-extrabold text-white/20">{o.partner_name[0]}</span>
+              </div>
+            </div>
+          )}
+          {/* Cashback badge */}
+          <div className="absolute top-2.5 left-2.5 bg-[#111]/70 backdrop-blur-md text-white px-2.5 py-1 rounded-lg">
+            <span className="font-mono-cash text-[14px] font-extrabold">{fmtRate(o)}</span>
+          </div>
+        </div>
+        {/* Info */}
+        <p className="text-[13px] font-bold text-[#111] mt-2.5 leading-tight truncate">{o.partner_name}</p>
+        <p className="text-[11px] text-[#999] mt-0.5 truncate">{o.name}</p>
+        <p className="text-[10px] text-[#bbb] mt-0.5">{'от '}{parseFloat(o.min_check).toFixed(0)}{' \u20bd'}</p>
+      </button>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-[#fafafa]">
-      {/* ── Header ── */}
+      {/* Header */}
       <div className="bg-[#111] noise-bg relative text-white px-5 pt-[max(52px,env(safe-area-inset-top,52px))] pb-5">
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-[#FFD500] rounded-2xl flex items-center justify-center shadow-[0_0_24px_rgba(255,213,0,0.3)]">
-                <span className="text-[11px] font-extrabold text-[#111] tracking-tight">CLO</span>
+                <span className="text-[11px] font-extrabold text-[#111]">CLO</span>
               </div>
               <div>
-                <p className="text-[16px] font-bold tracking-[-0.02em]">{'Подарки и акции'}</p>
-                <p className="text-[11px] text-white/40 font-medium tracking-wide">{'Билайн × НСПК'}</p>
+                <p className="text-[16px] font-bold tracking-[-0.02em]">Подарки и акции</p>
+                <p className="text-[11px] text-white/40 font-medium">Билайн × НСПК</p>
               </div>
             </div>
             <button onClick={() => navigate(`/client/${phoneHash}/cashback`)}
@@ -116,45 +141,40 @@ export default function OfferCatalog() {
               <svg className="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#FFD500] rounded-full text-[10px] font-bold text-[#111] flex items-center justify-center shadow-lg">7</span>
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#FFD500] rounded-full text-[10px] font-bold text-[#111] flex items-center justify-center">7</span>
             </button>
           </div>
-
-          {/* Search */}
           <div className="relative">
             <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-[16px] h-[16px] text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input type="text" value={search} onChange={e => { setSearch(e.target.value); if (e.target.value) setActiveCategory(null) }}
-              placeholder={'Найти партнёра или категорию'}
-              className="w-full pl-11 pr-10 py-3.5 bg-white/[0.06] text-white placeholder-white/25 rounded-2xl text-[14px] font-medium focus:outline-none focus:bg-white/[0.12] focus:ring-1 focus:ring-[#FFD500]/40 border border-white/[0.04] transition-all" />
+              placeholder="Найти партнёра или категорию"
+              className="w-full pl-11 pr-10 py-3.5 bg-white/[0.06] text-white placeholder-white/25 rounded-2xl text-[14px] font-medium focus:outline-none focus:bg-white/[0.12] focus:ring-1 focus:ring-[#FFD500]/40 border border-white/[0.04]" />
             {search && (
               <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/10 flex items-center justify-center">
-                <svg className="w-3.5 h-3.5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <svg className="w-3.5 h-3.5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             )}
           </div>
         </div>
       </div>
 
-      {/* ── Categories — horizontal scroll, fixed size ── */}
+      {/* Categories strip */}
       <div className="px-4 py-4 overflow-x-auto no-scrollbar">
         <div className="flex gap-2 min-w-max">
-          {/* "All" chip */}
           <button onClick={() => { setActiveCategory(null); setSearch('') }}
-            className={cn('w-[72px] h-[72px] rounded-2xl flex flex-col items-center justify-center gap-1 shrink-0 transition-all press-scale border',
-              !activeCategory ? 'bg-[#111] text-white border-[#111]' : 'bg-white text-[#666] border-[#f0f0f0] hover:border-[#ddd]')}>
-            <span className="text-[20px]">{'⭐'}</span>
-            <span className="text-[10px] font-bold">{'Все'}</span>
+            className={cn('w-[76px] h-[76px] rounded-2xl flex flex-col items-center justify-center gap-1 shrink-0 press-scale border',
+              !activeCategory ? 'bg-[#111] text-white border-[#111]' : 'bg-white text-[#666] border-[#f0f0f0]')}>
+            <span className="text-[22px]">⭐</span>
+            <span className="text-[10px] font-bold">Все</span>
           </button>
           {CATEGORIES.map(cat => (
             <button key={cat} onClick={() => { setActiveCategory(cat); setSearch('') }}
-              className={cn('w-[72px] h-[72px] rounded-2xl flex flex-col items-center justify-center gap-1 shrink-0 transition-all press-scale border',
-                activeCategory === cat ? 'bg-[#FFD500] text-[#111] border-[#FFD500] shadow-[0_2px_12px_rgba(255,213,0,0.3)]' : 'bg-white text-[#666] border-[#f0f0f0] hover:border-[#ddd]')}>
-              <span className="text-[20px]">{catIcons[cat] || ''}</span>
-              <span className="text-[10px] font-bold leading-tight text-center">{cat}</span>
+              className={cn('w-[76px] h-[76px] rounded-2xl flex flex-col items-center justify-center gap-1 shrink-0 press-scale border',
+                activeCategory === cat ? 'bg-[#FFD500] text-[#111] border-[#FFD500] shadow-[0_2px_12px_rgba(255,213,0,0.3)]' : 'bg-white text-[#666] border-[#f0f0f0]')}>
+              <span className="text-[22px]">{catIcons[cat] || '🏷️'}</span>
+              <span className="text-[10px] font-bold leading-tight text-center line-clamp-2 px-1">{cat}</span>
             </button>
           ))}
         </div>
@@ -163,104 +183,78 @@ export default function OfferCatalog() {
       {loading ? (
         <div className="flex flex-col items-center py-20">
           <div className="w-10 h-10 border-[3px] border-[#FFD500] border-t-transparent rounded-full animate-spin" />
-          <p className="text-[13px] text-[#999] mt-4 font-medium">{'Загрузка офферов...'}</p>
         </div>
       ) : isHome ? (
-        /* ── HOME: "Для вас" + Collections ── */
         <div className="pb-28">
-          {/* "Для вас" */}
-          <div className="pt-2 pb-4">
+          {/* "Для вас" — large cards */}
+          <div className="pt-1 pb-5">
             <div className="px-5 flex items-baseline justify-between mb-3">
-              <h2 className="text-[20px] font-extrabold text-[#111] tracking-[-0.03em]">{'Для вас'}</h2>
-              <span className="text-[11px] text-[#bbb] font-bold uppercase tracking-[0.08em]">{'Персональное'}</span>
+              <h2 className="text-[20px] font-extrabold text-[#111] tracking-[-0.03em]">Для вас</h2>
+              <span className="text-[11px] text-[#bbb] font-bold uppercase tracking-[0.08em]">Лучшее</span>
             </div>
             <div className="pl-5 overflow-x-auto no-scrollbar">
               <div className="flex gap-3 pr-5 animate-stagger">
-                {forYou.map(o => (
-                  <button key={o.id} onClick={() => navigate(`/client/${phoneHash}/offer/${o.id}`)}
-                    className="flex-shrink-0 w-[140px] press-scale">
-                    <div className={cn('h-[100px] rounded-2xl bg-gradient-to-br flex flex-col items-center justify-center relative overflow-hidden', grad(o.partner_name))}>
-                      <span className="font-mono-cash text-[32px] font-extrabold text-white drop-shadow-lg leading-none">{fmtRate(o)}</span>
-                      <span className="absolute top-2 right-2 text-[9px] bg-black/20 text-white/90 px-2 py-0.5 rounded-full backdrop-blur-sm font-medium">
-                        {o.category || ''}
-                      </span>
-                    </div>
-                    <p className="text-[13px] font-bold text-[#111] mt-2 leading-tight truncate">{o.partner_name}</p>
-                    <p className="text-[11px] text-[#999] mt-0.5">{'от '}{parseFloat(o.min_check).toFixed(0)}{' ₽'}</p>
-                  </button>
-                ))}
+                {forYou.map(o => <OfferCard key={o.id} o={o} size="lg" />)}
               </div>
             </div>
           </div>
 
-          {/* Collections by category */}
+          {/* Collections */}
           {collections.map(col => (
             <div key={col.name} className="mb-6">
               <div className="px-5 flex items-center justify-between mb-3">
-                <h2 className="text-[18px] font-extrabold text-[#111] tracking-[-0.02em]">
-                  {col.icon} {col.name}
-                </h2>
+                <h2 className="text-[18px] font-extrabold text-[#111] tracking-[-0.02em]">{col.icon} {col.name}</h2>
                 <button onClick={() => setActiveCategory(col.name)} className="text-[12px] font-bold text-[#FFD500] press-scale">
-                  {'Все '}{col.offers.length}{' →'}
+                  Все {col.offers.length} →
                 </button>
               </div>
               <div className="pl-5 overflow-x-auto no-scrollbar">
-                <div className="flex gap-2.5 pr-5">
-                  {col.offers.slice(0, 5).map(o => (
-                    <button key={o.id} onClick={() => navigate(`/client/${phoneHash}/offer/${o.id}`)}
-                      className="flex-shrink-0 w-[260px] bg-white rounded-2xl p-3.5 border border-[#f0f0f0] press-scale flex items-center gap-3 text-left hover:border-[#e0e0e0] transition-all">
-                      <div className={cn('w-11 h-11 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0 text-white text-[15px] font-extrabold shadow-md', grad(o.partner_name))}>
-                        {o.partner_name[0]}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-bold text-[#111] truncate">{o.partner_name}</p>
-                        <p className="text-[11px] text-[#999] truncate mt-0.5">{o.name}</p>
-                      </div>
-                      <div className="shrink-0 text-right">
-                        <p className="font-mono-cash text-[16px] font-extrabold text-[#111]">{fmtRate(o)}</p>
-                      </div>
-                    </button>
-                  ))}
+                <div className="flex gap-3 pr-5">
+                  {col.offers.slice(0, 6).map(o => <OfferCard key={o.id} o={o} />)}
                 </div>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        /* ── FILTERED VIEW ── */
+        /* Filtered view */
         <div className="px-5 pb-28">
           <div className="flex items-center justify-between mt-2 mb-4">
             <h2 className="text-[20px] font-extrabold text-[#111] tracking-[-0.03em]">
               {activeCategory ? `${catIcons[activeCategory] || ''} ${activeCategory}` : 'Результаты'}
             </h2>
-            <p className="text-[12px] text-[#999] font-medium">{filtered?.length || 0}{' офферов'}</p>
+            <p className="text-[12px] text-[#999] font-medium">{filtered?.length || 0} офферов</p>
           </div>
-
           {filtered && filtered.length === 0 ? (
             <div className="text-center py-16">
-              <div className="w-16 h-16 bg-[#f0f0f0] rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg className="w-7 h-7 text-[#ccc]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
               <p className="text-[14px] text-[#333] font-bold">{search ? 'Ничего не найдено' : 'Нет офферов'}</p>
-              {search && <button onClick={() => setSearch('')} className="text-[13px] text-[#FFD500] font-bold mt-3">{'Сбросить'}</button>}
+              {search && <button onClick={() => setSearch('')} className="text-[13px] text-[#FFD500] font-bold mt-3">Сбросить</button>}
             </div>
           ) : (
-            <div className="space-y-2 animate-stagger">
+            <div className="grid grid-cols-2 gap-3 animate-stagger">
               {(filtered || []).map(o => (
                 <button key={o.id} onClick={() => navigate(`/client/${phoneHash}/offer/${o.id}`)}
-                  className="w-full bg-white rounded-2xl p-4 text-left border border-[#f0f0f0] hover:border-[#e0e0e0] press-scale flex items-center gap-3.5 transition-all">
-                  <div className={cn('w-12 h-12 rounded-2xl bg-gradient-to-br flex items-center justify-center shrink-0 text-white text-[17px] font-extrabold shadow-lg', grad(o.partner_name))}>
-                    {o.partner_name[0]}
+                  className="bg-white rounded-2xl overflow-hidden border border-[#f0f0f0] press-scale text-left hover:border-[#e0e0e0] transition-all">
+                  {/* Image */}
+                  <div className="h-[120px] relative">
+                    {o.image_url ? (
+                      <img src={o.image_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className={cn('w-full h-full bg-gradient-to-br', grad(o.partner_name))}>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-[48px] font-extrabold text-white/15">{o.partner_name[0]}</span>
+                        </div>
+                      </div>
+                    )}
+                    <div className="absolute top-2 left-2 bg-[#111]/70 backdrop-blur-md text-white px-2 py-0.5 rounded-lg">
+                      <span className="font-mono-cash text-[13px] font-extrabold">{fmtRate(o)}</span>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-bold text-[#111] truncate">{o.partner_name}</p>
-                    <p className="text-[11px] text-[#999] mt-0.5 truncate font-medium">{o.name}</p>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <p className="font-mono-cash text-[18px] font-extrabold text-[#111] leading-none">{fmtRate(o)}</p>
-                    <p className="text-[10px] text-[#bbb] mt-1 font-medium">{'от '}{parseFloat(o.min_check).toFixed(0)}{'₽'}</p>
+                  {/* Info */}
+                  <div className="p-3">
+                    <p className="text-[13px] font-bold text-[#111] truncate">{o.partner_name}</p>
+                    <p className="text-[11px] text-[#999] mt-0.5 truncate">{o.name}</p>
+                    <p className="text-[10px] text-[#bbb] mt-1">от {parseFloat(o.min_check).toFixed(0)} ₽</p>
                   </div>
                 </button>
               ))}
@@ -269,21 +263,21 @@ export default function OfferCatalog() {
         </div>
       )}
 
-      {/* ── Tab bar ── */}
+      {/* Tab bar */}
       <div className="fixed bottom-0 left-0 right-0 glass border-t border-black/[0.04] px-4 pb-[max(8px,env(safe-area-inset-bottom))] pt-2">
         <div className="flex justify-around max-w-md mx-auto">
           <button className="flex flex-col items-center py-1 px-4 relative">
             <svg className="w-6 h-6 text-[#111]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
             </svg>
-            <span className="text-[10px] font-bold text-[#111] mt-0.5">{'Офферы'}</span>
+            <span className="text-[10px] font-bold text-[#111] mt-0.5">Офферы</span>
             <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-6 h-[3px] bg-[#FFD500] rounded-full" />
           </button>
           <button onClick={() => navigate(`/client/${phoneHash}/cashback`)} className="flex flex-col items-center py-1 px-4">
             <svg className="w-6 h-6 text-[#bbb]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-[10px] text-[#bbb] mt-0.5 font-medium">{'Кэшбэк'}</span>
+            <span className="text-[10px] text-[#bbb] mt-0.5 font-medium">Кэшбэк</span>
           </button>
         </div>
       </div>
