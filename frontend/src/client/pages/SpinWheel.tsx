@@ -1,92 +1,223 @@
-import { useState } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '@/api/client'
+import { cn } from '@/lib/utils'
 
-const segments = [
-  { value: 30, color: '#FFD500', label: '30%' },
-  { value: 50, color: '#F59E0B', label: '50%' },
-  { value: 70, color: '#EF4444', label: '70%' },
+const SLOT_ITEMS = [
+  { partner: 'Пятёрочка', rate: '10%', color: 'from-red-500 to-rose-600' },
+  { partner: 'Яндекс Еда', rate: '20%', color: 'from-amber-400 to-orange-500' },
+  { partner: 'Лента', rate: '7%', color: 'from-blue-500 to-indigo-600' },
+  { partner: 'Спортмастер', rate: '10%', color: 'from-emerald-500 to-teal-600' },
+  { partner: 'Lime', rate: '15%', color: 'from-lime-400 to-green-600' },
+  { partner: 'Шоколадница', rate: '15%', color: 'from-amber-600 to-yellow-800' },
+  { partner: 'KFC', rate: '15%', color: 'from-red-600 to-red-800' },
+  { partner: 'Кинопоиск', rate: '30%', color: 'from-violet-500 to-purple-700' },
+  { partner: 'Л\'Этуаль', rate: '12%', color: 'from-pink-400 to-fuchsia-600' },
+  { partner: 'Лукойл', rate: '5%', color: 'from-red-500 to-orange-600' },
+  { partner: 'М.Видео', rate: '5%', color: 'from-sky-500 to-blue-700' },
+  { partner: 'Магнит', rate: '300\u20bd', color: 'from-rose-500 to-pink-700' },
 ]
+
+const ITEM_H = 80 // px per slot item
+const VISIBLE = 3 // visible items in window
 
 export default function SpinWheel() {
   const { phoneHash, offerId } = useParams<{ phoneHash: string; offerId: string }>()
   const navigate = useNavigate()
   const [spinning, setSpinning] = useState(false)
-  const [result, setResult] = useState<number | null>(null)
-  const [rotation, setRotation] = useState(0)
+  const [winIdx, setWinIdx] = useState<number | null>(null)
+  const [showResult, setShowResult] = useState(false)
+  const [confetti, setConfetti] = useState(false)
+  const slotRef = useRef<HTMLDivElement>(null)
+  const touchStartY = useRef(0)
 
-  const spin = () => {
+  // Repeat items for seamless loop
+  const items = [...SLOT_ITEMS, ...SLOT_ITEMS, ...SLOT_ITEMS, ...SLOT_ITEMS]
+
+  const spin = useCallback(() => {
     if (spinning) return
-    setSpinning(true); setResult(null)
-    const win = Math.floor(Math.random() * segments.length)
-    const sa = 360 / segments.length
-    setRotation(360 * 6 + (360 - win * sa - sa / 2))
-    setTimeout(() => { setSpinning(false); setResult(segments[win].value) }, 3500)
+    setSpinning(true)
+    setShowResult(false)
+    setConfetti(false)
+
+    const win = Math.floor(Math.random() * SLOT_ITEMS.length)
+    setWinIdx(win)
+
+    // Target: land on win index in the 3rd repetition (center of visible window)
+    const targetIdx = SLOT_ITEMS.length * 2 + win
+    const targetOffset = targetIdx * ITEM_H - ITEM_H * Math.floor(VISIBLE / 2)
+
+    if (slotRef.current) {
+      // Reset to top instantly
+      slotRef.current.style.transition = 'none'
+      slotRef.current.style.transform = 'translateY(0)'
+
+      // Force reflow
+      void slotRef.current.offsetHeight
+
+      // Animate to target
+      slotRef.current.style.transition = 'transform 3s cubic-bezier(0.15, 0.65, 0.08, 1)'
+      slotRef.current.style.transform = `translateY(-${targetOffset}px)`
+    }
+
+    setTimeout(() => {
+      setSpinning(false)
+      setShowResult(true)
+      setConfetti(true)
+      setTimeout(() => setConfetti(false), 3000)
+    }, 3200)
+  }, [spinning])
+
+  // Touch swipe to spin
+  const handleTouchStart = (e: React.TouchEvent) => { touchStartY.current = e.touches[0].clientY }
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const dy = touchStartY.current - e.changedTouches[0].clientY
+    if (dy > 50) spin() // swipe up
   }
 
-  const handleAccept = async () => {
+  const winner = winIdx !== null ? SLOT_ITEMS[winIdx] : null
+
+  const handleActivate = async () => {
     if (!phoneHash || !offerId) return
     try { await api.post(`/client/${phoneHash}/activate/${offerId}`); navigate(`/client/${phoneHash}/thanks`) } catch {}
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] noise-bg relative flex flex-col items-center justify-center px-6 overflow-hidden">
-      {/* Ambient glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-[#FFD500]/[0.06] rounded-full blur-[100px]" />
-      <div className="absolute bottom-1/4 right-0 w-[200px] h-[200px] bg-purple-500/[0.04] rounded-full blur-[80px]" />
+    <div className="min-h-screen bg-[#0a0a0a] noise-bg relative flex flex-col items-center justify-center px-5 overflow-hidden"
+      onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
 
-      <div className="relative z-10 text-center mb-8">
-        <div className="w-14 h-14 rounded-3xl bg-[#FFD500]/10 flex items-center justify-center mx-auto mb-4">
-          <svg className="w-7 h-7 text-[#FFD500]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" /></svg>
+      {/* Ambient */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-[#FFD500]/[0.05] rounded-full blur-[120px]" />
+
+      {/* Confetti */}
+      {confetti && (
+        <div className="absolute inset-0 pointer-events-none z-30 overflow-hidden">
+          {Array.from({ length: 40 }).map((_, i) => (
+            <div key={i} className="absolute animate-[confettiFall_2.5s_ease-in_forwards]"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: '-20px',
+                animationDelay: `${Math.random() * 1}s`,
+                width: `${6 + Math.random() * 8}px`,
+                height: `${6 + Math.random() * 8}px`,
+                background: ['#FFD500', '#EF4444', '#3B82F6', '#10B981', '#F59E0B', '#EC4899'][i % 6],
+                borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+                transform: `rotate(${Math.random() * 360}deg)`,
+              }}
+            />
+          ))}
         </div>
-        <h1 className="text-[26px] font-extrabold text-white tracking-[-0.03em]">Крути барабан!</h1>
-        <p className="text-white/30 text-[13px] mt-2 font-medium">Узнай свой персональный кэшбэк</p>
+      )}
+
+      {/* Header */}
+      <div className="relative z-10 text-center mb-6">
+        <h1 className="text-[28px] font-extrabold text-white tracking-[-0.03em]">
+          {showResult ? 'Поздравляем!' : 'Крути барабан!'}
+        </h1>
+        <p className="text-white/30 text-[13px] mt-1.5 font-medium">
+          {showResult ? 'Ваш персональный оффер' : 'Свайпните вверх или нажмите кнопку'}
+        </p>
       </div>
 
-      {/* Wheel */}
-      <div className="relative w-72 h-72 mb-10 z-10">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1.5 z-10">
-          <div className="w-0 h-0 border-l-[14px] border-r-[14px] border-t-[24px] border-l-transparent border-r-transparent border-t-[#FFD500] drop-shadow-[0_0_12px_rgba(255,213,0,0.5)]" />
-        </div>
-        <div style={{ transform: `rotate(${rotation}deg)`, transition: spinning ? 'transform 3.5s cubic-bezier(0.13,0.67,0.08,0.99)' : 'none' }}>
-          <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-[0_0_40px_rgba(255,213,0,0.15)]">
-            {segments.map((seg, i) => {
-              const a = (360 / segments.length) * i, sa = (a-90)*Math.PI/180, ea = (a+120-90)*Math.PI/180
-              const x1=100+95*Math.cos(sa), y1=100+95*Math.sin(sa), x2=100+95*Math.cos(ea), y2=100+95*Math.sin(ea)
-              const ma=(a+60-90)*Math.PI/180, tx=100+58*Math.cos(ma), ty=100+58*Math.sin(ma)
-              return (<g key={i}>
-                <path d={`M100,100 L${x1},${y1} A95,95 0 0,1 ${x2},${y2} Z`} fill={seg.color} stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
-                <text x={tx} y={ty} textAnchor="middle" dominantBaseline="central" fill="white" fontWeight="800" fontSize="22" fontFamily="JetBrains Mono" style={{textShadow:'0 2px 8px rgba(0,0,0,0.3)'}}>{seg.label}</text>
-              </g>)
-            })}
-            <circle cx="100" cy="100" r="24" fill="#1a1a1a" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-            <circle cx="100" cy="100" r="20" fill="#222" />
-            <text x="100" y="102" textAnchor="middle" dominantBaseline="central" fill="#FFD500" fontWeight="800" fontSize="8" fontFamily="JetBrains Mono">SPIN</text>
-          </svg>
-        </div>
-      </div>
+      {/* Slot Machine */}
+      <div className="relative z-10 w-full max-w-sm mb-8">
+        {/* Machine frame */}
+        <div className="bg-[#161618] border border-white/[0.08] rounded-3xl p-4 shadow-[0_0_60px_rgba(255,213,0,0.08)]">
+          {/* Slot window */}
+          <div className="relative overflow-hidden rounded-2xl bg-[#0c0c0e]"
+            style={{ height: ITEM_H * VISIBLE }}>
 
-      {/* Result or spin */}
-      <div className="relative z-10 w-full max-w-xs">
-        {result !== null ? (
-          <div className="text-center animate-stagger">
-            <div className="bg-[#111] border border-white/[0.08] rounded-3xl px-8 py-8 mb-5">
-              <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Ваш кэшбэк</p>
-              <p className="font-mono-cash text-[56px] font-extrabold gold-shimmer leading-none mt-3">{result}%</p>
-              <p className="text-[12px] text-white/30 mt-3 font-medium">Персональная ставка</p>
+            {/* Gradient overlays for depth */}
+            <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[#0c0c0e] to-transparent z-10 pointer-events-none" />
+            <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#0c0c0e] to-transparent z-10 pointer-events-none" />
+
+            {/* Center indicator line */}
+            <div className="absolute inset-x-0 z-20 pointer-events-none" style={{ top: ITEM_H, height: ITEM_H }}>
+              <div className="h-full border-y-2 border-[#FFD500]/40 bg-[#FFD500]/[0.04]" />
             </div>
+
+            {/* Scrolling items */}
+            <div ref={slotRef} className="will-change-transform">
+              {items.map((item, i) => (
+                <div key={i} className="flex items-center gap-3 px-4" style={{ height: ITEM_H }}>
+                  <div className={cn('w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0 shadow-lg', item.color)}>
+                    <span className="text-white text-[16px] font-extrabold">{item.partner[0]}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[14px] font-bold text-white truncate">{item.partner}</p>
+                    <p className="text-[11px] text-white/40 mt-0.5 font-medium">Кэшбэк на счёт Билайн</p>
+                  </div>
+                  <div className="shrink-0">
+                    <span className="font-mono-cash text-[20px] font-extrabold text-[#FFD500]">{item.rate}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Machine label */}
+          <div className="flex items-center justify-center mt-3 gap-2">
+            <div className="w-2 h-2 rounded-full bg-[#FFD500] animate-pulse" />
+            <span className="text-[10px] text-white/20 font-bold uppercase tracking-[0.15em]">
+              {spinning ? 'Выбираем лучшее...' : showResult ? 'Готово!' : 'CLO Slot Machine'}
+            </span>
+            <div className="w-2 h-2 rounded-full bg-[#FFD500] animate-pulse" />
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom area */}
+      <div className="relative z-10 w-full max-w-sm">
+        {showResult && winner ? (
+          <div className="animate-stagger">
+            {/* Winner card */}
+            <div className={cn('rounded-3xl p-6 mb-4 relative overflow-hidden bg-gradient-to-br', winner.color)}>
+              <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/10" />
+              <div className="absolute -bottom-10 -left-6 w-24 h-24 rounded-full bg-black/10" />
+              <div className="relative z-10">
+                <p className="text-[11px] font-bold text-white/60 uppercase tracking-[0.15em]">Ваш кэшбэк</p>
+                <p className="font-mono-cash text-[48px] font-extrabold text-white leading-none mt-2 drop-shadow-lg">{winner.rate}</p>
+                <p className="text-[16px] font-bold text-white/90 mt-3">{winner.partner}</p>
+                <p className="text-[12px] text-white/50 mt-1">Оплатите через СБП и получите кэшбэк</p>
+              </div>
+            </div>
+
+            {/* Actions */}
             <div className="flex gap-3">
-              <button className="flex-1 py-3.5 rounded-2xl border border-white/10 text-white/70 font-bold text-[14px] press-scale">К партнёру</button>
-              <button onClick={handleAccept} className="flex-1 py-3.5 rounded-2xl bg-[#FFD500] text-[#111] font-extrabold text-[14px] press-scale shadow-[0_4px_24px_rgba(255,213,0,0.35)]">Отлично</button>
+              <button onClick={() => { setShowResult(false); setWinIdx(null) }}
+                className="flex-1 py-3.5 rounded-2xl border border-white/10 text-white/60 font-bold text-[14px] press-scale flex items-center justify-center gap-2">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Ещё раз
+              </button>
+              <button onClick={handleActivate}
+                className="flex-1 py-3.5 rounded-2xl bg-[#FFD500] text-[#111] font-extrabold text-[14px] press-scale shadow-[0_4px_24px_rgba(255,213,0,0.35)]">
+                Активировать
+              </button>
             </div>
           </div>
         ) : (
           <button onClick={spin} disabled={spinning}
-            className="w-full py-4 rounded-2xl bg-[#FFD500] text-[#111] font-extrabold text-[16px] press-scale disabled:opacity-70 shadow-[0_4px_32px_rgba(255,213,0,0.4)]">
-            {spinning ? <span className="flex items-center justify-center gap-2"><div className="w-4 h-4 border-2 border-[#111]/30 border-t-[#111] rounded-full animate-spin" />Крутим...</span> : 'Крутить!'}
+            className="w-full py-4 rounded-2xl bg-[#FFD500] text-[#111] font-extrabold text-[16px] press-scale disabled:opacity-70 shadow-[0_4px_32px_rgba(255,213,0,0.4)] flex items-center justify-center gap-2">
+            {spinning ? (
+              <><div className="w-5 h-5 border-[3px] border-[#111]/30 border-t-[#111] rounded-full animate-spin" />Крутим...</>
+            ) : (
+              <><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+              </svg>Крутить!</>
+            )}
           </button>
         )}
       </div>
+
+      {/* Confetti keyframes */}
+      <style>{`
+        @keyframes confettiFall {
+          0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+          100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+      `}</style>
     </div>
   )
 }
