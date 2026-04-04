@@ -142,22 +142,24 @@ export default function OfferCatalog() {
                 if (!('Notification' in window)) { alert('Push-уведомления не поддерживаются в этом браузере'); return }
                 const perm = await Notification.requestPermission()
                 if (perm !== 'granted') { alert('Разрешите уведомления в настройках браузера'); return }
-                const best = offers.length > 0 ? offers[Math.floor(Math.random() * Math.min(offers.length, 10))] : null
+                const lenta = offers.find(o => o.partner_name === 'Лента') || offers[0]
+                const offerUrl = `/claude/client/${phoneHash}/offer/${lenta?.id || 'offer-3'}`
                 const reg = await navigator.serviceWorker?.ready
                 if (reg) {
-                  reg.showNotification('Новый кэшбэк ждёт вас!', {
-                    body: best ? `${fmtRate(best)} в ${best.partner_name} — активируйте прямо сейчас` : 'Откройте каталог офферов',
+                  reg.showNotification('Лента: кэшбэк 7% на продукты!', {
+                    body: 'Оплатите покупки через СБП и получите кэшбэк на счёт Билайн. Активируйте прямо сейчас →',
                     icon: '/claude/icons/icon-192.png',
                     badge: '/claude/icons/icon-192.png',
-                    tag: 'clo-demo',
+                    tag: 'clo-lenta',
                     renotify: true,
-                    data: { url: `/claude/client/${phoneHash}` },
+                    data: { url: offerUrl },
                   } as NotificationOptions)
                 } else {
-                  new Notification('Новый кэшбэк ждёт вас!', {
-                    body: best ? `${fmtRate(best)} в ${best.partner_name}` : 'Откройте каталог',
+                  new Notification('Лента: кэшбэк 7% на продукты!', {
+                    body: 'Активируйте оффер прямо сейчас →',
                     icon: '/claude/icons/icon-192.png',
                   })
+                  setTimeout(() => navigate(`/client/${phoneHash}/offer/${lenta?.id || 'offer-3'}`), 500)
                 }
               }}
                 className="relative w-10 h-10 rounded-2xl bg-white/[0.08] border border-white/[0.06] flex items-center justify-center press-scale">
