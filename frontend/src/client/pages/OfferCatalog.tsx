@@ -201,8 +201,8 @@ export default function OfferCatalog() {
           </button>
           {CATEGORIES.map(cat => (
             <button key={cat} onClick={() => { setActiveCategory(cat); setSearch('') }}
-              className={cn('w-[76px] h-[76px] rounded-2xl shrink-0 press-scale border overflow-hidden relative',
-                activeCategory === cat ? 'border-[#FFD500] shadow-[0_2px_12px_rgba(255,213,0,0.3)]' : 'border-[#f0f0f0]')}>
+              className={cn('w-[76px] h-[76px] rounded-2xl shrink-0 press-scale overflow-hidden relative',
+                catImages[cat] ? (activeCategory === cat ? 'ring-2 ring-[#FFD500] shadow-[0_2px_12px_rgba(255,213,0,0.3)]' : '') : (activeCategory === cat ? 'border border-[#FFD500] shadow-[0_2px_12px_rgba(255,213,0,0.3)]' : 'border border-[#f0f0f0]'))}>
               {catImages[cat] ? (
                 <>
                   <img src={catImages[cat]} alt={cat} className="absolute inset-0 w-full h-full object-cover" />
