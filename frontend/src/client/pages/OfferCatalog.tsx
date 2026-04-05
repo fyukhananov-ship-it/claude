@@ -301,7 +301,7 @@ export default function OfferCatalog() {
             <div key={col.name}>
               <div className="mb-6">
                 <div className="px-5 flex items-center justify-between mb-3">
-                  <h2 className="text-[18px] font-extrabold text-[#111] tracking-[-0.02em]">{col.icon} {col.name}</h2>
+                  <h2 className="text-[18px] font-extrabold text-[#111] tracking-[-0.02em]">{col.name}</h2>
                   <button onClick={() => setActiveCategory(col.name)} className="text-[12px] font-bold text-[#FFD500] press-scale">
                     Все {col.offers.length} →
                   </button>
@@ -321,7 +321,7 @@ export default function OfferCatalog() {
         <div className="px-5 pb-28">
           <div className="flex items-center justify-between mt-2 mb-4">
             <h2 className="text-[20px] font-extrabold text-[#111] tracking-[-0.03em]">
-              {activeCategory ? `${catIcons[activeCategory] || ''} ${activeCategory}` : 'Результаты'}
+              {activeCategory || 'Результаты'}
             </h2>
             <p className="text-[12px] text-[#999] font-medium">{filtered?.length || 0} офферов</p>
           </div>
