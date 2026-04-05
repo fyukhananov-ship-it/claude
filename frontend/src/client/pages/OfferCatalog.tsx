@@ -51,8 +51,9 @@ export default function OfferCatalog() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
-  const onboardingSeen = useOnboardingSeen()
-  const [showOnboarding, setShowOnboarding] = useState(!onboardingSeen)
+  // TODO: remove — temporary reset for testing onboarding
+  useEffect(() => { localStorage.removeItem('clo_onboarding_seen') }, [])
+  const [showOnboarding, setShowOnboarding] = useState(true)
 
   useEffect(() => {
     if (!phoneHash) return
