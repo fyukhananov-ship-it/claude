@@ -201,14 +201,21 @@ export default function OfferCatalog() {
           </button>
           {CATEGORIES.map(cat => (
             <button key={cat} onClick={() => { setActiveCategory(cat); setSearch('') }}
-              className={cn('w-[76px] h-[76px] rounded-2xl flex flex-col items-center justify-center gap-1 shrink-0 press-scale border overflow-hidden relative',
-                activeCategory === cat ? 'bg-[#FFD500] text-[#111] border-[#FFD500] shadow-[0_2px_12px_rgba(255,213,0,0.3)]' : 'bg-white text-[#666] border-[#f0f0f0]')}>
+              className={cn('w-[76px] h-[76px] rounded-2xl shrink-0 press-scale border overflow-hidden relative',
+                activeCategory === cat ? 'border-[#FFD500] shadow-[0_2px_12px_rgba(255,213,0,0.3)]' : 'border-[#f0f0f0]')}>
               {catImages[cat] ? (
-                <img src={catImages[cat]} alt={cat} className="w-10 h-10 object-contain" />
+                <>
+                  <img src={catImages[cat]} alt={cat} className="absolute inset-0 w-full h-full object-cover" />
+                  {activeCategory === cat && <div className="absolute inset-0 bg-[#FFD500]/20" />}
+                  <span className="absolute bottom-1 left-0.5 right-0.5 text-[9px] font-bold leading-tight text-center text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] line-clamp-2">{cat}</span>
+                </>
               ) : (
-                <span className="text-[22px]">{catIcons[cat] || '🏷️'}</span>
+                <div className={cn('w-full h-full flex flex-col items-center justify-center gap-1',
+                  activeCategory === cat ? 'bg-[#FFD500] text-[#111]' : 'bg-white text-[#666]')}>
+                  <span className="text-[22px]">{catIcons[cat] || '🏷️'}</span>
+                  <span className="text-[10px] font-bold leading-tight text-center line-clamp-2 px-1">{cat}</span>
+                </div>
               )}
-              <span className="text-[10px] font-bold leading-tight text-center line-clamp-2 px-1">{cat}</span>
             </button>
           ))}
         </div>
