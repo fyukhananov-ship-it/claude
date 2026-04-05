@@ -62,6 +62,16 @@ export default function OnboardingStories({ onComplete }: { onComplete: () => vo
   const currentRef = useRef(current)
   currentRef.current = current
 
+  // Preload all story images on mount
+  useEffect(() => {
+    stories.forEach(s => {
+      if (s.image) {
+        const img = new Image()
+        img.src = s.image
+      }
+    })
+  }, [])
+
   const clearTimers = useCallback(() => {
     if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null }
     if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
@@ -213,15 +223,19 @@ export default function OnboardingStories({ onComplete }: { onComplete: () => vo
       onTouchEnd={onTouchEnd}
       onClick={onClickHandler}
     >
-      {/* Background */}
-      {story.image ? (
-        <>
-          <img src={story.image} alt="" className="absolute inset-0 w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-        </>
-      ) : (
-        <div className={cn('absolute inset-0 bg-gradient-to-b', story.bg)} />
-      )}
+      {/* Background — all layers pre-rendered, toggle visibility */}
+      {stories.map((s, i) => (
+        <div key={i} className={cn('absolute inset-0', i === current ? 'opacity-100' : 'opacity-0 pointer-events-none')}>
+          {s.image ? (
+            <>
+              <img src={s.image} alt="" className="absolute inset-0 w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+            </>
+          ) : (
+            <div className={cn('absolute inset-0 bg-gradient-to-b', s.bg)} />
+          )}
+        </div>
+      ))}
 
       {/* Progress bars */}
       <div className="absolute top-[max(12px,env(safe-area-inset-top,12px))] left-4 right-14 z-20 flex gap-1.5">
