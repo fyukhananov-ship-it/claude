@@ -5,6 +5,7 @@ const STORAGE_KEY = 'clo_onboarding_seen'
 
 interface Story {
   bg: string
+  image?: string
   icon: string
   title: string
   description: string
@@ -14,6 +15,7 @@ interface Story {
 const stories: Story[] = [
   {
     bg: 'from-[#111] via-[#1a1a2e] to-[#111]',
+    image: '/claude/assets/onboarding/welcome.jpg',
     icon: '🎁',
     title: 'Добро пожаловать\nв Билайн Кэшбэк',
     description: 'Получайте кэшбэк до 30% за покупки\nу партнёров — деньги вернутся\nна ваш счёт Билайн',
@@ -174,7 +176,14 @@ export default function OnboardingStories({ onComplete }: { onComplete: () => vo
       onClick={handleClick}
     >
       {/* Background */}
-      <div className={cn('absolute inset-0 bg-gradient-to-b', story.bg, 'transition-all duration-500')} />
+      {story.image ? (
+        <>
+          <img src={story.image} alt="" className="absolute inset-0 w-full h-full object-cover transition-all duration-500" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+        </>
+      ) : (
+        <div className={cn('absolute inset-0 bg-gradient-to-b', story.bg, 'transition-all duration-500')} />
+      )}
 
       {/* Progress bars */}
       <div className="absolute top-[max(12px,env(safe-area-inset-top,12px))] left-4 right-4 z-10 flex gap-1.5">
@@ -199,24 +208,31 @@ export default function OnboardingStories({ onComplete }: { onComplete: () => vo
       </button>
 
       {/* Content */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center px-8 z-10">
-        {/* Decorative circles */}
-        <div
-          className="absolute w-[300px] h-[300px] rounded-full opacity-[0.07]"
-          style={{ background: story.accent, filter: 'blur(80px)', top: '15%' }}
-        />
-        <div
-          className="absolute w-[200px] h-[200px] rounded-full opacity-[0.05]"
-          style={{ background: story.accent, filter: 'blur(60px)', bottom: '20%' }}
-        />
+      <div className={cn(
+        'absolute inset-0 flex flex-col items-center px-8 z-10',
+        story.image ? 'justify-end pb-[max(100px,calc(env(safe-area-inset-bottom,32px)+100px))]' : 'justify-center'
+      )}>
+        {!story.image && (
+          <>
+            {/* Decorative circles */}
+            <div
+              className="absolute w-[300px] h-[300px] rounded-full opacity-[0.07]"
+              style={{ background: story.accent, filter: 'blur(80px)', top: '15%' }}
+            />
+            <div
+              className="absolute w-[200px] h-[200px] rounded-full opacity-[0.05]"
+              style={{ background: story.accent, filter: 'blur(60px)', bottom: '20%' }}
+            />
 
-        {/* Icon */}
-        <div
-          className="w-24 h-24 rounded-[28px] flex items-center justify-center mb-8 shadow-2xl"
-          style={{ background: `${story.accent}20`, boxShadow: `0 0 60px ${story.accent}30` }}
-        >
-          <span className="text-[48px]">{story.icon}</span>
-        </div>
+            {/* Icon */}
+            <div
+              className="w-24 h-24 rounded-[28px] flex items-center justify-center mb-8 shadow-2xl"
+              style={{ background: `${story.accent}20`, boxShadow: `0 0 60px ${story.accent}30` }}
+            >
+              <span className="text-[48px]">{story.icon}</span>
+            </div>
+          </>
+        )}
 
         {/* Title */}
         <h1 className="text-[28px] font-extrabold text-white text-center leading-[1.15] tracking-[-0.03em] whitespace-pre-line">
@@ -224,7 +240,9 @@ export default function OnboardingStories({ onComplete }: { onComplete: () => vo
         </h1>
 
         {/* Description */}
-        <p className="text-[15px] text-white/50 text-center mt-4 leading-[1.5] font-medium whitespace-pre-line">
+        <p className={cn('text-[15px] text-center mt-4 leading-[1.5] font-medium whitespace-pre-line',
+          story.image ? 'text-white/70' : 'text-white/50'
+        )}>
           {story.description}
         </p>
 
