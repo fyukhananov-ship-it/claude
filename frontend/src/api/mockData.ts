@@ -160,6 +160,7 @@ const OFFER_DEFS: OfferDef[] = [
 
 const partnerImages: Record<string, string> = {
   'World Class': '/claude/assets/offers/world-class.jpg',
+  'Кинопоиск': '/claude/assets/offers/kinopoisk.jpg',
 }
 
 function makeOffer(def: OfferDef, idx: number) {
