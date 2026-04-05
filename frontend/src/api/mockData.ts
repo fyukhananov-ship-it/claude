@@ -171,7 +171,7 @@ function makeOffer(def: OfferDef, idx: number) {
     partner_logo: null,
     name,
     description: `Оплачивайте покупки в ${partner} через СБП и получайте ${cbType === 'percent' ? rateVal + '%' : rateVal + '₽'} кэшбэк на счёт Билайн.`,
-    image_url: `/claude/assets/offers/offer-${idx + 1}.svg`,
+    image_url: null as string | null,
     cashback_type: cbType,
     cashback_rate: rate,
     min_check: minCheck.toFixed(2),
