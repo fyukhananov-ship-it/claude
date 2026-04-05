@@ -27,6 +27,10 @@ const catIcons: Record<string, string> = {
   'Подписаться': '📲',
 }
 
+const catImages: Record<string, string> = {
+  'Купить продукты': '/claude/assets/categories/купить-продукты.jpg',
+}
+
 // Deterministic gradient from partner name
 const grads = [
   'from-amber-400 via-orange-400 to-red-400',
@@ -197,9 +201,13 @@ export default function OfferCatalog() {
           </button>
           {CATEGORIES.map(cat => (
             <button key={cat} onClick={() => { setActiveCategory(cat); setSearch('') }}
-              className={cn('w-[76px] h-[76px] rounded-2xl flex flex-col items-center justify-center gap-1 shrink-0 press-scale border',
+              className={cn('w-[76px] h-[76px] rounded-2xl flex flex-col items-center justify-center gap-1 shrink-0 press-scale border overflow-hidden relative',
                 activeCategory === cat ? 'bg-[#FFD500] text-[#111] border-[#FFD500] shadow-[0_2px_12px_rgba(255,213,0,0.3)]' : 'bg-white text-[#666] border-[#f0f0f0]')}>
-              <span className="text-[22px]">{catIcons[cat] || '🏷️'}</span>
+              {catImages[cat] ? (
+                <img src={catImages[cat]} alt={cat} className="w-10 h-10 object-contain" />
+              ) : (
+                <span className="text-[22px]">{catIcons[cat] || '🏷️'}</span>
+              )}
               <span className="text-[10px] font-bold leading-tight text-center line-clamp-2 px-1">{cat}</span>
             </button>
           ))}
