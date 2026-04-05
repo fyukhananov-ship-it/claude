@@ -5,7 +5,7 @@
       "command": "npx",
       "args": ["-y", "mcp-fal-ai-image"],
       "env": {
-        "FAL_KEY": "${FAL_KEY}"
+        "FAL_KEY": "f24f4580-6de3-49a0-a579-a585542f665f:15008f22536a18fb9af5d375081f15dc"
       }
     }
   }
