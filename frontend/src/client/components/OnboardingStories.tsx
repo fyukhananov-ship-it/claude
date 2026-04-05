@@ -45,6 +45,7 @@ const stories: Story[] = [
 ]
 
 const HOLD_DURATION = 4000
+const DOUBLE_TAP_DELAY = 300
 
 export default function OnboardingStories({ onComplete }: { onComplete: () => void }) {
   const [current, setCurrent] = useState(0)
@@ -52,8 +53,8 @@ export default function OnboardingStories({ onComplete }: { onComplete: () => vo
   const [exiting, setExiting] = useState(false)
   const timerRef = useRef<number | null>(null)
   const startTimeRef = useRef(0)
-  const pausedAtRef = useRef(0)
   const rafRef = useRef<number | null>(null)
+  const lastLeftTapRef = useRef(0)
 
   const finish = useCallback(() => {
     localStorage.setItem(STORAGE_KEY, '1')
@@ -70,12 +71,31 @@ export default function OnboardingStories({ onComplete }: { onComplete: () => vo
     }
   }, [current, finish])
 
+  const restartCurrent = useCallback(() => {
+    setProgress(0)
+  }, [])
+
   const goPrev = useCallback(() => {
     if (current > 0) {
       setCurrent(c => c - 1)
       setProgress(0)
+    } else {
+      restartCurrent()
     }
-  }, [current])
+  }, [current, restartCurrent])
+
+  const handleLeftTap = useCallback(() => {
+    const now = Date.now()
+    if (now - lastLeftTapRef.current < DOUBLE_TAP_DELAY) {
+      // Double tap — go to previous story
+      lastLeftTapRef.current = 0
+      goPrev()
+    } else {
+      // Single tap — restart current story
+      lastLeftTapRef.current = now
+      restartCurrent()
+    }
+  }, [goPrev, restartCurrent])
 
   // Auto-advance timer with smooth progress
   const startTimer = useCallback((fromProgress = 0) => {
@@ -98,18 +118,6 @@ export default function OnboardingStories({ onComplete }: { onComplete: () => vo
     timerRef.current = window.setTimeout(goNext, remaining)
   }, [goNext])
 
-  const pauseTimer = useCallback(() => {
-    if (timerRef.current) clearTimeout(timerRef.current)
-    if (rafRef.current) cancelAnimationFrame(rafRef.current)
-    timerRef.current = null
-    rafRef.current = null
-    pausedAtRef.current = progress
-  }, [progress])
-
-  const resumeTimer = useCallback(() => {
-    startTimer(pausedAtRef.current)
-  }, [startTimer])
-
   useEffect(() => {
     startTimer(0)
     return () => {
@@ -127,7 +135,6 @@ export default function OnboardingStories({ onComplete }: { onComplete: () => vo
     touchStartX.current = e.touches[0].clientX
     touchStartY.current = e.touches[0].clientY
     isTap.current = true
-    pauseTimer()
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -140,17 +147,13 @@ export default function OnboardingStories({ onComplete }: { onComplete: () => vo
     const dx = e.changedTouches[0].clientX - touchStartX.current
 
     if (Math.abs(dx) > 60) {
-      // Swipe
       if (dx < 0) goNext()
       else goPrev()
     } else if (isTap.current) {
-      // Tap left/right
       const x = e.changedTouches[0].clientX
       const w = window.innerWidth
-      if (x < w * 0.3) goPrev()
+      if (x < w * 0.3) handleLeftTap()
       else goNext()
-    } else {
-      resumeTimer()
     }
   }
 
@@ -158,7 +161,7 @@ export default function OnboardingStories({ onComplete }: { onComplete: () => vo
   const handleClick = (e: React.MouseEvent) => {
     const x = e.clientX
     const w = window.innerWidth
-    if (x < w * 0.3) goPrev()
+    if (x < w * 0.3) handleLeftTap()
     else goNext()
   }
 
@@ -186,7 +189,7 @@ export default function OnboardingStories({ onComplete }: { onComplete: () => vo
       )}
 
       {/* Progress bars */}
-      <div className="absolute top-[max(12px,env(safe-area-inset-top,12px))] left-4 right-4 z-10 flex gap-1.5">
+      <div className="absolute top-[max(12px,env(safe-area-inset-top,12px))] left-4 right-12 z-10 flex gap-1.5">
         {stories.map((_, i) => (
           <div key={i} className="flex-1 h-[3px] rounded-full bg-white/20 overflow-hidden">
             <div
@@ -199,12 +202,14 @@ export default function OnboardingStories({ onComplete }: { onComplete: () => vo
         ))}
       </div>
 
-      {/* Skip button */}
+      {/* Close button */}
       <button
         onClick={(e) => { e.stopPropagation(); finish() }}
-        className="absolute top-[max(28px,calc(env(safe-area-inset-top,28px)+16px))] right-4 z-10 text-white/50 text-[13px] font-bold px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm"
+        className="absolute top-[max(24px,calc(env(safe-area-inset-top,24px)+12px))] right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm"
       >
-        Пропустить
+        <svg className="w-4 h-4 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
       </button>
 
       {/* Content */}
