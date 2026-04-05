@@ -4,6 +4,7 @@ import { api } from '@/api/client'
 import { CATEGORIES } from '@/api/mockData'
 import { cn } from '@/lib/utils'
 import OnboardingStories, { useOnboardingSeen } from '@/client/components/OnboardingStories'
+import ArticlesWidget from '@/client/components/ArticlesWidget'
 
 interface OfferItem {
   id: string; partner_name: string; partner_logo: string | null; name: string
@@ -295,20 +296,23 @@ export default function OfferCatalog() {
             })()}
           </div>
 
-          {/* Collections */}
-          {collections.map(col => (
-            <div key={col.name} className="mb-6">
-              <div className="px-5 flex items-center justify-between mb-3">
-                <h2 className="text-[18px] font-extrabold text-[#111] tracking-[-0.02em]">{col.icon} {col.name}</h2>
-                <button onClick={() => setActiveCategory(col.name)} className="text-[12px] font-bold text-[#FFD500] press-scale">
-                  Все {col.offers.length} →
-                </button>
-              </div>
-              <div className="pl-5 overflow-x-auto no-scrollbar">
-                <div className="flex gap-3 pr-5">
-                  {col.offers.slice(0, 6).map(o => <OfferCard key={o.id} o={o} />)}
+          {/* Collections with articles widget inserted after "Позаботиться о себе" */}
+          {collections.map((col, idx) => (
+            <div key={col.name}>
+              <div className="mb-6">
+                <div className="px-5 flex items-center justify-between mb-3">
+                  <h2 className="text-[18px] font-extrabold text-[#111] tracking-[-0.02em]">{col.icon} {col.name}</h2>
+                  <button onClick={() => setActiveCategory(col.name)} className="text-[12px] font-bold text-[#FFD500] press-scale">
+                    Все {col.offers.length} →
+                  </button>
+                </div>
+                <div className="pl-5 overflow-x-auto no-scrollbar">
+                  <div className="flex gap-3 pr-5">
+                    {col.offers.slice(0, 6).map(o => <OfferCard key={o.id} o={o} />)}
+                  </div>
                 </div>
               </div>
+              {col.name === 'Позаботиться о себе' && phoneHash && <ArticlesWidget phoneHash={phoneHash} />}
             </div>
           ))}
         </div>

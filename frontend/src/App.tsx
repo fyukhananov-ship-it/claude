@@ -10,6 +10,7 @@ import Activation from './client/pages/Activation'
 import SpinWheel from './client/pages/SpinWheel'
 import ThankYou from './client/pages/ThankYou'
 import CashbackHistory from './client/pages/CashbackHistory'
+import Article from './client/pages/Article'
 
 // Partner pages
 import PartnerLayout from './partner/layout/PartnerLayout'
@@ -36,6 +37,7 @@ export default function App() {
 
         {/* Client web-view (no auth — identified by phone_hash in URL) */}
         <Route path="/client/:phoneHash" element={<OfferCatalog />} />
+        <Route path="/client/:phoneHash/article/:articleId" element={<Article />} />
         <Route path="/client/:phoneHash/offer/:offerId" element={<OfferDetail />} />
         <Route path="/client/:phoneHash/activate/:offerId" element={<Activation />} />
         <Route path="/client/:phoneHash/spin/:offerId" element={<SpinWheel />} />
