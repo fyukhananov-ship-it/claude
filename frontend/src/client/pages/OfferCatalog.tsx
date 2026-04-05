@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '@/api/client'
 import { CATEGORIES } from '@/api/mockData'
 import { cn } from '@/lib/utils'
+import OnboardingStories, { useOnboardingSeen } from '@/client/components/OnboardingStories'
 
 interface OfferItem {
   id: string; partner_name: string; partner_logo: string | null; name: string
@@ -46,6 +47,8 @@ export default function OfferCatalog() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
+  const onboardingSeen = useOnboardingSeen()
+  const [showOnboarding, setShowOnboarding] = useState(!onboardingSeen)
 
   useEffect(() => {
     if (!phoneHash) return
@@ -123,6 +126,9 @@ export default function OfferCatalog() {
 
   return (
     <div className="min-h-screen bg-[#fafafa]">
+      {/* Onboarding stories */}
+      {showOnboarding && <OnboardingStories onComplete={() => setShowOnboarding(false)} />}
+
       {/* Header */}
       <div className="bg-[#111] noise-bg relative text-white px-5 pt-[max(52px,env(safe-area-inset-top,52px))] pb-5">
         <div className="relative z-10">
