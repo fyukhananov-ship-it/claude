@@ -130,11 +130,13 @@ export default function OnboardingStories({ onComplete }: { onComplete: () => vo
   const touchStartX = useRef(0)
   const touchStartY = useRef(0)
   const isTap = useRef(true)
+  const touchHandled = useRef(false)
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX
     touchStartY.current = e.touches[0].clientY
     isTap.current = true
+    touchHandled.current = false
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -144,6 +146,7 @@ export default function OnboardingStories({ onComplete }: { onComplete: () => vo
   }
 
   const handleTouchEnd = (e: React.TouchEvent) => {
+    touchHandled.current = true
     const dx = e.changedTouches[0].clientX - touchStartX.current
 
     if (Math.abs(dx) > 60) {
@@ -157,8 +160,12 @@ export default function OnboardingStories({ onComplete }: { onComplete: () => vo
     }
   }
 
-  // Click for desktop
+  // Click for desktop — skip if touch already handled
   const handleClick = (e: React.MouseEvent) => {
+    if (touchHandled.current) {
+      touchHandled.current = false
+      return
+    }
     const x = e.clientX
     const w = window.innerWidth
     if (x < w * 0.3) handleLeftTap()
