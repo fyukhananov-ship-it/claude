@@ -158,6 +158,10 @@ const OFFER_DEFS: OfferDef[] = [
   ['МТС Музыка', 'Кэшбэк 20% на МТС Музыку', 'Подписаться', 20, 'percent', 200],
 ]
 
+const partnerImages: Record<string, string> = {
+  'World Class': '/claude/assets/offers/world-class.jpg',
+}
+
 function makeOffer(def: OfferDef, idx: number) {
   const [partner, name, category, rateVal, cbType, minCheck] = def
   const rate = cbType === 'percent' ? (rateVal / 100).toFixed(4) : rateVal.toFixed(4)
@@ -171,7 +175,7 @@ function makeOffer(def: OfferDef, idx: number) {
     partner_logo: null,
     name,
     description: `Оплачивайте покупки в ${partner} через СБП и получайте ${cbType === 'percent' ? rateVal + '%' : rateVal + '₽'} кэшбэк на счёт Билайн.`,
-    image_url: null as string | null,
+    image_url: partnerImages[partner] || null as string | null,
     cashback_type: cbType,
     cashback_rate: rate,
     min_check: minCheck.toFixed(2),
