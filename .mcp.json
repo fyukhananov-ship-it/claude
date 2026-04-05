@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "fal-ai": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "mcp-fal-ai-image"],
+      "env": {
+        "FAL_KEY": "${FAL_KEY}"
+      }
+    }
+  }
+}
