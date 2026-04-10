@@ -66,14 +66,14 @@ export default function OfferDetail() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-[#fafafa] flex flex-col items-center justify-center gap-3">
+    <div className="min-h-screen bg-[#F5F6F8] flex flex-col items-center justify-center gap-3">
       <div className="w-8 h-8 border-[3px] border-[#FFD500] border-t-transparent rounded-full animate-spin" />
       <p className="text-[13px] text-[#999] font-medium">Загружаем оффер…</p>
     </div>
   )
 
   if (error || !offer) return (
-    <div className="min-h-screen bg-[#fafafa] flex flex-col items-center justify-center px-6">
+    <div className="min-h-screen bg-[#F5F6F8] flex flex-col items-center justify-center px-6">
       <div className="w-16 h-16 bg-[#f0f0f0] rounded-full flex items-center justify-center mb-3">
         <svg className="w-7 h-7 text-[#ccc]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -95,7 +95,7 @@ export default function OfferDetail() {
   const daysLeft = daysUntil(offer.end_date)
 
   return (
-    <div className="min-h-screen bg-[#fafafa]">
+    <div className="min-h-screen bg-[#F5F6F8]">
       {/* Header */}
       <div className="sticky top-0 z-20 glass border-b border-black/[0.04] px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-[#f0f0f0] flex items-center justify-center press-scale">
@@ -164,7 +164,7 @@ export default function OfferDetail() {
             { n: '2', title: 'Оплатите через СБП', desc: 'Оплата только через Систему быстрых платежей. Другие способы не участвуют', color: 'from-sky-400 to-blue-600' },
             { n: '3', title: 'Получите кэшбэк', desc: 'Кэшбэк автоматически зачислится на счёт Билайн в течение 1–3 дней', color: 'from-emerald-400 to-teal-600' },
           ].map(s => (
-            <div key={s.n} className="bg-white rounded-2xl border border-[#f0f0f0] p-4 flex gap-3 items-start">
+            <div key={s.n} className="bg-white rounded-2xl border shadow-card p-4 flex gap-3 items-start">
               <div className={cn('w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0 shadow-lg', s.color)}>
                 <span className="font-mono-cash text-[14px] font-extrabold text-white">{s.n}</span>
               </div>
@@ -195,7 +195,7 @@ export default function OfferDetail() {
       <div className="px-5 mt-5 mb-32">
         <h3 className="text-[16px] font-extrabold text-[#111] mb-3 tracking-[-0.02em]">Условия</h3>
         <p className="text-[13px] text-[#666] leading-relaxed">{offer.description}</p>
-        <div className="mt-4 bg-white rounded-2xl border border-[#f0f0f0] overflow-hidden">
+        <div className="mt-4 bg-white rounded-2xl border shadow-card overflow-hidden">
           {[
             ['Минимальный чек', `${parseFloat(offer.min_check).toFixed(0)} \u20BD`],
             ['Макс. за покупку', `${parseFloat(offer.max_cashback_per_tx).toFixed(0)} \u20BD`],

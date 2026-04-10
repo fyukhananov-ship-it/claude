@@ -157,35 +157,35 @@ export default function OfferCatalog() {
   const isHome = !search && !activeCategory
 
   return (
-    <div className="min-h-screen bg-[#fafafa]">
+    <div className="min-h-screen bg-[#F5F6F8]">
       {showOnboarding && <OnboardingStories onComplete={() => setShowOnboarding(false)} />}
 
       {/* Header */}
-      <div className="bg-[#111] noise-bg relative text-white px-5 pt-[max(52px,env(safe-area-inset-top,52px))] pb-5">
+      <div className="bg-dark-hero relative text-white px-5 pt-[max(52px,env(safe-area-inset-top,52px))] pb-6">
         <div className="relative z-10">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#FFD500] rounded-2xl flex items-center justify-center shadow-[0_0_24px_rgba(255,213,0,0.3)]">
-                <span className="text-[11px] font-extrabold text-[#111]">CLO</span>
+              <div className="w-11 h-11 bg-[#FFDC00] rounded-2xl flex items-center justify-center">
+                <span className="text-[11px] font-extrabold text-[#0A0A0C] tracking-wide">CLO</span>
               </div>
               <div>
-                <p className="text-[16px] font-bold tracking-[-0.02em]">Подарки и акции</p>
-                <p className="text-[12px] text-white/50 font-medium">Билайн × НСПК</p>
+                <p className="text-[17px] font-bold tracking-[-0.02em] leading-tight">Подарки и акции</p>
+                <p className="text-[12px] text-white/55 font-medium mt-0.5">Билайн × НСПК</p>
               </div>
             </div>
             <button
               onClick={() => navigate(`/client/${phoneHash}/cashback`)}
-              className="bg-white/[0.08] border border-white/[0.06] rounded-2xl px-3 py-2 press-scale"
+              className="bg-white/[0.07] border border-white/[0.08] rounded-2xl px-3.5 py-2.5 press-scale backdrop-blur-sm"
               aria-label="Мой кэшбэк"
             >
-              <p className="text-[10px] text-white/50 font-bold uppercase tracking-[0.08em]">Кэшбэк</p>
-              <p className="font-mono-cash text-[14px] font-extrabold text-[#FFD500] leading-none mt-0.5">{formatCurrency(total)}</p>
+              <p className="text-[9px] text-white/50 font-bold uppercase tracking-[0.12em]">Кэшбэк</p>
+              <p className="font-mono-cash text-[15px] font-extrabold text-[#FFDC00] leading-none mt-1">{formatCurrency(total)}</p>
             </button>
           </div>
 
           {/* Search */}
           <div className="relative">
-            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-[16px] h-[16px] text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-[17px] h-[17px] text-white/35" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
@@ -193,12 +193,12 @@ export default function OfferCatalog() {
               value={search}
               onChange={e => { setSearch(e.target.value); if (e.target.value) setActiveCategory(null) }}
               placeholder="Партнёр или категория"
-              className="w-full pl-11 pr-10 py-3.5 bg-white/[0.06] text-white placeholder-white/30 rounded-2xl text-[14px] font-medium focus:outline-none focus:bg-white/[0.12] focus:ring-1 focus:ring-[#FFD500]/40 border border-white/[0.04]"
+              className="w-full pl-11 pr-10 py-3.5 bg-white/[0.07] text-white placeholder-white/35 rounded-2xl text-[14px] font-medium focus:outline-none focus:bg-white/[0.11] focus:ring-1 focus:ring-[#FFDC00]/40 border border-white/[0.06] backdrop-blur-sm transition-all"
               aria-label="Поиск"
             />
             {search && (
               <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/10 flex items-center justify-center" aria-label="Очистить">
-                <svg className="w-3.5 h-3.5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                <svg className="w-3.5 h-3.5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             )}
           </div>
@@ -206,13 +206,15 @@ export default function OfferCatalog() {
       </div>
 
       {/* Compact chip categories */}
-      <div className="px-5 py-4 overflow-x-auto no-scrollbar">
+      <div className="px-5 py-4 overflow-x-auto no-scrollbar bg-[#F5F6F8]">
         <div className="flex gap-2 min-w-max">
           <button
             onClick={() => { setActiveCategory(null); setSearch('') }}
             className={cn(
-              'px-4 py-2 rounded-full text-[13px] font-bold shrink-0 press-scale transition-all border',
-              !activeCategory ? 'bg-[#111] text-white border-[#111]' : 'bg-white text-[#666] border-[#e8e8ec]'
+              'px-4 py-2 rounded-full text-[13px] font-bold shrink-0 press-scale transition-all',
+              !activeCategory
+                ? 'bg-[#0A0A0C] text-white shadow-card'
+                : 'bg-white text-[#6B7280] shadow-card'
             )}
           >
             ⭐ Все
@@ -222,11 +224,13 @@ export default function OfferCatalog() {
               key={cat}
               onClick={() => { setActiveCategory(cat); setSearch('') }}
               className={cn(
-                'px-4 py-2 rounded-full text-[13px] font-bold shrink-0 press-scale transition-all border whitespace-nowrap',
-                activeCategory === cat ? 'bg-[#FFD500] text-[#111] border-[#FFD500]' : 'bg-white text-[#666] border-[#e8e8ec]'
+                'px-4 py-2 rounded-full text-[13px] font-bold shrink-0 press-scale transition-all whitespace-nowrap',
+                activeCategory === cat
+                  ? 'bg-[#FFDC00] text-[#0A0A0C] shadow-card'
+                  : 'bg-white text-[#6B7280] shadow-card'
               )}
             >
-              <span className="mr-1">{catIcons[cat]}</span>
+              <span className="mr-1.5">{catIcons[cat]}</span>
               {cat}
             </button>
           ))}
@@ -235,8 +239,8 @@ export default function OfferCatalog() {
 
       {loading ? (
         <div className="flex flex-col items-center py-20 gap-3">
-          <div className="w-10 h-10 border-[3px] border-[#FFD500] border-t-transparent rounded-full animate-spin" />
-          <p className="text-[13px] text-[#999] font-medium">Загружаем офферы…</p>
+          <div className="w-10 h-10 border-[3px] border-[#FFDC00] border-t-transparent rounded-full animate-spin" />
+          <p className="text-[13px] text-[#6B7280] font-medium">Загружаем офферы…</p>
         </div>
       ) : error ? (
         <div className="text-center py-20 px-5">
@@ -245,18 +249,18 @@ export default function OfferCatalog() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <p className="text-[14px] text-[#333] font-bold">Не удалось загрузить</p>
-          <p className="text-[13px] text-[#999] mt-1 font-medium">Проверьте интернет</p>
-          <button onClick={fetchOffers} className="mt-4 px-5 py-2.5 rounded-2xl bg-[#111] text-white font-bold text-[13px] press-scale">Повторить</button>
+          <p className="text-[14px] text-[#0A0A0C] font-bold">Не удалось загрузить</p>
+          <p className="text-[13px] text-[#6B7280] mt-1 font-medium">Проверьте интернет</p>
+          <button onClick={fetchOffers} className="mt-4 px-5 py-2.5 rounded-full bg-[#0A0A0C] text-white font-bold text-[13px] press-scale shadow-card">Повторить</button>
         </div>
       ) : isHome ? (
         <div className="pb-28">
           {/* ═══ HERO SPOTLIGHT — Offer of the day ═══ */}
           {heroOffer && phoneHash && (
-            <div className="px-5 mb-5">
+            <div className="px-5 mb-6">
               <div className="flex items-baseline justify-between mb-3">
-                <h2 className="text-[12px] font-extrabold text-[#FFD500] uppercase tracking-[0.12em]">★ Топ оффер</h2>
-                <span className="text-[11px] text-[#bbb] font-bold uppercase tracking-wider">Сегодня</span>
+                <h2 className="text-[11px] font-extrabold text-[#D97706] uppercase tracking-[0.14em]">★ Топ оффер</h2>
+                <span className="text-[11px] text-[#9CA3AF] font-bold uppercase tracking-[0.1em]">Сегодня</span>
               </div>
               <OfferCard offer={heroOffer} phoneHash={phoneHash} variant="hero" />
             </div>
@@ -264,10 +268,10 @@ export default function OfferCatalog() {
 
           {/* ═══ МОИ АКТИВАЦИИ — compact pill list ═══ */}
           {myActivations.length > 0 && phoneHash && (
-            <div className="mb-5">
+            <div className="mb-6">
               <div className="px-5 flex items-baseline justify-between mb-3">
-                <h2 className="text-[17px] font-extrabold text-[#111] tracking-[-0.02em]">Мои активации</h2>
-                <span className="text-[12px] text-[#999] font-bold">{myActivations.length}</span>
+                <h2 className="text-[18px] font-extrabold text-[#0A0A0C] tracking-[-0.02em]">Мои активации</h2>
+                <span className="text-[12px] text-[#9CA3AF] font-bold">{myActivations.length}</span>
               </div>
               <div className="pl-5 overflow-x-auto no-scrollbar">
                 <div className="flex gap-2 pr-5">
@@ -281,8 +285,8 @@ export default function OfferCatalog() {
           {topPicks.length > 0 && phoneHash && (
             <div className="px-5 mb-6">
               <div className="flex items-baseline justify-between mb-3">
-                <h2 className="text-[17px] font-extrabold text-[#111] tracking-[-0.02em]">Для вас</h2>
-                <span className="text-[11px] text-[#bbb] font-bold uppercase tracking-wider">Лучшее</span>
+                <h2 className="text-[18px] font-extrabold text-[#0A0A0C] tracking-[-0.02em]">Для вас</h2>
+                <span className="text-[11px] text-[#9CA3AF] font-bold uppercase tracking-[0.1em]">Лучшее</span>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 {topPicks.map(o => <OfferCard key={o.id} offer={o} phoneHash={phoneHash} variant="grid" />)}
@@ -298,37 +302,37 @@ export default function OfferCatalog() {
 
               return slotResult ? (
                 <button onClick={() => navigate(`/client/${phoneHash}/spin/offer-1`)}
-                  className={cn('w-full relative rounded-2xl p-5 press-scale overflow-hidden text-left bg-gradient-to-br', slotResult.color)}>
-                  <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/10" />
-                  <div className="absolute bottom-0 left-0 w-20 h-20 rounded-full bg-black/5" />
+                  className="w-full relative rounded-[22px] p-5 press-scale overflow-hidden text-left shadow-float"
+                  style={{ background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)' }}>
+                  <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-emerald-500/10 blur-2xl" />
                   <div className="relative z-10 flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0">
-                      <span className="text-[22px] font-extrabold text-white">{slotResult.partner[0]}</span>
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shrink-0 shadow-lg">
+                      <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-bold text-white/60 uppercase tracking-[0.1em]">Ваш кэшбэк</p>
-                      <div className="flex items-baseline gap-2 mt-0.5">
+                      <p className="text-[10px] font-bold text-white/60 uppercase tracking-[0.14em]">Ваш выигрыш</p>
+                      <div className="flex items-baseline gap-2 mt-1">
                         <span className="font-mono-cash text-[28px] font-extrabold text-white leading-none">{slotResult.rate}</span>
                         <span className="text-[14px] font-bold text-white/90 truncate">{slotResult.partner}</span>
                       </div>
-                      <p className="text-[12px] text-white/70 mt-1 font-medium">Нажмите, чтобы крутить снова</p>
+                      <p className="text-[12px] text-white/55 mt-1.5 font-medium">Нажмите, чтобы крутить снова</p>
                     </div>
                   </div>
                 </button>
               ) : (
                 <button onClick={() => navigate(`/client/${phoneHash}/spin/offer-1`)}
-                  className="w-full bg-[#111] noise-bg relative rounded-2xl p-5 press-scale overflow-hidden text-left">
-                  <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-[#FFD500]/[0.08]" />
-                  <div className="absolute bottom-0 left-0 w-24 h-24 rounded-full bg-purple-500/[0.06]" />
+                  className="w-full bg-dark-hero relative rounded-[22px] p-5 press-scale overflow-hidden text-left shadow-float">
                   <div className="relative z-10 flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#FFD500] to-[#F59E0B] flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(255,213,0,0.3)]">
-                      <svg className="w-7 h-7 text-[#111]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14" />
+                    <div className="w-14 h-14 rounded-2xl bg-[#FFDC00] flex items-center justify-center shrink-0">
+                      <svg className="w-6 h-6 text-[#0A0A0C]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                     </div>
                     <div className="flex-1">
-                      <p className="text-[15px] font-extrabold text-white">Испытайте удачу!</p>
-                      <p className="text-[12px] text-white/60 mt-0.5 font-medium">Крутите барабан и выиграйте до 30%</p>
+                      <p className="text-[15px] font-extrabold text-white tracking-[-0.01em]">Испытайте удачу</p>
+                      <p className="text-[12px] text-white/60 mt-0.5 font-medium">Кэшбэк до 30% за один спин</p>
                     </div>
                     <svg className="w-5 h-5 text-white/40 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -344,17 +348,17 @@ export default function OfferCatalog() {
             <div className="px-5 mb-6">
               <div className="flex items-baseline justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                  <h2 className="text-[17px] font-extrabold text-[#111] tracking-[-0.02em]">Скоро закончатся</h2>
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                  <h2 className="text-[18px] font-extrabold text-[#0A0A0C] tracking-[-0.02em]">Скоро закончатся</h2>
                 </div>
                 <button
                   onClick={() => { setSortMode('expiring'); setActiveCategory(null); window.scrollTo(0, 0) }}
-                  className="text-[12px] font-bold text-[#FFD500] press-scale"
+                  className="text-[12px] font-bold text-[#6B7280] press-scale"
                 >
                   Все →
                 </button>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {expiringSoon.map(o => <OfferCard key={o.id} offer={o} phoneHash={phoneHash} variant="list" />)}
               </div>
             </div>
@@ -364,10 +368,10 @@ export default function OfferCatalog() {
           {featuredFood.length > 0 && phoneHash && (
             <div className="mb-6">
               <div className="px-5 flex items-baseline justify-between mb-3">
-                <h2 className="text-[17px] font-extrabold text-[#111] tracking-[-0.02em]">🍽️ Поесть вне дома</h2>
+                <h2 className="text-[18px] font-extrabold text-[#0A0A0C] tracking-[-0.02em]">Поесть вне дома</h2>
                 <button
                   onClick={() => { setActiveCategory('Поесть вне дома'); window.scrollTo(0, 0) }}
-                  className="text-[12px] font-bold text-[#FFD500] press-scale"
+                  className="text-[12px] font-bold text-[#6B7280] press-scale"
                 >
                   Все →
                 </button>
@@ -384,15 +388,15 @@ export default function OfferCatalog() {
           {newArrivals.length > 0 && phoneHash && (
             <div className="px-5 mb-6">
               <div className="flex items-baseline justify-between mb-3">
-                <h2 className="text-[17px] font-extrabold text-[#111] tracking-[-0.02em]">Новинки</h2>
+                <h2 className="text-[18px] font-extrabold text-[#0A0A0C] tracking-[-0.02em]">Новинки</h2>
                 <button
                   onClick={() => { setSortMode('new'); setActiveCategory(null); window.scrollTo(0, 0) }}
-                  className="text-[12px] font-bold text-[#FFD500] press-scale"
+                  className="text-[12px] font-bold text-[#6B7280] press-scale"
                 >
                   Все →
                 </button>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {newArrivals.map(o => <OfferCard key={o.id} offer={o} phoneHash={phoneHash} variant="list" />)}
               </div>
             </div>
@@ -401,19 +405,19 @@ export default function OfferCatalog() {
           {/* ═══ ARTICLES ═══ */}
           {phoneHash && <ArticlesWidget phoneHash={phoneHash} />}
 
-          {/* ═══ ALL CATEGORIES — compact 2-col grid ═══ */}
+          {/* ═══ ALL CATEGORIES ═══ */}
           <div className="px-5 mt-6">
-            <h2 className="text-[17px] font-extrabold text-[#111] tracking-[-0.02em] mb-3">Все категории</h2>
+            <h2 className="text-[18px] font-extrabold text-[#0A0A0C] tracking-[-0.02em] mb-3">Все категории</h2>
             <div className="grid grid-cols-2 gap-2.5">
               {categoriesWithCounts.map(c => (
                 <button
                   key={c.name}
                   onClick={() => { setActiveCategory(c.name); window.scrollTo(0, 0) }}
-                  className="bg-white rounded-2xl border border-[#f0f0f0] p-4 text-left press-scale hover:border-[#e0e0e0] transition-all"
+                  className="bg-white rounded-[18px] p-4 text-left press-scale shadow-card hover:shadow-card-hover transition-shadow"
                 >
-                  <span className="text-[24px]">{c.icon}</span>
-                  <p className="text-[13px] font-bold text-[#111] mt-2 leading-tight">{c.name}</p>
-                  <p className="text-[11px] text-[#999] mt-0.5 font-medium">{c.count} офферов</p>
+                  <span className="text-[26px]">{c.icon}</span>
+                  <p className="text-[13px] font-bold text-[#0A0A0C] mt-2.5 leading-tight tracking-[-0.01em]">{c.name}</p>
+                  <p className="text-[11px] text-[#9CA3AF] mt-0.5 font-medium">{c.count} офферов</p>
                 </button>
               ))}
             </div>
@@ -423,10 +427,10 @@ export default function OfferCatalog() {
         /* ═══ FILTERED VIEW ═══ */
         <div className="px-5 pb-28">
           <div className="flex items-center justify-between mt-2 mb-3">
-            <h2 className="text-[22px] font-extrabold text-[#111] tracking-[-0.03em]">
+            <h2 className="text-[22px] font-extrabold text-[#0A0A0C] tracking-[-0.03em]">
               {activeCategory || 'Результаты'}
             </h2>
-            <p className="text-[13px] text-[#999] font-medium">{filtered?.length || 0}</p>
+            <p className="text-[13px] text-[#9CA3AF] font-medium">{filtered?.length || 0}</p>
           </div>
 
           {filtered && filtered.length > 0 && (
@@ -440,10 +444,10 @@ export default function OfferCatalog() {
                   key={opt.key}
                   onClick={() => setSortMode(opt.key)}
                   className={cn(
-                    'px-3.5 py-2 rounded-full text-[12px] font-bold shrink-0 press-scale transition-colors',
+                    'px-3.5 py-2 rounded-full text-[12px] font-bold shrink-0 press-scale transition-all',
                     sortMode === opt.key
-                      ? 'bg-[#111] text-white'
-                      : 'bg-white border border-[#e8e8ec] text-[#666]'
+                      ? 'bg-[#0A0A0C] text-white shadow-card'
+                      : 'bg-white text-[#6B7280] shadow-card'
                   )}
                 >
                   {opt.label}
@@ -454,8 +458,8 @@ export default function OfferCatalog() {
 
           {filtered && filtered.length === 0 ? (
             <div className="text-center py-16">
-              <p className="text-[14px] text-[#333] font-bold">{search ? 'Ничего не найдено' : 'Нет офферов'}</p>
-              {search && <button onClick={() => setSearch('')} className="text-[13px] text-[#FFD500] font-bold mt-3">Сбросить</button>}
+              <p className="text-[14px] text-[#0A0A0C] font-bold">{search ? 'Ничего не найдено' : 'Нет офферов'}</p>
+              {search && <button onClick={() => setSearch('')} className="text-[13px] text-[#D97706] font-bold mt-3">Сбросить</button>}
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3 animate-stagger">

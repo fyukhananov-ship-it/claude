@@ -42,7 +42,7 @@ export default function TabBar({ active }: { active: TabId }) {
   const loc = useLocation()
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 glass border-t border-black/[0.04] px-4 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 z-30">
+    <div className="fixed bottom-0 left-0 right-0 glass px-4 pb-[max(8px,env(safe-area-inset-bottom))] pt-2.5 z-30">
       <div className="flex justify-around max-w-md mx-auto">
         {tabs.map(tab => {
           const isActive = active === tab.id
@@ -53,13 +53,13 @@ export default function TabBar({ active }: { active: TabId }) {
                 const target = `/client/${phoneHash}${tab.path}`
                 if (loc.pathname !== target) navigate(target)
               }}
-              className="flex flex-col items-center py-1 px-4 relative"
+              className="flex flex-col items-center py-1 px-4 relative group"
             >
-              <span className={cn(isActive ? 'text-[#111]' : 'text-[#bbb]')}>{tab.icon}</span>
-              <span className={cn('text-[10px] mt-0.5', isActive ? 'font-bold text-[#111]' : 'font-medium text-[#bbb]')}>
+              <span className={cn('transition-colors', isActive ? 'text-[#0A0A0C]' : 'text-[#9CA3AF]')}>{tab.icon}</span>
+              <span className={cn('text-[10px] mt-1 transition-colors', isActive ? 'font-bold text-[#0A0A0C]' : 'font-medium text-[#9CA3AF]')}>
                 {tab.label}
               </span>
-              {isActive && <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-6 h-[3px] bg-[#FFD500] rounded-full" />}
+              {isActive && <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-5 h-[3px] bg-[#FFDC00] rounded-full" />}
             </button>
           )
         })}

@@ -41,9 +41,9 @@ export default function CashbackHistory() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafafa]">
+    <div className="min-h-screen bg-[#F5F6F8]">
       {/* Header */}
-      <div className="bg-[#111] noise-bg relative text-white px-5 pt-[max(52px,env(safe-area-inset-top,52px))] pb-6">
+      <div className="bg-dark-hero relative text-white px-5 pt-[max(52px,env(safe-area-inset-top,52px))] pb-6">
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-5">
             <button onClick={() => navigate(`/client/${phoneHash}`)} className="w-9 h-9 rounded-full bg-white/[0.08] border border-white/[0.06] flex items-center justify-center press-scale" aria-label="Назад">
@@ -108,7 +108,7 @@ export default function CashbackHistory() {
               const st = statusStyles[item.status] || statusStyles.pending
               const isRejected = item.status === 'rejected'
               return (
-                <div key={i} className="bg-white rounded-2xl border border-[#f0f0f0] p-4">
+                <div key={i} className="bg-white rounded-2xl shadow-card p-4">
                   <div className="flex items-center gap-3">
                     <div className={cn('w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white text-[14px] font-extrabold shrink-0 shadow-lg', getGrad(item.partner_name))}>
                       {item.partner_name[0]}

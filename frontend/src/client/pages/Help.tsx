@@ -39,7 +39,7 @@ export default function Help() {
   const [openIdx, setOpenIdx] = useState<number | null>(0)
 
   return (
-    <div className="min-h-screen bg-[#fafafa]">
+    <div className="min-h-screen bg-[#F5F6F8]">
       <div className="sticky top-0 z-20 glass border-b border-black/[0.04] px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-[#f0f0f0] flex items-center justify-center press-scale">
           <svg className="w-5 h-5 text-[#333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -58,7 +58,7 @@ export default function Help() {
             <button
               key={i}
               onClick={() => setOpenIdx(openIdx === i ? null : i)}
-              className="w-full bg-white rounded-2xl border border-[#f0f0f0] p-4 text-left press-scale"
+              className="w-full bg-white rounded-2xl shadow-card p-4 text-left press-scale"
             >
               <div className="flex items-start justify-between gap-3">
                 <p className="text-[14px] font-bold text-[#111] leading-tight flex-1">{faq.q}</p>

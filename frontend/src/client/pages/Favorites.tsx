@@ -34,7 +34,7 @@ export default function Favorites() {
     : `${parseFloat(o.cashback_rate).toFixed(0)} ₽`
 
   return (
-    <div className="min-h-screen bg-[#fafafa]">
+    <div className="min-h-screen bg-[#F5F6F8]">
       {/* Header */}
       <div className="sticky top-0 z-20 glass border-b border-black/[0.04] px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-[#f0f0f0] flex items-center justify-center press-scale">

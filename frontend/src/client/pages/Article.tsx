@@ -28,7 +28,7 @@ export default function Article() {
 
   if (!article) {
     return (
-      <div className="min-h-screen bg-[#fafafa] flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-[#F5F6F8] flex flex-col items-center justify-center">
         <p className="text-[14px] text-[#999] font-medium">Статья не найдена</p>
         <button onClick={() => navigate(-1)} className="text-[#FFD500] font-bold mt-3 text-[14px]">Назад</button>
       </div>
@@ -38,7 +38,7 @@ export default function Article() {
   const related = ARTICLES.filter(a => a.slug !== article.slug).slice(0, 2)
 
   return (
-    <div className="min-h-screen bg-[#fafafa]">
+    <div className="min-h-screen bg-[#F5F6F8]">
       {/* Header */}
       <div className="sticky top-0 z-20 glass border-b border-black/[0.04] px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-[#f0f0f0] flex items-center justify-center press-scale">
@@ -79,7 +79,7 @@ export default function Article() {
 
       {/* Content */}
       <div className="px-5 mt-6">
-        <div className="bg-white rounded-2xl border border-[#f0f0f0] p-5">
+        <div className="bg-white rounded-2xl shadow-card p-5">
           {article.content.map((paragraph, i) => (
             <p key={i} className={cn('text-[14px] text-[#444] leading-[1.7]', i > 0 && 'mt-4')}>
               {paragraph}
@@ -97,7 +97,7 @@ export default function Article() {
               <button
                 key={r.id}
                 onClick={() => { navigate(`/client/${phoneHash}/article/${r.slug}`); window.scrollTo(0, 0) }}
-                className="w-full bg-white rounded-2xl border border-[#f0f0f0] p-4 flex gap-3 items-center press-scale text-left"
+                className="w-full bg-white rounded-2xl shadow-card p-4 flex gap-3 items-center press-scale text-left"
               >
                 <div className={cn('w-14 h-14 rounded-2xl bg-gradient-to-br flex items-center justify-center shrink-0', r.gradient)}>
                   <span className="text-[24px]">{r.icon}</span>

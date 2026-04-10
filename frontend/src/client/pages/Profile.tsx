@@ -52,9 +52,9 @@ export default function Profile() {
   const shortHash = phoneHash ? `${phoneHash.slice(0, 6)}…${phoneHash.slice(-4)}` : ''
 
   return (
-    <div className="min-h-screen bg-[#fafafa]">
+    <div className="min-h-screen bg-[#F5F6F8]">
       {/* Header */}
-      <div className="bg-[#111] noise-bg relative text-white px-5 pt-[max(52px,env(safe-area-inset-top,52px))] pb-6">
+      <div className="bg-dark-hero relative text-white px-5 pt-[max(52px,env(safe-area-inset-top,52px))] pb-6">
         <div className="relative z-10">
           <h1 className="text-[22px] font-extrabold tracking-[-0.02em] mb-5">Профиль</h1>
 
@@ -88,7 +88,7 @@ export default function Profile() {
       <div className="px-5 py-5 pb-28 space-y-3">
         <button
           onClick={() => navigate(`/client/${phoneHash}/favorites`)}
-          className="w-full bg-white rounded-2xl border border-[#f0f0f0] p-4 flex items-center gap-4 press-scale"
+          className="w-full bg-white rounded-2xl shadow-card p-4 flex items-center gap-4 press-scale"
         >
           <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
             <svg className="w-5 h-5 text-rose-500" fill="currentColor" viewBox="0 0 24 24">
@@ -106,7 +106,7 @@ export default function Profile() {
 
         <button
           onClick={togglePush}
-          className="w-full bg-white rounded-2xl border border-[#f0f0f0] p-4 flex items-center gap-4 press-scale"
+          className="w-full bg-white rounded-2xl shadow-card p-4 flex items-center gap-4 press-scale"
         >
           <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
             <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -126,7 +126,7 @@ export default function Profile() {
 
         <button
           onClick={() => navigate(`/client/${phoneHash}/help`)}
-          className="w-full bg-white rounded-2xl border border-[#f0f0f0] p-4 flex items-center gap-4 press-scale"
+          className="w-full bg-white rounded-2xl shadow-card p-4 flex items-center gap-4 press-scale"
         >
           <div className="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center shrink-0">
             <svg className="w-5 h-5 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -144,7 +144,7 @@ export default function Profile() {
 
         <button
           onClick={resetOnboarding}
-          className="w-full bg-white rounded-2xl border border-[#f0f0f0] p-4 flex items-center gap-4 press-scale"
+          className="w-full bg-white rounded-2xl shadow-card p-4 flex items-center gap-4 press-scale"
         >
           <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
             <svg className="w-5 h-5 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
