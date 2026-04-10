@@ -13,7 +13,6 @@ interface OfferItem extends OfferCardItem {
   status: string
   category: string | null
   partner_logo: string | null
-  max_cashback_per_client?: string
 }
 
 const catIcons: Record<string, string> = {
@@ -31,18 +30,13 @@ const catIcons: Record<string, string> = {
   'Подписаться': '📲',
 }
 
-const catImages: Record<string, string> = {
-  'Купить продукты': '/claude/assets/categories/купить-продукты.jpg',
-}
-
 type SortMode = 'best' | 'new' | 'expiring'
 
-// Normalized comparable rate: percent as-is, fixed → approximate % based on min_check
 function normalizedRate(o: OfferCardItem): number {
   if (o.cashback_type === 'percent') return parseFloat(o.cashback_rate)
   const fixed = parseFloat(o.cashback_rate)
   const minCheck = parseFloat(o.min_check) || 1000
-  return fixed / minCheck // e.g. 300₽ / 1000₽ = 0.3 = 30%
+  return fixed / minCheck
 }
 
 export default function OfferCatalog() {
@@ -76,37 +70,75 @@ export default function OfferCatalog() {
 
   useEffect(fetchOffers, [phoneHash])
 
-  // Load activated offer ids from localStorage
   const activatedIds = useMemo(() => {
     try { return new Set<string>(JSON.parse(localStorage.getItem('clo_activated') || '[]')) }
     catch { return new Set<string>() }
   }, [offers])
 
+  const activeOffers = useMemo(() => offers.filter(o => o.status !== 'draft'), [offers])
+
   const myActivations = useMemo(() =>
-    offers.filter(o => activatedIds.has(o.id)).slice(0, 6)
-  , [offers, activatedIds])
+    activeOffers.filter(o => activatedIds.has(o.id)).slice(0, 6)
+  , [activeOffers, activatedIds])
 
-  // Fix: normalize fixed vs percent for fair comparison
-  const forYou = useMemo(() => {
-    const seen = new Set<string>()
-    return offers
-      .filter(o => o.status !== 'draft')
+  // Single hero: highest normalized rate
+  const heroOffer = useMemo(() => {
+    if (activeOffers.length === 0) return null
+    return [...activeOffers].sort((a, b) => normalizedRate(b) - normalizedRate(a))[0]
+  }, [activeOffers])
+
+  // Top picks: next 4 after hero, diverse categories
+  const topPicks = useMemo(() => {
+    if (!heroOffer) return []
+    const seen = new Set<string>([heroOffer.category || ''])
+    return activeOffers
+      .filter(o => o.id !== heroOffer.id)
       .sort((a, b) => normalizedRate(b) - normalizedRate(a))
-      .filter(o => { if (seen.has(o.category || '')) return false; seen.add(o.category || ''); return true })
-      .slice(0, 6)
-  }, [offers])
+      .filter(o => {
+        const cat = o.category || ''
+        if (seen.has(cat)) return false
+        seen.add(cat)
+        return true
+      })
+      .slice(0, 4)
+  }, [activeOffers, heroOffer])
 
-  const collections = useMemo(() =>
+  // "Скоро закончатся" — offers ending within 14 days
+  const expiringSoon = useMemo(() => {
+    const now = Date.now()
+    return activeOffers
+      .filter(o => {
+        const days = (new Date(o.end_date).getTime() - now) / 86400000
+        return days > 0 && days <= 14
+      })
+      .sort((a, b) => new Date(a.end_date).getTime() - new Date(b.end_date).getTime())
+      .slice(0, 3)
+  }, [activeOffers])
+
+  // Featured food collection (horizontal scroll with tall cards)
+  const featuredFood = useMemo(() =>
+    activeOffers.filter(o => o.category === 'Поесть вне дома').slice(0, 5)
+  , [activeOffers])
+
+  // "Новинки"
+  const newArrivals = useMemo(() =>
+    [...activeOffers]
+      .sort((a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime())
+      .slice(0, 3)
+  , [activeOffers])
+
+  // Categories with counts for compact grid
+  const categoriesWithCounts = useMemo(() =>
     CATEGORIES.map(cat => ({
       name: cat,
-      icon: catIcons[cat] || '',
-      offers: offers.filter(o => o.category === cat && o.status !== 'draft'),
-    })).filter(c => c.offers.length > 0)
-  , [offers])
+      icon: catIcons[cat] || '🏷️',
+      count: activeOffers.filter(o => o.category === cat).length,
+    })).filter(c => c.count > 0)
+  , [activeOffers])
 
   const filtered = useMemo(() => {
     if (!search && !activeCategory) return null
-    let r = offers.filter(o => o.status !== 'draft')
+    let r = activeOffers
     if (activeCategory) r = r.filter(o => o.category === activeCategory)
     if (search.trim()) {
       const q = search.toLowerCase()
@@ -116,12 +148,11 @@ export default function OfferCatalog() {
         (o.category || '').toLowerCase().includes(q)
       )
     }
-    // Apply sort
     if (sortMode === 'best') r = [...r].sort((a, b) => normalizedRate(b) - normalizedRate(a))
     else if (sortMode === 'new') r = [...r].sort((a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime())
     else if (sortMode === 'expiring') r = [...r].sort((a, b) => new Date(a.end_date).getTime() - new Date(b.end_date).getTime())
     return r
-  }, [offers, activeCategory, search, sortMode])
+  }, [activeOffers, activeCategory, search, sortMode])
 
   const isHome = !search && !activeCategory
 
@@ -147,7 +178,7 @@ export default function OfferCatalog() {
               className="bg-white/[0.08] border border-white/[0.06] rounded-2xl px-3 py-2 press-scale"
               aria-label="Мой кэшбэк"
             >
-              <p className="text-[10px] text-white/40 font-bold uppercase tracking-[0.08em]">Кэшбэк</p>
+              <p className="text-[10px] text-white/50 font-bold uppercase tracking-[0.08em]">Кэшбэк</p>
               <p className="font-mono-cash text-[14px] font-extrabold text-[#FFD500] leading-none mt-0.5">{formatCurrency(total)}</p>
             </button>
           </div>
@@ -161,7 +192,7 @@ export default function OfferCatalog() {
               type="text"
               value={search}
               onChange={e => { setSearch(e.target.value); if (e.target.value) setActiveCategory(null) }}
-              placeholder="Найти партнёра или категорию"
+              placeholder="Партнёр или категория"
               className="w-full pl-11 pr-10 py-3.5 bg-white/[0.06] text-white placeholder-white/30 rounded-2xl text-[14px] font-medium focus:outline-none focus:bg-white/[0.12] focus:ring-1 focus:ring-[#FFD500]/40 border border-white/[0.04]"
               aria-label="Поиск"
             />
@@ -174,42 +205,29 @@ export default function OfferCatalog() {
         </div>
       </div>
 
-      {/* Categories strip */}
-      <div className="px-4 py-4 overflow-x-auto no-scrollbar">
+      {/* Compact chip categories */}
+      <div className="px-5 py-4 overflow-x-auto no-scrollbar">
         <div className="flex gap-2 min-w-max">
           <button
             onClick={() => { setActiveCategory(null); setSearch('') }}
             className={cn(
-              'w-[76px] h-[76px] rounded-2xl flex flex-col items-center justify-center gap-1 shrink-0 press-scale border',
-              !activeCategory ? 'bg-[#111] text-white border-[#111]' : 'bg-white text-[#666] border-[#f0f0f0]'
+              'px-4 py-2 rounded-full text-[13px] font-bold shrink-0 press-scale transition-all border',
+              !activeCategory ? 'bg-[#111] text-white border-[#111]' : 'bg-white text-[#666] border-[#e8e8ec]'
             )}
           >
-            <span className="text-[22px]">⭐</span>
-            <span className="text-[11px] font-bold">Все</span>
+            ⭐ Все
           </button>
           {CATEGORIES.map(cat => (
             <button
               key={cat}
               onClick={() => { setActiveCategory(cat); setSearch('') }}
               className={cn(
-                'w-[76px] h-[76px] rounded-2xl shrink-0 press-scale overflow-hidden relative',
-                catImages[cat]
-                  ? (activeCategory === cat ? 'ring-2 ring-[#FFD500] shadow-[0_2px_12px_rgba(255,213,0,0.3)]' : '')
-                  : (activeCategory === cat ? 'border border-[#FFD500] shadow-[0_2px_12px_rgba(255,213,0,0.3)]' : 'border border-[#f0f0f0]')
+                'px-4 py-2 rounded-full text-[13px] font-bold shrink-0 press-scale transition-all border whitespace-nowrap',
+                activeCategory === cat ? 'bg-[#FFD500] text-[#111] border-[#FFD500]' : 'bg-white text-[#666] border-[#e8e8ec]'
               )}
             >
-              {catImages[cat] ? (
-                <>
-                  <img src={catImages[cat]} alt={cat} className="absolute inset-0 w-full h-full object-cover" />
-                  {activeCategory === cat && <div className="absolute inset-0 bg-[#FFD500]/20" />}
-                  <span className="absolute bottom-1 left-0.5 right-0.5 text-[10px] font-bold leading-tight text-center text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] line-clamp-2">{cat}</span>
-                </>
-              ) : (
-                <div className={cn('w-full h-full flex flex-col items-center justify-center gap-1', activeCategory === cat ? 'bg-[#FFD500] text-[#111]' : 'bg-white text-[#666]')}>
-                  <span className="text-[22px]">{catIcons[cat] || '🏷️'}</span>
-                  <span className="text-[10px] font-bold leading-tight text-center line-clamp-2 px-1">{cat}</span>
-                </div>
-              )}
+              <span className="mr-1">{catIcons[cat]}</span>
+              {cat}
             </button>
           ))}
         </div>
@@ -218,7 +236,7 @@ export default function OfferCatalog() {
       {loading ? (
         <div className="flex flex-col items-center py-20 gap-3">
           <div className="w-10 h-10 border-[3px] border-[#FFD500] border-t-transparent rounded-full animate-spin" />
-          <p className="text-[12px] text-[#999] font-medium">Загружаем офферы…</p>
+          <p className="text-[13px] text-[#999] font-medium">Загружаем офферы…</p>
         </div>
       ) : error ? (
         <div className="text-center py-20 px-5">
@@ -227,41 +245,52 @@ export default function OfferCatalog() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <p className="text-[14px] text-[#333] font-bold">Не удалось загрузить офферы</p>
-          <p className="text-[12px] text-[#999] mt-1 font-medium">Проверьте интернет</p>
+          <p className="text-[14px] text-[#333] font-bold">Не удалось загрузить</p>
+          <p className="text-[13px] text-[#999] mt-1 font-medium">Проверьте интернет</p>
           <button onClick={fetchOffers} className="mt-4 px-5 py-2.5 rounded-2xl bg-[#111] text-white font-bold text-[13px] press-scale">Повторить</button>
         </div>
       ) : isHome ? (
         <div className="pb-28">
-          {/* Мои активации */}
-          {myActivations.length > 0 && (
-            <div className="pt-1 pb-5">
+          {/* ═══ HERO SPOTLIGHT — Offer of the day ═══ */}
+          {heroOffer && phoneHash && (
+            <div className="px-5 mb-5">
+              <div className="flex items-baseline justify-between mb-3">
+                <h2 className="text-[12px] font-extrabold text-[#FFD500] uppercase tracking-[0.12em]">★ Топ оффер</h2>
+                <span className="text-[11px] text-[#bbb] font-bold uppercase tracking-wider">Сегодня</span>
+              </div>
+              <OfferCard offer={heroOffer} phoneHash={phoneHash} variant="hero" />
+            </div>
+          )}
+
+          {/* ═══ МОИ АКТИВАЦИИ — compact pill list ═══ */}
+          {myActivations.length > 0 && phoneHash && (
+            <div className="mb-5">
               <div className="px-5 flex items-baseline justify-between mb-3">
-                <h2 className="text-[20px] font-extrabold text-[#111] tracking-[-0.03em]">Мои активации</h2>
+                <h2 className="text-[17px] font-extrabold text-[#111] tracking-[-0.02em]">Мои активации</h2>
                 <span className="text-[12px] text-[#999] font-bold">{myActivations.length}</span>
               </div>
               <div className="pl-5 overflow-x-auto no-scrollbar">
-                <div className="flex gap-3 pr-5">
-                  {myActivations.map(o => <OfferCard key={o.id} offer={o} phoneHash={phoneHash || ''} />)}
+                <div className="flex gap-2 pr-5">
+                  {myActivations.map(o => <OfferCard key={o.id} offer={o} phoneHash={phoneHash} variant="compact" />)}
                 </div>
               </div>
             </div>
           )}
 
-          {/* Для вас */}
-          <div className="pt-1 pb-5">
-            <div className="px-5 flex items-baseline justify-between mb-3">
-              <h2 className="text-[20px] font-extrabold text-[#111] tracking-[-0.03em]">Для вас</h2>
-              <span className="text-[12px] text-[#999] font-bold uppercase tracking-[0.08em]">Лучшее</span>
-            </div>
-            <div className="pl-5 overflow-x-auto no-scrollbar">
-              <div className="flex gap-3 pr-5 animate-stagger">
-                {forYou.map(o => <OfferCard key={o.id} offer={o} phoneHash={phoneHash || ''} size="lg" />)}
+          {/* ═══ TOP PICKS — 4 cards 2x2 grid ═══ */}
+          {topPicks.length > 0 && phoneHash && (
+            <div className="px-5 mb-6">
+              <div className="flex items-baseline justify-between mb-3">
+                <h2 className="text-[17px] font-extrabold text-[#111] tracking-[-0.02em]">Для вас</h2>
+                <span className="text-[11px] text-[#bbb] font-bold uppercase tracking-wider">Лучшее</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {topPicks.map(o => <OfferCard key={o.id} offer={o} phoneHash={phoneHash} variant="grid" />)}
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Slot machine widget */}
+          {/* ═══ SLOT MACHINE BANNER ═══ */}
           <div className="px-5 mb-6">
             {(() => {
               let slotResult: { partner: string; rate: string; color: string; desc: string } | null = null
@@ -282,11 +311,8 @@ export default function OfferCatalog() {
                         <span className="font-mono-cash text-[28px] font-extrabold text-white leading-none">{slotResult.rate}</span>
                         <span className="text-[14px] font-bold text-white/90 truncate">{slotResult.partner}</span>
                       </div>
-                      <p className="text-[12px] text-white/60 mt-1 font-medium">Нажмите, чтобы крутить снова</p>
+                      <p className="text-[12px] text-white/70 mt-1 font-medium">Нажмите, чтобы крутить снова</p>
                     </div>
-                    <svg className="w-5 h-5 text-white/50 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
                   </div>
                 </button>
               ) : (
@@ -297,12 +323,12 @@ export default function OfferCatalog() {
                   <div className="relative z-10 flex items-center gap-4">
                     <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#FFD500] to-[#F59E0B] flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(255,213,0,0.3)]">
                       <svg className="w-7 h-7 text-[#111]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14" />
                       </svg>
                     </div>
                     <div className="flex-1">
                       <p className="text-[15px] font-extrabold text-white">Испытайте удачу!</p>
-                      <p className="text-[12px] text-white/60 mt-0.5 font-medium">Крутите барабан и выиграйте кэшбэк до 30%</p>
+                      <p className="text-[12px] text-white/60 mt-0.5 font-medium">Крутите барабан и выиграйте до 30%</p>
                     </div>
                     <svg className="w-5 h-5 text-white/40 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -313,37 +339,96 @@ export default function OfferCatalog() {
             })()}
           </div>
 
-          {/* Collections */}
-          {collections.map(col => (
-            <div key={col.name} className="mb-6">
-              <div className="px-5 flex items-center justify-between mb-3">
-                <h2 className="text-[18px] font-extrabold text-[#111] tracking-[-0.02em]">{col.name}</h2>
-                <button onClick={() => setActiveCategory(col.name)} className="text-[12px] font-bold text-[#FFD500] press-scale">
-                  Все {col.offers.length} →
+          {/* ═══ СКОРО ЗАКОНЧАТСЯ — vertical list ═══ */}
+          {expiringSoon.length > 0 && phoneHash && (
+            <div className="px-5 mb-6">
+              <div className="flex items-baseline justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                  <h2 className="text-[17px] font-extrabold text-[#111] tracking-[-0.02em]">Скоро закончатся</h2>
+                </div>
+                <button
+                  onClick={() => { setSortMode('expiring'); setActiveCategory(null); window.scrollTo(0, 0) }}
+                  className="text-[12px] font-bold text-[#FFD500] press-scale"
+                >
+                  Все →
+                </button>
+              </div>
+              <div className="space-y-2">
+                {expiringSoon.map(o => <OfferCard key={o.id} offer={o} phoneHash={phoneHash} variant="list" />)}
+              </div>
+            </div>
+          )}
+
+          {/* ═══ FEATURED FOOD — horizontal tall cards ═══ */}
+          {featuredFood.length > 0 && phoneHash && (
+            <div className="mb-6">
+              <div className="px-5 flex items-baseline justify-between mb-3">
+                <h2 className="text-[17px] font-extrabold text-[#111] tracking-[-0.02em]">🍽️ Поесть вне дома</h2>
+                <button
+                  onClick={() => { setActiveCategory('Поесть вне дома'); window.scrollTo(0, 0) }}
+                  className="text-[12px] font-bold text-[#FFD500] press-scale"
+                >
+                  Все →
                 </button>
               </div>
               <div className="pl-5 overflow-x-auto no-scrollbar">
                 <div className="flex gap-3 pr-5">
-                  {col.offers.slice(0, 6).map(o => <OfferCard key={o.id} offer={o} phoneHash={phoneHash || ''} />)}
+                  {featuredFood.map(o => <OfferCard key={o.id} offer={o} phoneHash={phoneHash} variant="tall" />)}
                 </div>
               </div>
             </div>
-          ))}
+          )}
 
-          {/* Articles widget — moved to bottom */}
+          {/* ═══ НОВИНКИ — list ═══ */}
+          {newArrivals.length > 0 && phoneHash && (
+            <div className="px-5 mb-6">
+              <div className="flex items-baseline justify-between mb-3">
+                <h2 className="text-[17px] font-extrabold text-[#111] tracking-[-0.02em]">Новинки</h2>
+                <button
+                  onClick={() => { setSortMode('new'); setActiveCategory(null); window.scrollTo(0, 0) }}
+                  className="text-[12px] font-bold text-[#FFD500] press-scale"
+                >
+                  Все →
+                </button>
+              </div>
+              <div className="space-y-2">
+                {newArrivals.map(o => <OfferCard key={o.id} offer={o} phoneHash={phoneHash} variant="list" />)}
+              </div>
+            </div>
+          )}
+
+          {/* ═══ ARTICLES ═══ */}
           {phoneHash && <ArticlesWidget phoneHash={phoneHash} />}
+
+          {/* ═══ ALL CATEGORIES — compact 2-col grid ═══ */}
+          <div className="px-5 mt-6">
+            <h2 className="text-[17px] font-extrabold text-[#111] tracking-[-0.02em] mb-3">Все категории</h2>
+            <div className="grid grid-cols-2 gap-2.5">
+              {categoriesWithCounts.map(c => (
+                <button
+                  key={c.name}
+                  onClick={() => { setActiveCategory(c.name); window.scrollTo(0, 0) }}
+                  className="bg-white rounded-2xl border border-[#f0f0f0] p-4 text-left press-scale hover:border-[#e0e0e0] transition-all"
+                >
+                  <span className="text-[24px]">{c.icon}</span>
+                  <p className="text-[13px] font-bold text-[#111] mt-2 leading-tight">{c.name}</p>
+                  <p className="text-[11px] text-[#999] mt-0.5 font-medium">{c.count} офферов</p>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       ) : (
-        /* Filtered view */
+        /* ═══ FILTERED VIEW ═══ */
         <div className="px-5 pb-28">
           <div className="flex items-center justify-between mt-2 mb-3">
-            <h2 className="text-[20px] font-extrabold text-[#111] tracking-[-0.03em]">
+            <h2 className="text-[22px] font-extrabold text-[#111] tracking-[-0.03em]">
               {activeCategory || 'Результаты'}
             </h2>
-            <p className="text-[12px] text-[#999] font-medium">{filtered?.length || 0} офферов</p>
+            <p className="text-[13px] text-[#999] font-medium">{filtered?.length || 0}</p>
           </div>
 
-          {/* Sort toggle */}
           {filtered && filtered.length > 0 && (
             <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
               {([
