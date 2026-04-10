@@ -8,6 +8,7 @@ interface Offer {
   cashback_type: string; cashback_rate: string; min_check: string; max_cashback_per_tx: string
   max_cashback_per_client: string; budget: string; budget_spent: string
   start_date: string; end_date: string; status: string; segment: string; category: string; terminals_count: number
+  image_url?: string | null
 }
 
 interface Partner { id: string; name: string }
@@ -43,6 +44,7 @@ export default function OfferModeration() {
   const [acting, setActing] = useState<string | null>(null)
   const [expanded, setExpanded] = useState<string | null>(null)
   const [showCreate, setShowCreate] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
 
@@ -64,18 +66,63 @@ export default function OfferModeration() {
     catch {} finally { setActing(null) }
   }
 
-  const handleCreate = async () => {
+  const openCreate = () => {
+    setEditingId(null)
+    setForm(emptyForm)
+    setShowCreate(true)
+  }
+
+  const openEdit = (o: Offer) => {
+    setEditingId(o.id)
+    // Convert stored values back to form-friendly format
+    const rateDisplay = o.cashback_type === 'percent'
+      ? (parseFloat(o.cashback_rate) * 100).toFixed(0)
+      : parseFloat(o.cashback_rate).toFixed(0)
+    setForm({
+      partner_id: o.partner_id,
+      name: o.name,
+      description: o.description,
+      cashback_type: o.cashback_type,
+      cashback_rate: rateDisplay,
+      min_check: parseFloat(o.min_check).toFixed(0),
+      max_cashback_per_tx: parseFloat(o.max_cashback_per_tx).toFixed(0),
+      max_cashback_per_client: parseFloat(o.max_cashback_per_client).toFixed(0),
+      budget: parseFloat(o.budget).toFixed(0),
+      start_date: o.start_date,
+      end_date: o.end_date,
+      segment: o.segment,
+      category: o.category || '',
+      image_url: o.image_url || '',
+    })
+    setShowCreate(true)
+  }
+
+  const closeModal = () => {
+    setShowCreate(false)
+    setEditingId(null)
+    setForm(emptyForm)
+  }
+
+  const handleSave = async () => {
     setSaving(true)
     try {
-      const rate = form.cashback_type === 'percent' ? (parseFloat(form.cashback_rate) / 100).toFixed(4) : parseFloat(form.cashback_rate).toFixed(4)
-      await api.post('/admin/offers', {
+      const rate = form.cashback_type === 'percent'
+        ? (parseFloat(form.cashback_rate) / 100).toFixed(4)
+        : parseFloat(form.cashback_rate).toFixed(4)
+      const payload = {
         ...form, cashback_rate: rate,
         min_check: parseFloat(form.min_check || '0').toFixed(2),
         max_cashback_per_tx: parseFloat(form.max_cashback_per_tx || '0').toFixed(2),
         max_cashback_per_client: parseFloat(form.max_cashback_per_client || '0').toFixed(2),
         budget: parseFloat(form.budget || '0').toFixed(2),
-      })
-      setShowCreate(false); setForm(emptyForm); load()
+      }
+      if (editingId) {
+        await api.put(`/admin/offers/${editingId}`, payload)
+      } else {
+        await api.post('/admin/offers', payload)
+      }
+      closeModal()
+      load()
     } catch {} finally { setSaving(false) }
   }
 
@@ -103,7 +150,7 @@ export default function OfferModeration() {
           <h1 className="text-[28px] font-extrabold text-[#111] tracking-[-0.03em]">Офферы</h1>
           <p className="text-[13px] text-[#999] mt-1 font-medium">{offers.length} всего, {counts.active || 0} активных</p>
         </div>
-        <button onClick={() => setShowCreate(true)}
+        <button onClick={openCreate}
           className="px-4 py-2.5 rounded-xl bg-[#FFD500] text-[#111] text-[13px] font-bold press-scale shadow-[0_2px_12px_rgba(255,213,0,0.25)]">
           Создать оффер
         </button>
@@ -148,7 +195,11 @@ export default function OfferModeration() {
                 <tr key={o.id} className="border-b border-[#fafafa] last:border-0 hover:bg-[#fafafa] transition-colors cursor-pointer" onClick={() => setExpanded(expanded === o.id ? null : o.id)}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-[11px] font-extrabold shrink-0">{o.partner_name[0]}</div>
+                      {o.image_url ? (
+                        <img src={o.image_url} alt={o.partner_name} className="w-9 h-9 rounded-lg object-cover shrink-0" />
+                      ) : (
+                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-[11px] font-extrabold shrink-0">{o.partner_name[0]}</div>
+                      )}
                       <span className="text-[12px] font-bold text-[#111]">{o.partner_name}</span>
                     </div>
                   </td>
@@ -165,18 +216,24 @@ export default function OfferModeration() {
                   </td>
                   <td className="px-4 py-3"><span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full', s.c)}>{s.l}</span></td>
                   <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
-                    {o.status === 'moderation' ? (
-                      <div className="flex gap-1.5">
-                        <button onClick={() => moderate(o.id, 'approve')} disabled={acting === o.id}
-                          className="px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-[11px] font-bold press-scale disabled:opacity-50">Одобрить</button>
-                        <button onClick={() => moderate(o.id, 'reject')} disabled={acting === o.id}
-                          className="px-3 py-1.5 rounded-lg bg-red-500 text-white text-[11px] font-bold press-scale disabled:opacity-50">Отклонить</button>
-                      </div>
-                    ) : o.status === 'draft' ? (
-                      <button onClick={() => moderate(o.id, 'approve')} className="text-[11px] font-bold text-[#FFD500] hover:text-[#B8960A] press-scale">Активировать</button>
-                    ) : o.status === 'active' ? (
-                      <span className="text-[11px] text-emerald-500 font-bold">Live</span>
-                    ) : <span className="text-[11px] text-[#ddd]">&mdash;</span>}
+                    <div className="flex items-center gap-1.5">
+                      {o.status === 'moderation' && (
+                        <>
+                          <button onClick={() => moderate(o.id, 'approve')} disabled={acting === o.id}
+                            className="px-2.5 py-1.5 rounded-lg bg-emerald-500 text-white text-[11px] font-bold press-scale disabled:opacity-50">Одобрить</button>
+                          <button onClick={() => moderate(o.id, 'reject')} disabled={acting === o.id}
+                            className="px-2.5 py-1.5 rounded-lg bg-red-500 text-white text-[11px] font-bold press-scale disabled:opacity-50">Отклонить</button>
+                        </>
+                      )}
+                      {o.status === 'draft' && (
+                        <button onClick={() => moderate(o.id, 'approve')} className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 press-scale px-2">Активировать</button>
+                      )}
+                      <button onClick={() => openEdit(o)} className="w-8 h-8 rounded-lg bg-[#f5f5f7] hover:bg-[#FFD500]/20 flex items-center justify-center press-scale" title="Редактировать">
+                        <svg className="w-4 h-4 text-[#666]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               )
@@ -185,13 +242,16 @@ export default function OfferModeration() {
         </table>
       </div>
 
-      {/* ===== Create Offer Modal ===== */}
+      {/* ===== Create / Edit Offer Modal ===== */}
       {showCreate && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 bg-black/40 backdrop-blur-sm overflow-y-auto" onClick={() => setShowCreate(false)}>
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 bg-black/40 backdrop-blur-sm overflow-y-auto" onClick={closeModal}>
           <div className="bg-white rounded-2xl border border-[#f0f0f0] w-full max-w-2xl p-6 shadow-2xl mb-16" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-[20px] font-extrabold text-[#111]">Создать оффер</h2>
-              <button onClick={() => setShowCreate(false)} className="w-8 h-8 rounded-full bg-[#f0f0f0] flex items-center justify-center hover:bg-[#e5e5e5]">
+              <div>
+                <h2 className="text-[20px] font-extrabold text-[#111]">{editingId ? 'Редактировать оффер' : 'Создать оффер'}</h2>
+                {editingId && <p className="text-[11px] text-[#999] font-medium mt-0.5">ID: {editingId}</p>}
+              </div>
+              <button onClick={closeModal} className="w-8 h-8 rounded-full bg-[#f0f0f0] flex items-center justify-center hover:bg-[#e5e5e5]">
                 <svg className="w-4 h-4 text-[#999]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
@@ -292,13 +352,15 @@ export default function OfferModeration() {
 
               {/* Actions */}
               <div className="flex gap-3 pt-3 border-t border-[#f5f5f5]">
-                <button onClick={() => setShowCreate(false)} className="flex-1 py-3 rounded-xl bg-[#f0f0f0] text-[#666] text-[13px] font-bold press-scale">
+                <button onClick={closeModal} className="flex-1 py-3 rounded-xl bg-[#f0f0f0] text-[#666] text-[13px] font-bold press-scale">
                   Отмена
                 </button>
-                <button onClick={handleCreate}
+                <button onClick={handleSave}
                   disabled={saving || !form.partner_id || !form.name || !form.cashback_rate || !form.budget}
                   className="flex-1 py-3 rounded-xl bg-[#FFD500] text-[#111] text-[13px] font-bold press-scale disabled:opacity-40 shadow-[0_2px_12px_rgba(255,213,0,0.25)]">
-                  {saving ? 'Создание...' : 'Создать и опубликовать'}
+                  {saving
+                    ? (editingId ? 'Сохранение...' : 'Создание...')
+                    : (editingId ? 'Сохранить изменения' : 'Создать и опубликовать')}
                 </button>
               </div>
             </div>

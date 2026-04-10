@@ -335,6 +335,23 @@ class MockStore {
     return o
   }
 
+  updateOffer(id: string, data: Record<string, unknown>) {
+    const idx = this.offers.findIndex(o => o.id === id)
+    if (idx === -1) return null
+    // Re-resolve partner name if partner_id changed
+    let partnerName = this.offers[idx].partner_name
+    if (data.partner_id && data.partner_id !== this.offers[idx].partner_id) {
+      const p = this.partners.find(p => p.id === data.partner_id)
+      if (p) partnerName = p.name
+    }
+    this.offers[idx] = {
+      ...this.offers[idx],
+      ...data,
+      partner_name: partnerName,
+    } as typeof DEMO_OFFERS[0]
+    return this.offers[idx]
+  }
+
   getPartners() { return this.partners }
 
   addPartner(data: { name: string; contact_email: string; contact_phone?: string }) {
@@ -403,7 +420,10 @@ export function mockApiCall(method: string, rawPath: string, body?: unknown): un
     const id = path.split('/').pop()
     return store.getOffer(id!) || store.offers[0]
   }
-  if (method === 'PUT' && path.match(/^\/offers\/[^/]+$/)) return { ...store.offers[0], ...body }
+  if (method === 'PUT' && path.match(/^\/offers\/[^/]+$/)) {
+    const id = path.split('/').pop()!
+    return store.updateOffer(id, body as Record<string, unknown>) || store.offers[0]
+  }
   if (method === 'PUT' && path.match(/^\/offers\/[^/]+\/status$/)) {
     const id = path.split('/')[2]
     const { status } = body as { status: string }
@@ -471,6 +491,18 @@ export function mockApiCall(method: string, rawPath: string, body?: unknown): un
     const id = path.split('/')[3]
     const { action } = body as { action: 'approve' | 'reject' }
     return store.moderateOffer(id, action)
+  }
+
+  // Admin — update offer (full edit)
+  if (method === 'PUT' && path.match(/^\/admin\/offers\/[^/]+$/)) {
+    const id = path.split('/').pop()!
+    return store.updateOffer(id, body as Record<string, unknown>) || store.offers[0]
+  }
+
+  // Admin — get single offer
+  if (method === 'GET' && path.match(/^\/admin\/offers\/[^/]+$/)) {
+    const id = path.split('/').pop()!
+    return store.getOffer(id) || store.offers[0]
   }
 
   if (method === 'POST' && path === '/admin/registry/upload') return { batch_id: 'batch-demo', total: 4823, matched: 3891, errors: 47 }
