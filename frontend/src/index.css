@@ -70,6 +70,13 @@ body {
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* ═══ iOS: prevent zoom on focus ═══ */
+@supports (-webkit-touch-callout: none) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
+
 /* ═══ Glass effect (refined) ═══ */
 .glass {
   background: rgba(255, 255, 255, 0.82);

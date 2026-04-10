@@ -193,7 +193,7 @@ export default function OfferCatalog() {
               value={search}
               onChange={e => { setSearch(e.target.value); if (e.target.value) setActiveCategory(null) }}
               placeholder="Партнёр или категория"
-              className="w-full pl-11 pr-10 py-3.5 bg-white/[0.07] text-white placeholder-white/35 rounded-2xl text-[14px] font-medium focus:outline-none focus:bg-white/[0.11] focus:ring-1 focus:ring-[#FFDC00]/40 border border-white/[0.06] backdrop-blur-sm transition-all"
+              className="w-full pl-11 pr-10 py-3 bg-white/[0.07] text-white placeholder-white/35 rounded-2xl text-[16px] font-medium focus:outline-none focus:bg-white/[0.11] focus:ring-1 focus:ring-[#FFDC00]/40 border border-white/[0.06] backdrop-blur-sm transition-all"
               aria-label="Поиск"
             />
             {search && (
