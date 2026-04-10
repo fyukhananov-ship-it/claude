@@ -24,14 +24,14 @@ export default function ThankYou() {
           </div>
           <div>
             <p className="text-[13px] font-bold text-[#111]">Начисление 1&#8211;3 дня</p>
-            <p className="text-[11px] text-[#999] mt-0.5 font-medium">После обработки реестра НСПК</p>
+            <p className="text-[12px] text-[#999] mt-0.5 font-medium">Система найдёт покупку автоматически</p>
           </div>
         </div>
 
         <div className="mt-8 space-y-3 w-full">
           <button onClick={() => navigate(`/client/${phoneHash}`)}
             className="w-full py-4 rounded-2xl bg-[#FFD500] text-[#111] font-extrabold text-[15px] press-scale shadow-[0_4px_24px_rgba(255,213,0,0.35)]">
-            Смотреть другие офферы
+            Смотреть офферы
           </button>
           <button onClick={() => navigate(`/client/${phoneHash}/cashback`)}
             className="w-full py-3.5 rounded-2xl bg-[#f0f0f0] text-[#333] font-bold text-[14px] press-scale">

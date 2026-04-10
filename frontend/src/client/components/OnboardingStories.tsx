@@ -229,7 +229,7 @@ export default function OnboardingStories({ onComplete }: { onComplete: () => vo
           {s.image ? (
             <>
               <img src={s.image} alt="" className="absolute inset-0 w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/10" />
             </>
           ) : (
             <div className={cn('absolute inset-0 bg-gradient-to-b', s.bg)} />

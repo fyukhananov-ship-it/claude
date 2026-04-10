@@ -2,15 +2,18 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthContext'
 import { ProtectedRoute } from './auth/ProtectedRoute'
 import LoginPage from './auth/LoginPage'
+import { ToastProvider } from './client/components/Toast'
 
 // Client pages
 import OfferCatalog from './client/pages/OfferCatalog'
 import OfferDetail from './client/pages/OfferDetail'
-import Activation from './client/pages/Activation'
 import SpinWheel from './client/pages/SpinWheel'
 import ThankYou from './client/pages/ThankYou'
 import CashbackHistory from './client/pages/CashbackHistory'
 import Article from './client/pages/Article'
+import Profile from './client/pages/Profile'
+import Favorites from './client/pages/Favorites'
+import Help from './client/pages/Help'
 
 // Partner pages
 import PartnerLayout from './partner/layout/PartnerLayout'
@@ -31,6 +34,7 @@ import Finance from './admin/pages/Finance'
 export default function App() {
   return (
     <AuthProvider>
+      <ToastProvider>
       <Routes>
         {/* Auth */}
         <Route path="/login" element={<LoginPage />} />
@@ -39,10 +43,13 @@ export default function App() {
         <Route path="/client/:phoneHash" element={<OfferCatalog />} />
         <Route path="/client/:phoneHash/article/:articleId" element={<Article />} />
         <Route path="/client/:phoneHash/offer/:offerId" element={<OfferDetail />} />
-        <Route path="/client/:phoneHash/activate/:offerId" element={<Activation />} />
+        <Route path="/client/:phoneHash/activate/:offerId" element={<OfferDetail />} />
         <Route path="/client/:phoneHash/spin/:offerId" element={<SpinWheel />} />
         <Route path="/client/:phoneHash/thanks" element={<ThankYou />} />
         <Route path="/client/:phoneHash/cashback" element={<CashbackHistory />} />
+        <Route path="/client/:phoneHash/profile" element={<Profile />} />
+        <Route path="/client/:phoneHash/favorites" element={<Favorites />} />
+        <Route path="/client/:phoneHash/help" element={<Help />} />
 
         {/* Partner cabinet */}
         <Route
@@ -78,6 +85,7 @@ export default function App() {
 
         <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
+      </ToastProvider>
     </AuthProvider>
   )
 }

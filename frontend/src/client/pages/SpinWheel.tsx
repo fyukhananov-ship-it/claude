@@ -94,6 +94,17 @@ export default function SpinWheel() {
   if (phase === 'result' && winner) {
     return (
       <div className={cn('min-h-screen relative flex flex-col overflow-hidden bg-gradient-to-br', winner.color)}>
+        {/* Close button */}
+        <button
+          onClick={() => navigate(`/client/${phoneHash}`)}
+          className="absolute top-[max(16px,env(safe-area-inset-top,16px))] right-4 z-40 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center press-scale"
+          aria-label="Закрыть"
+        >
+          <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
         {/* Decorative shapes */}
         <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-white/[0.08]" />
         <div className="absolute top-1/3 -left-16 w-40 h-40 rounded-full bg-black/[0.06]" />
@@ -173,18 +184,29 @@ export default function SpinWheel() {
     <div className="min-h-screen bg-[#0a0a0a] noise-bg relative flex flex-col items-center justify-center px-5 overflow-hidden"
       onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
 
+      {/* Close button */}
+      <button
+        onClick={() => navigate(`/client/${phoneHash}`)}
+        className="absolute top-[max(16px,env(safe-area-inset-top,16px))] right-4 z-40 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center press-scale"
+        aria-label="Закрыть"
+      >
+        <svg className="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-[#FFD500]/[0.05] rounded-full blur-[120px]" />
 
       {/* Header */}
       <div className="relative z-10 text-center mb-6">
         <h1 className="text-[28px] font-extrabold text-white tracking-[-0.03em]">Крути барабан!</h1>
-        <p className="text-white/30 text-[13px] mt-1.5 font-medium">
-          {phase === 'spinning' ? 'Выбираем лучшее предложение...' : 'Свайпните вверх или нажмите кнопку'}
+        <p className="text-white/40 text-[13px] mt-1.5 font-medium">
+          {phase === 'spinning' ? 'Выбираем лучшее предложение...' : 'Нажмите кнопку или свайпните вверх'}
         </p>
       </div>
 
       {/* Slot Machine */}
-      <div className="relative z-10 w-full max-w-sm mb-8">
+      <div className="relative z-10 w-full mb-8">
         <div className="bg-[#161618] border border-white/[0.08] rounded-3xl p-4 shadow-[0_0_60px_rgba(255,213,0,0.08)]">
           <div className="relative overflow-hidden rounded-2xl bg-[#0c0c0e]" style={{ height: ITEM_H * VISIBLE }}>
             <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[#0c0c0e] to-transparent z-10 pointer-events-none" />
@@ -220,7 +242,7 @@ export default function SpinWheel() {
       </div>
 
       {/* Spin button */}
-      <div className="relative z-10 w-full max-w-sm">
+      <div className="relative z-10 w-full">
         <button onClick={spin} disabled={phase === 'spinning'}
           className="w-full py-4 rounded-2xl bg-[#FFD500] text-[#111] font-extrabold text-[16px] press-scale disabled:opacity-70 shadow-[0_4px_32px_rgba(255,213,0,0.4)] flex items-center justify-center gap-2">
           {phase === 'spinning' ? (
@@ -231,6 +253,9 @@ export default function SpinWheel() {
             </svg>Крутить!</>
           )}
         </button>
+        <p className="text-[11px] text-white/30 text-center mt-3 font-medium">
+          Можно крутить раз в сутки · Выигрыш — до 30% кэшбэка
+        </p>
       </div>
     </div>
   )
