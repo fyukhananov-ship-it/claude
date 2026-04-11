@@ -64,6 +64,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Prepare /opt/clo on VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ env.VM_IP }}
+          username: ${{ env.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            set -e
+            if [ ! -d /opt/clo ]; then
+              sudo mkdir -p /opt/clo/deploy/nginx
+              sudo chown -R $USER:$USER /opt/clo
+            else
+              mkdir -p /opt/clo/deploy/nginx
+            fi
+            ls -la /opt/clo
+
       - name: Copy compose and nginx files to VM
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -73,6 +89,7 @@ jobs:
           source: "docker-compose.prod.yml,deploy/nginx/clo.conf"
           target: "/opt/clo"
           strip_components: 0
+          overwrite: true
 
       - name: Pull image, run migrations, restart services
         uses: appleboy/ssh-action@v1.0.3
