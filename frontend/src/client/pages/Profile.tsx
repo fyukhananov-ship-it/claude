@@ -49,6 +49,13 @@ export default function Profile() {
     setTimeout(() => navigate(`/client/${phoneHash}`), 500)
   }
 
+  const resetStore = () => {
+    if (!confirm('Сбросить все сохранённые офферы и партнёров к исходному состоянию?')) return
+    localStorage.removeItem('clo_mock_store_v1')
+    toast.show('Данные сброшены', 'success')
+    setTimeout(() => window.location.reload(), 500)
+  }
+
   const shortHash = phoneHash ? `${phoneHash.slice(0, 6)}…${phoneHash.slice(-4)}` : ''
 
   return (
@@ -154,6 +161,24 @@ export default function Profile() {
           <div className="flex-1 text-left">
             <p className="text-[14px] font-bold text-[#111]">Посмотреть онбординг</p>
             <p className="text-[12px] text-[#999] mt-0.5 font-medium">Краткий тур по приложению</p>
+          </div>
+          <svg className="w-5 h-5 text-[#ccc]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
+        <button
+          onClick={resetStore}
+          className="w-full bg-white rounded-2xl shadow-card p-4 flex items-center gap-4 press-scale"
+        >
+          <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center shrink-0">
+            <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </div>
+          <div className="flex-1 text-left">
+            <p className="text-[14px] font-bold text-[#111]">Сбросить данные</p>
+            <p className="text-[12px] text-[#999] mt-0.5 font-medium">Очистить админ-правки офферов</p>
           </div>
           <svg className="w-5 h-5 text-[#ccc]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />

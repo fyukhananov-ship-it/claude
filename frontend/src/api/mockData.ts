@@ -294,6 +294,7 @@ export const DEMO_USERS: Record<string, { password: string; role: string; partne
 // --- Reactive persistent store (shared between admin and client) ---
 
 const STORAGE_KEY = 'clo_mock_store_v1'
+const STORE_CHANGE_EVENT = 'clo-mock-store-changed'
 
 class MockStore {
   offers: Array<typeof DEMO_OFFERS[0]>
@@ -308,21 +309,43 @@ class MockStore {
         if (parsed.v === 1 && Array.isArray(parsed.offers) && Array.isArray(parsed.partners)) {
           this.offers = parsed.offers as Array<typeof DEMO_OFFERS[0]>
           this.partners = parsed.partners as Array<typeof DEMO_PARTNERS[0]>
+          this.installSync()
           return
         }
       }
     } catch {}
     this.offers = [...DEMO_OFFERS]
     this.partners = [...DEMO_PARTNERS]
+    this.installSync()
+  }
+
+  // Listen for changes made by other tabs and re-hydrate
+  private installSync() {
+    if (typeof window === 'undefined') return
+    window.addEventListener('storage', (e) => {
+      if (e.key !== STORAGE_KEY || !e.newValue) return
+      try {
+        const parsed = JSON.parse(e.newValue) as { offers: unknown; partners: unknown; v: number }
+        if (parsed.v === 1 && Array.isArray(parsed.offers) && Array.isArray(parsed.partners)) {
+          this.offers = parsed.offers as Array<typeof DEMO_OFFERS[0]>
+          this.partners = parsed.partners as Array<typeof DEMO_PARTNERS[0]>
+          window.dispatchEvent(new CustomEvent(STORE_CHANGE_EVENT))
+          console.log('[MockStore] synced from other tab')
+        }
+      } catch {}
+    })
   }
 
   persist() {
     try {
       if (typeof localStorage === 'undefined') return
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ v: 1, offers: this.offers, partners: this.partners }))
+      // Also notify same-tab listeners
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent(STORE_CHANGE_EVENT))
+      }
     } catch (e) {
-      // Storage quota exceeded or other error — silently degrade
-      console.warn('[MockStore] persist failed', e)
+      console.warn('[MockStore] persist failed — storage quota?', e)
     }
   }
 
@@ -330,6 +353,9 @@ class MockStore {
     this.offers = [...DEMO_OFFERS]
     this.partners = [...DEMO_PARTNERS]
     try { localStorage.removeItem(STORAGE_KEY) } catch {}
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(STORE_CHANGE_EVENT))
+    }
   }
 
   getActiveOffers() { return this.offers.filter(o => o.status === 'active') }
@@ -369,7 +395,10 @@ class MockStore {
 
   updateOffer(id: string, data: Record<string, unknown>) {
     const idx = this.offers.findIndex(o => o.id === id)
-    if (idx === -1) return null
+    if (idx === -1) {
+      console.warn('[MockStore] updateOffer: offer not found', id)
+      return null
+    }
     // Re-resolve partner name if partner_id changed
     let partnerName = this.offers[idx].partner_name
     if (data.partner_id && data.partner_id !== this.offers[idx].partner_id) {
@@ -381,6 +410,10 @@ class MockStore {
       ...data,
       partner_name: partnerName,
     } as typeof DEMO_OFFERS[0]
+    console.log('[MockStore] updated offer', id, {
+      partner: this.offers[idx].partner_name,
+      image_url_kb: this.offers[idx].image_url ? Math.round((this.offers[idx].image_url as string).length / 1024) + ' KB' : 'null',
+    })
     this.persist()
     return this.offers[idx]
   }

@@ -70,6 +70,13 @@ export default function OfferCatalog() {
 
   useEffect(fetchOffers, [phoneHash])
 
+  // Auto-refresh when admin edits an offer (cross-tab or same-tab)
+  useEffect(() => {
+    const handler = () => fetchOffers()
+    window.addEventListener('clo-mock-store-changed', handler)
+    return () => window.removeEventListener('clo-mock-store-changed', handler)
+  }, [phoneHash]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const activatedIds = useMemo(() => {
     try { return new Set<string>(JSON.parse(localStorage.getItem('clo_activated') || '[]')) }
     catch { return new Set<string>() }
