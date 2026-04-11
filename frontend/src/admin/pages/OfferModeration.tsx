@@ -80,6 +80,7 @@ export default function OfferModeration() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   const load = useCallback(() => {
     setLoading(true)
@@ -315,19 +316,47 @@ export default function OfferModeration() {
               </Field>
               <Field label="Изображение (URL или загрузка)">
                 <div className="flex gap-3">
-                  <input value={form.image_url} onChange={e => upd('image_url', e.target.value)} className="inp flex-1" placeholder="https://... или перетащите файл" />
-                  <label className="px-4 py-2.5 rounded-xl bg-[#f0f0f0] text-[#666] text-[12px] font-bold cursor-pointer press-scale hover:bg-[#e5e5e5] flex items-center gap-1.5 shrink-0">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                    Загрузить
-                    <input type="file" accept="image/*" className="hidden" onChange={async e => {
+                  <input value={form.image_url} onChange={e => upd('image_url', e.target.value)} className="inp flex-1" placeholder="https://... или загрузите файл" />
+                  <label className={cn(
+                    "px-4 py-2.5 rounded-xl text-[12px] font-bold cursor-pointer press-scale flex items-center gap-1.5 shrink-0",
+                    uploading ? "bg-[#e5e5e5] text-[#999] pointer-events-none" : "bg-[#f0f0f0] text-[#666] hover:bg-[#e5e5e5]"
+                  )}>
+                    {uploading ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-[#999] border-t-transparent rounded-full animate-spin" />
+                        Загружаем...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        Загрузить
+                      </>
+                    )}
+                    <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={async e => {
                       const file = e.target.files?.[0]
                       if (!file) return
+                      setUploading(true)
                       try {
-                        const compressed = await compressImage(file, 800, 0.82)
-                        upd('image_url', compressed)
+                        if (editingId) {
+                          // Edit mode — upload to backend, get real URL
+                          const res = await api.uploadFile<{ image_url: string }>(
+                            `/admin/offers/${editingId}/image`,
+                            file
+                          )
+                          upd('image_url', res.image_url)
+                        } else {
+                          // Create mode — offer doesn't exist yet, keep compressed dataURL in state,
+                          // will be uploaded after creation (TODO) or sent as URL string
+                          const compressed = await compressImage(file, 800, 0.82)
+                          upd('image_url', compressed)
+                        }
                       } catch (err) {
-                        console.error('Image compression failed', err)
-                        alert('Не удалось обработать изображение')
+                        console.error('Upload failed', err)
+                        alert('Не удалось загрузить изображение: ' + (err as Error).message)
+                      } finally {
+                        setUploading(false)
+                        // Reset input so the same file can be picked again
+                        e.target.value = ''
                       }
                     }} />
                   </label>
@@ -338,7 +367,9 @@ export default function OfferModeration() {
                     <button onClick={() => upd('image_url', '')} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center">×</button>
                   </div>
                 )}
-                <p className="text-[10px] text-[#bbb] mt-1.5 font-medium">Картинка сожмётся до 800px и сохранится в браузере</p>
+                <p className="text-[10px] text-[#bbb] mt-1.5 font-medium">
+                  {editingId ? 'Загрузится в Object Storage и привяжется к офферу' : 'Сжимается до 800px; для загрузки в облако сначала сохраните оффер'}
+                </p>
               </Field>
 
               {/* Cashback */}

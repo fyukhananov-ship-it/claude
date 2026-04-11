@@ -1,0 +1,61 @@
+# Production compose for Yandex Cloud VM
+# Backend runs in container, Postgres/Redis/S3 are Managed YC services
+#
+# Usage on VM:
+#   docker compose -f docker-compose.prod.yml --env-file .env pull
+#   docker compose -f docker-compose.prod.yml --env-file .env up -d
+#
+# First deploy (migrations + seed):
+#   docker compose -f docker-compose.prod.yml --env-file .env run --rm api alembic upgrade head
+#   docker compose -f docker-compose.prod.yml --env-file .env run --rm api python seed.py
+
+services:
+  api:
+    # Image is pulled from Yandex Container Registry (set in .env)
+    image: ${BACKEND_IMAGE:-cr.yandex/your-registry/clo-backend:latest}
+    container_name: clo-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    expose:
+      - "8000"
+    networks:
+      - clo-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: clo-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      # - "443:443"  # uncomment when SSL is configured
+    volumes:
+      - ./deploy/nginx/clo.conf:/etc/nginx/conf.d/default.conf:ro
+      # - ./deploy/nginx/certs:/etc/nginx/certs:ro  # for later SSL
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - clo-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  clo-net:
+    driver: bridge

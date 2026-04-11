@@ -160,10 +160,15 @@ async def upload_image(
     if len(content) > 2 * 1024 * 1024:
         raise HTTPException(400, "Image must be under 2MB")
 
-    path = await save_upload(content, file.filename or "image.jpg", subdir="offers")
-    offer.image_url = path
+    url = await save_upload(
+        content,
+        file.filename or "image.jpg",
+        subdir="offers",
+        content_type=file.content_type,
+    )
+    offer.image_url = url
     await db.commit()
-    return {"image_url": path}
+    return {"image_url": url}
 
 
 @router.post("/{offer_id}/placements", response_model=list[PlacementResponse])

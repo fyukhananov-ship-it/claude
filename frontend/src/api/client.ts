@@ -1,13 +1,11 @@
 import { mockApiCall } from './mockData'
 
-const API_BASE = '/api/v1'
+// API base URL — set via VITE_API_URL env at build time.
+// Empty string falls back to mock mode (for GitHub Pages demo).
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) || ''
 
 function shouldUseMocks(): boolean {
-  try {
-    // In dev mode with backend running, don't use mocks
-    if (location.hostname === 'localhost' && !location.pathname.startsWith('/claude')) return false
-  } catch {}
-  return true
+  return !API_BASE
 }
 
 interface RequestOptions extends RequestInit {
@@ -22,16 +20,16 @@ class ApiClient {
   private async request<T>(path: string, options: RequestOptions = {}): Promise<T> {
     const { params, ...init } = options
 
-    // Mock mode — return demo data
+    // Mock mode — return demo data from in-browser store
     if (shouldUseMocks()) {
       await new Promise(r => setTimeout(r, 150 + Math.random() * 200))
-      const body = init.body ? JSON.parse(init.body as string) : undefined
+      const body = init.body && typeof init.body === 'string' ? JSON.parse(init.body) : undefined
       let mockPath = path
       if (params) mockPath += '?' + new URLSearchParams(params).toString()
       return mockApiCall(init.method || 'GET', mockPath, body) as T
     }
 
-    let url = `${API_BASE}${path}`
+    let url = `${API_BASE}/api/v1${path}`
 
     if (params) {
       const searchParams = new URLSearchParams(params)
@@ -54,7 +52,6 @@ class ApiClient {
     const response = await fetch(url, { ...init, headers })
 
     if (response.status === 401) {
-      // Try refresh token
       const refreshed = await this.refreshToken()
       if (refreshed) {
         headers['Authorization'] = `Bearer ${this.getToken()}`
@@ -81,7 +78,7 @@ class ApiClient {
     if (!refreshToken) return false
 
     try {
-      const response = await fetch(`${API_BASE}/auth/refresh`, {
+      const response = await fetch(`${API_BASE}/api/v1/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refresh_token: refreshToken }),
@@ -122,13 +119,25 @@ class ApiClient {
       return mockApiCall('POST', path, { filename: file.name }) as T
     }
 
+    const url = `${API_BASE}/api/v1${path}`
     const formData = new FormData()
     formData.append(fieldName, file)
 
-    return this.request<T>(path, {
+    const headers: Record<string, string> = {}
+    const token = this.getToken()
+    if (token) headers['Authorization'] = `Bearer ${token}`
+
+    const response = await fetch(url, {
       method: 'POST',
-      body: formData as unknown as string,
+      headers,
+      body: formData,
     })
+
+    if (!response.ok) {
+      const errorBody = await response.text()
+      throw new Error(errorBody || response.statusText)
+    }
+    return response.json()
   }
 
   async login(email: string, password: string) {

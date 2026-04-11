@@ -23,6 +23,7 @@ from app.services.billing import topup_balance
 from app.services.batch_processor import (
     parse_csv_registry, parse_json_registry, process_batch,
 )
+from app.utils.file_storage import save_upload
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -174,6 +175,36 @@ async def moderate_offer(
 
     await db.commit()
     return {"offer_id": str(offer.id), "status": offer.status, "comment": body.comment}
+
+
+@router.post("/offers/{offer_id}/image")
+async def admin_upload_offer_image(
+    offer_id: UUID,
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_role("operator")),
+):
+    """Operator can upload/replace the image of any offer (any partner)."""
+    offer = await db.get(Offer, offer_id)
+    if not offer:
+        raise HTTPException(404, "Offer not found")
+
+    if file.content_type not in ("image/png", "image/jpeg", "image/webp"):
+        raise HTTPException(400, "Only PNG, JPG and WebP images are allowed")
+
+    content = await file.read()
+    if len(content) > 2 * 1024 * 1024:
+        raise HTTPException(400, "Image must be under 2MB")
+
+    url = await save_upload(
+        content,
+        file.filename or "image.jpg",
+        subdir="offers",
+        content_type=file.content_type,
+    )
+    offer.image_url = url
+    await db.commit()
+    return {"offer_id": str(offer.id), "image_url": url}
 
 
 @router.post("/registry/upload")
