@@ -35,6 +35,39 @@ const emptyForm = {
   start_date: today, end_date: in90, segment: 'all', category: '', image_url: '',
 }
 
+// Compress image to JPEG data URL (max dimension, quality 0-1)
+function compressImage(file: File, maxDim = 800, quality = 0.82): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        let { width, height } = img
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = (height * maxDim) / width
+            width = maxDim
+          } else {
+            width = (width * maxDim) / height
+            height = maxDim
+          }
+        }
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return reject(new Error('canvas ctx'))
+        ctx.drawImage(img, 0, 0, width, height)
+        resolve(canvas.toDataURL('image/jpeg', quality))
+      }
+      img.onerror = reject
+      img.src = e.target?.result as string
+    }
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
 export default function OfferModeration() {
   const [offers, setOffers] = useState<Offer[]>([])
   const [partners, setPartners] = useState<Partner[]>([])
@@ -286,12 +319,15 @@ export default function OfferModeration() {
                   <label className="px-4 py-2.5 rounded-xl bg-[#f0f0f0] text-[#666] text-[12px] font-bold cursor-pointer press-scale hover:bg-[#e5e5e5] flex items-center gap-1.5 shrink-0">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                     Загрузить
-                    <input type="file" accept="image/*" className="hidden" onChange={e => {
+                    <input type="file" accept="image/*" className="hidden" onChange={async e => {
                       const file = e.target.files?.[0]
-                      if (file) {
-                        const reader = new FileReader()
-                        reader.onload = () => upd('image_url', reader.result as string)
-                        reader.readAsDataURL(file)
+                      if (!file) return
+                      try {
+                        const compressed = await compressImage(file, 800, 0.82)
+                        upd('image_url', compressed)
+                      } catch (err) {
+                        console.error('Image compression failed', err)
+                        alert('Не удалось обработать изображение')
                       }
                     }} />
                   </label>
@@ -302,6 +338,7 @@ export default function OfferModeration() {
                     <button onClick={() => upd('image_url', '')} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center">×</button>
                   </div>
                 )}
+                <p className="text-[10px] text-[#bbb] mt-1.5 font-medium">Картинка сожмётся до 800px и сохранится в браузере</p>
               </Field>
 
               {/* Cashback */}

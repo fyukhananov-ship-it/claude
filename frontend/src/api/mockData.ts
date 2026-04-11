@@ -291,15 +291,45 @@ export const DEMO_USERS: Record<string, { password: string; role: string; partne
   'partner@magnit.ru': { password: 'partner123', role: 'partner_admin', partner_id: 'p-магнит' },
 }
 
-// --- Reactive in-memory store (shared between admin and client) ---
+// --- Reactive persistent store (shared between admin and client) ---
+
+const STORAGE_KEY = 'clo_mock_store_v1'
 
 class MockStore {
   offers: Array<typeof DEMO_OFFERS[0]>
   partners: Array<typeof DEMO_PARTNERS[0]>
 
   constructor() {
+    // Try to hydrate from localStorage (so admin edits persist across reloads/tabs)
+    try {
+      const saved = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null
+      if (saved) {
+        const parsed = JSON.parse(saved) as { offers: unknown; partners: unknown; v: number }
+        if (parsed.v === 1 && Array.isArray(parsed.offers) && Array.isArray(parsed.partners)) {
+          this.offers = parsed.offers as Array<typeof DEMO_OFFERS[0]>
+          this.partners = parsed.partners as Array<typeof DEMO_PARTNERS[0]>
+          return
+        }
+      }
+    } catch {}
     this.offers = [...DEMO_OFFERS]
     this.partners = [...DEMO_PARTNERS]
+  }
+
+  persist() {
+    try {
+      if (typeof localStorage === 'undefined') return
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ v: 1, offers: this.offers, partners: this.partners }))
+    } catch (e) {
+      // Storage quota exceeded or other error — silently degrade
+      console.warn('[MockStore] persist failed', e)
+    }
+  }
+
+  reset() {
+    this.offers = [...DEMO_OFFERS]
+    this.partners = [...DEMO_PARTNERS]
+    try { localStorage.removeItem(STORAGE_KEY) } catch {}
   }
 
   getActiveOffers() { return this.offers.filter(o => o.status === 'active') }
@@ -319,6 +349,7 @@ class MockStore {
       placements: [],
     }
     this.offers.unshift(offer as typeof DEMO_OFFERS[0])
+    this.persist()
     return offer
   }
 
@@ -326,12 +357,13 @@ class MockStore {
     const o = this.offers.find(o => o.id === id)
     if (!o) return null
     o.status = action === 'approve' ? 'active' : 'draft'
+    this.persist()
     return o
   }
 
   updateOfferStatus(id: string, status: string) {
     const o = this.offers.find(o => o.id === id)
-    if (o) o.status = status
+    if (o) { o.status = status; this.persist() }
     return o
   }
 
@@ -349,6 +381,7 @@ class MockStore {
       ...data,
       partner_name: partnerName,
     } as typeof DEMO_OFFERS[0]
+    this.persist()
     return this.offers[idx]
   }
 
@@ -361,12 +394,13 @@ class MockStore {
       balance: '0.00', status: 'active', created_at: new Date().toISOString(), offers_count: 0,
     }
     this.partners.unshift(p)
+    this.persist()
     return p
   }
 
   topUpBalance(pid: string, amount: number) {
     const p = this.partners.find(p => p.id === pid)
-    if (p) p.balance = (parseFloat(p.balance) + amount).toFixed(2)
+    if (p) { p.balance = (parseFloat(p.balance) + amount).toFixed(2); this.persist() }
     return p
   }
 }
