@@ -15,7 +15,7 @@ interface Story {
 const stories: Story[] = [
   {
     bg: 'from-[#111] via-[#1a1a2e] to-[#111]',
-    image: '/claude/assets/onboarding/welcome.jpg',
+    image: `${import.meta.env.BASE_URL}assets/onboarding/welcome.jpg`,
     icon: '🎁',
     title: 'Добро пожаловать\nв Билайн Кэшбэк',
     description: 'Получайте кэшбэк до 30% за покупки\nу партнёров — деньги вернутся\nна ваш счёт Билайн',
@@ -23,7 +23,7 @@ const stories: Story[] = [
   },
   {
     bg: 'from-[#0f172a] via-[#1e293b] to-[#0f172a]',
-    image: '/claude/assets/onboarding/how-it-works.jpg',
+    image: `${import.meta.env.BASE_URL}assets/onboarding/how-it-works.jpg`,
     icon: '📱',
     title: 'Как это работает?',
     description: 'Выберите оффер → оплатите покупку\nчерез СБП → кэшбэк начислится\nавтоматически в течение 3 дней',
@@ -31,7 +31,7 @@ const stories: Story[] = [
   },
   {
     bg: 'from-[#1a0a2e] via-[#2d1b4e] to-[#1a0a2e]',
-    image: '/claude/assets/onboarding/categories.jpg',
+    image: `${import.meta.env.BASE_URL}assets/onboarding/categories.jpg`,
     icon: '🛍️',
     title: '90+ партнёров\nв 12 категориях',
     description: 'Продукты, рестораны, одежда, техника,\nспорт, путешествия — кэшбэк\nна всё, что вы любите',
@@ -39,7 +39,7 @@ const stories: Story[] = [
   },
   {
     bg: 'from-[#1a2e0a] via-[#1b4e2d] to-[#0a2e1a]',
-    image: '/claude/assets/onboarding/spin.jpg',
+    image: `${import.meta.env.BASE_URL}assets/onboarding/spin.jpg`,
     icon: '🎰',
     title: 'Крутите барабан —\nвыигрывайте больше!',
     description: 'Испытайте удачу в нашем колесе\nфортуны и получите повышенный\nкэшбэк на любимые бренды',

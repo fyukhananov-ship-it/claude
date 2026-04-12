@@ -159,8 +159,8 @@ const OFFER_DEFS: OfferDef[] = [
 ]
 
 const partnerImages: Record<string, string> = {
-  'World Class': '/claude/assets/offers/world-class.jpg',
-  'Кинопоиск': '/claude/assets/offers/kinopoisk.jpg',
+  'World Class': `${import.meta.env.BASE_URL}assets/offers/world-class.jpg`,
+  'Кинопоиск': `${import.meta.env.BASE_URL}assets/offers/kinopoisk.jpg`,
 }
 
 function makeOffer(def: OfferDef, idx: number) {

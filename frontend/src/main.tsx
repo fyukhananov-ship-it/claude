@@ -24,7 +24,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { err
 // Register service worker for PWA + push
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/claude/sw.js')
+    navigator.serviceWorker.register(import.meta.env.BASE_URL + 'sw.js')
       .then(reg => console.log('[CLO] SW registered, scope:', reg.scope))
       .catch(err => console.log('[CLO] SW registration failed:', err))
   })
@@ -33,7 +33,7 @@ if ('serviceWorker' in navigator) {
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <BrowserRouter basename="/claude">
+      <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || '/'}>
         <App />
       </BrowserRouter>
     </ErrorBoundary>
