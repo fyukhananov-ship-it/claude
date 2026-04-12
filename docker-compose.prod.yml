@@ -12,7 +12,7 @@
 services:
   api:
     # Image is pulled from Yandex Container Registry (set in .env)
-    image: ${BACKEND_IMAGE:-cr.yandex/your-registry/clo-backend:latest}
+    image: ${BACKEND_IMAGE:?Set BACKEND_IMAGE in clo.env}
     container_name: clo-api
     restart: unless-stopped
     env_file:
