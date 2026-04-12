@@ -29,9 +29,7 @@ jobs:
           VITE_API_URL: http://${{ secrets.VM_IP }}
 
       - name: Install AWS CLI
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y awscli
+        run: pip install awscli
 
       - name: Upload to YC Object Storage
         env:
