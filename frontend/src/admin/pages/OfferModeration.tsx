@@ -84,13 +84,13 @@ export default function OfferModeration() {
 
   const load = useCallback(() => {
     setLoading(true)
-    Promise.all([
-      api.get<Offer[]>('/admin/offers'),
-      api.get<Partner[]>('/admin/partners'),
-    ]).then(([o, p]) => {
+    const offersP = api.get<Offer[]>('/admin/offers').then(o => {
       setOffers(Array.isArray(o) ? o : [])
+    }).catch(() => setOffers([]))
+    const partnersP = api.get<Partner[]>('/admin/partners').then(p => {
       setPartners(Array.isArray(p) ? p : [])
-    }).catch(() => {}).finally(() => setLoading(false))
+    }).catch(() => setPartners([]))
+    Promise.all([offersP, partnersP]).finally(() => setLoading(false))
   }, [])
   useEffect(() => { load() }, [load])
 
