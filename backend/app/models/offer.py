@@ -39,6 +39,7 @@ class Offer(Base):
     segment: Mapped[str] = mapped_column(
         Enum("all", "new", "existing", name="offer_segment"), default="all"
     )
+    category: Mapped[str | None] = mapped_column(String(100), nullable=True)
     geo: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(

@@ -152,6 +152,106 @@ async def topup_partner_balance(
     return {"partner_id": str(partner_id), "new_balance": str(new_balance)}
 
 
+@router.get("/offers")
+async def list_offers(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_role("operator")),
+):
+    offers = (await db.execute(
+        select(Offer).order_by(Offer.created_at.desc())
+    )).scalars().all()
+
+    result = []
+    for o in offers:
+        partner = await db.get(Partner, o.partner_id)
+        terminals_count = (await db.execute(
+            select(func.count()).select_from(
+                select(1).where(
+                    Offer.id == o.id
+                ).correlate(Offer).subquery()
+            )
+        )).scalar() or 0
+        result.append({
+            "id": str(o.id),
+            "partner_id": str(o.partner_id),
+            "partner_name": partner.name if partner else "—",
+            "name": o.name,
+            "description": o.description,
+            "image_url": o.image_url,
+            "cashback_type": o.cashback_type,
+            "cashback_rate": str(o.cashback_rate),
+            "min_check": str(o.min_check),
+            "max_cashback_per_tx": str(o.max_cashback_per_tx),
+            "max_cashback_per_client": str(o.max_cashback_per_client),
+            "budget": str(o.budget),
+            "budget_spent": str(o.budget_spent),
+            "start_date": o.start_date.isoformat(),
+            "end_date": o.end_date.isoformat(),
+            "status": o.status,
+            "segment": o.segment,
+            "category": o.category,
+            "terminals_count": len(o.terminals) if o.terminals else 0,
+        })
+    return result
+
+
+@router.post("/offers")
+async def create_offer(
+    body: dict,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_role("operator")),
+):
+    partner = await db.get(Partner, UUID(body["partner_id"]))
+    if not partner:
+        raise HTTPException(404, "Partner not found")
+
+    offer = Offer(
+        partner_id=partner.id,
+        name=body["name"],
+        description=body.get("description", ""),
+        cashback_type=body["cashback_type"],
+        cashback_rate=body["cashback_rate"],
+        min_check=body.get("min_check", 0),
+        max_cashback_per_tx=body.get("max_cashback_per_tx", 0),
+        max_cashback_per_client=body.get("max_cashback_per_client", 0),
+        budget=body.get("budget", 0),
+        start_date=body["start_date"],
+        end_date=body["end_date"],
+        segment=body.get("segment", "all"),
+        category=body.get("category"),
+        status="active",
+    )
+    db.add(offer)
+    await db.commit()
+    await db.refresh(offer)
+    return {"id": str(offer.id), "status": offer.status}
+
+
+@router.put("/offers/{offer_id}")
+async def update_offer(
+    offer_id: UUID,
+    body: dict,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_role("operator")),
+):
+    offer = await db.get(Offer, offer_id)
+    if not offer:
+        raise HTTPException(404, "Offer not found")
+
+    updatable = [
+        "name", "description", "cashback_type", "cashback_rate",
+        "min_check", "max_cashback_per_tx", "max_cashback_per_client",
+        "budget", "start_date", "end_date", "segment", "category",
+        "status", "image_url",
+    ]
+    for field in updatable:
+        if field in body:
+            setattr(offer, field, body[field])
+
+    await db.commit()
+    return {"id": str(offer.id), "status": offer.status}
+
+
 @router.put("/offers/{offer_id}/moderate")
 async def moderate_offer(
     offer_id: UUID,
