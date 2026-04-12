@@ -176,6 +176,9 @@ async def seed():
             status="active",
         ))
 
+        # Flush to ensure all parent records exist before inserting FK-dependent rows
+        await session.flush()
+
         # Add billing transactions
         session.add(BillingTransaction(
             partner_id=pyaterochka.id,
