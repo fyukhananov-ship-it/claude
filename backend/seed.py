@@ -89,6 +89,7 @@ async def seed():
             end_date=today + timedelta(days=90),
             status="active",
             segment="all",
+            category="Купить продукты",
         )
         session.add(offer1)
 
@@ -108,6 +109,7 @@ async def seed():
             end_date=today + timedelta(days=60),
             status="active",
             segment="new",
+            category="Купить продукты",
         )
         session.add(offer2)
 
@@ -126,6 +128,7 @@ async def seed():
             end_date=today + timedelta(days=120),
             status="draft",
             segment="all",
+            category="Купить продукты",
         )
         session.add(offer3)
 

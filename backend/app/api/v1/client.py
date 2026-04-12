@@ -72,6 +72,7 @@ async def get_client_offers(
             start_date=offer.start_date,
             end_date=offer.end_date,
             status=offer_status,
+            category=offer.category,
         ))
 
     # Sort
@@ -140,6 +141,7 @@ async def get_client_offer_detail(
         start_date=offer.start_date,
         end_date=offer.end_date,
         status="activated" if activation else "new",
+        category=offer.category,
     )
 
 
