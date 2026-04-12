@@ -214,10 +214,10 @@ async def create_offer(
         max_cashback_per_tx=body.get("max_cashback_per_tx", 0),
         max_cashback_per_client=body.get("max_cashback_per_client", 0),
         budget=body.get("budget", 0),
-        start_date=body["start_date"],
-        end_date=body["end_date"],
+        start_date=date.fromisoformat(body["start_date"]),
+        end_date=date.fromisoformat(body["end_date"]),
         segment=body.get("segment", "all"),
-        category=body.get("category"),
+        category=body.get("category") or None,
         status="active",
     )
     db.add(offer)
@@ -245,7 +245,12 @@ async def update_offer(
     ]
     for field in updatable:
         if field in body:
-            setattr(offer, field, body[field])
+            value = body[field]
+            if field in ("start_date", "end_date") and isinstance(value, str):
+                value = date.fromisoformat(value)
+            if field == "category" and value == "":
+                value = None
+            setattr(offer, field, value)
 
     await db.commit()
     return {"id": str(offer.id), "status": offer.status}
