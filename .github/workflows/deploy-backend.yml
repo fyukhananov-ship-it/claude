@@ -103,10 +103,10 @@ jobs:
             cd /opt/clo
 
             # Export new image tag into .env (overwrite BACKEND_IMAGE line)
-            if grep -q '^BACKEND_IMAGE=' .env; then
-              sed -i "s|^BACKEND_IMAGE=.*|BACKEND_IMAGE=${{ needs.build-and-push.outputs.image_full }}|" .env
+            if grep -q '^BACKEND_IMAGE=' clo.env; then
+              sed -i "s|^BACKEND_IMAGE=.*|BACKEND_IMAGE=${{ needs.build-and-push.outputs.image_full }}|" clo.env
             else
-              echo "BACKEND_IMAGE=${{ needs.build-and-push.outputs.image_full }}" >> .env
+              echo "BACKEND_IMAGE=${{ needs.build-and-push.outputs.image_full }}" >> clo.env
             fi
 
             # Login to CR (IAM token from metadata service — works because VM has SA attached)
@@ -115,13 +115,13 @@ jobs:
             fi
 
             # Pull new image
-            docker compose -f docker-compose.prod.yml --env-file .env pull api
+            docker compose -f docker-compose.prod.yml --env-file clo.env pull api
 
             # Run migrations
-            docker compose -f docker-compose.prod.yml --env-file .env run --rm api alembic upgrade head
+            docker compose -f docker-compose.prod.yml --env-file clo.env run --rm api alembic upgrade head
 
             # Restart services (nginx stays up, api is recreated)
-            docker compose -f docker-compose.prod.yml --env-file .env up -d
+            docker compose -f docker-compose.prod.yml --env-file clo.env up -d
 
             # Cleanup old images
             docker image prune -f

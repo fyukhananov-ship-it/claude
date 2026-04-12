@@ -2,12 +2,12 @@
 # Backend runs in container, Postgres/Redis/S3 are Managed YC services
 #
 # Usage on VM:
-#   docker compose -f docker-compose.prod.yml --env-file .env pull
-#   docker compose -f docker-compose.prod.yml --env-file .env up -d
+#   docker compose -f docker-compose.prod.yml --env-file clo.env pull
+#   docker compose -f docker-compose.prod.yml --env-file clo.env up -d
 #
 # First deploy (migrations + seed):
-#   docker compose -f docker-compose.prod.yml --env-file .env run --rm api alembic upgrade head
-#   docker compose -f docker-compose.prod.yml --env-file .env run --rm api python seed.py
+#   docker compose -f docker-compose.prod.yml --env-file clo.env run --rm api alembic upgrade head
+#   docker compose -f docker-compose.prod.yml --env-file clo.env run --rm api python seed.py
 
 services:
   api:
@@ -16,7 +16,7 @@ services:
     container_name: clo-api
     restart: unless-stopped
     env_file:
-      - .env
+      - clo.env
     environment:
       - PYTHONUNBUFFERED=1
     expose:
