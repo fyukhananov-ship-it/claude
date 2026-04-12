@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models.partner import Partner, User
 from app.models.offer import Offer
+from app.models.article import Article
 from app.models.match import Match
 from app.models.transaction import TransactionBatch, Transaction
 from app.models.billing import BillingTransaction
@@ -189,6 +190,7 @@ async def list_offers(
             "status": offer.status,
             "segment": offer.segment,
             "category": offer.category,
+            "is_featured": offer.is_featured,
             "terminals_count": t_count,
         })
     return result
@@ -218,6 +220,7 @@ async def create_offer(
         end_date=date.fromisoformat(body["end_date"]),
         segment=body.get("segment", "all"),
         category=body.get("category") or None,
+        is_featured=body.get("is_featured", False),
         status="active",
     )
     db.add(offer)
@@ -241,7 +244,7 @@ async def update_offer(
         "name", "description", "cashback_type", "cashback_rate",
         "min_check", "max_cashback_per_tx", "max_cashback_per_client",
         "budget", "start_date", "end_date", "segment", "category",
-        "status", "image_url",
+        "status", "image_url", "is_featured",
     ]
     for field in updatable:
         if field in body:
@@ -486,3 +489,106 @@ async def get_pnl(
         ))
 
     return result
+
+
+# ─── Articles CRUD ───
+
+
+@router.get("/articles")
+async def list_articles(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_role("operator")),
+):
+    articles = (await db.execute(
+        select(Article).order_by(Article.sort_order, Article.created_at.desc())
+    )).scalars().all()
+    return [
+        {
+            "id": str(a.id),
+            "title": a.title,
+            "subtitle": a.subtitle,
+            "content": a.content,
+            "image_url": a.image_url,
+            "read_time": a.read_time,
+            "published": a.published,
+            "sort_order": a.sort_order,
+            "created_at": a.created_at.isoformat(),
+        }
+        for a in articles
+    ]
+
+
+@router.post("/articles")
+async def create_article(
+    body: dict,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_role("operator")),
+):
+    article = Article(
+        title=body["title"],
+        subtitle=body.get("subtitle", ""),
+        content=body.get("content", ""),
+        image_url=body.get("image_url") or None,
+        read_time=body.get("read_time", 3),
+        published=body.get("published", False),
+        sort_order=body.get("sort_order", 0),
+    )
+    db.add(article)
+    await db.commit()
+    await db.refresh(article)
+    return {"id": str(article.id)}
+
+
+@router.put("/articles/{article_id}")
+async def update_article(
+    article_id: UUID,
+    body: dict,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_role("operator")),
+):
+    article = await db.get(Article, article_id)
+    if not article:
+        raise HTTPException(404, "Article not found")
+    for field in ["title", "subtitle", "content", "image_url", "read_time", "published", "sort_order"]:
+        if field in body:
+            value = body[field]
+            if field == "image_url" and value == "":
+                value = None
+            setattr(article, field, value)
+    await db.commit()
+    return {"id": str(article.id)}
+
+
+@router.delete("/articles/{article_id}")
+async def delete_article(
+    article_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_role("operator")),
+):
+    article = await db.get(Article, article_id)
+    if not article:
+        raise HTTPException(404, "Article not found")
+    await db.delete(article)
+    await db.commit()
+    return {"ok": True}
+
+
+@router.post("/articles/{article_id}/image")
+async def upload_article_image(
+    article_id: UUID,
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_role("operator")),
+):
+    article = await db.get(Article, article_id)
+    if not article:
+        raise HTTPException(404, "Article not found")
+    if file.content_type not in ("image/png", "image/jpeg", "image/webp"):
+        raise HTTPException(400, "Only PNG, JPG and WebP images are allowed")
+    content = await file.read()
+    if len(content) > 2 * 1024 * 1024:
+        raise HTTPException(400, "Image must be under 2MB")
+    url = await save_upload(content, file.filename or "image.jpg", subdir="articles", content_type=file.content_type)
+    article.image_url = url
+    await db.commit()
+    return {"image_url": url}

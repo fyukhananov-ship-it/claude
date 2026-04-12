@@ -6,6 +6,7 @@ from app.models.match import Match
 from app.models.payout import Payout
 from app.models.billing import BillingTransaction
 from app.models.event import UIEvent
+from app.models.article import Article
 
 __all__ = [
     "Partner", "User",
@@ -16,4 +17,5 @@ __all__ = [
     "Payout",
     "BillingTransaction",
     "UIEvent",
+    "Article",
 ]

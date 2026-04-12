@@ -137,40 +137,38 @@ export default function OfferCard({ offer: o, phoneHash, variant = 'horizontal' 
     </div>
   )
 
-  // ─── HERO: full-width spotlight card ───
+  // ─── HERO: full-width card — image on top, text below ───
   if (variant === 'hero') {
     return (
       <div className="relative">
-        <button onClick={handleOpen} className="w-full rounded-[28px] overflow-hidden press-scale text-left block relative h-[240px] shadow-hero">
-          {o.image_url ? (
-            <img src={o.image_url} alt={o.partner_name} className="absolute inset-0 w-full h-full object-cover" />
-          ) : (
-            <ImageFallback size="lg" />
-          )}
-          {/* Refined vignette */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0C]/85 via-[#0A0A0C]/15 to-transparent" />
-
-          <div className="absolute top-5 left-5 flex gap-2">
-            <Badges />
+        <button onClick={handleOpen} className="w-full rounded-[24px] overflow-hidden press-scale text-left block bg-white shadow-float">
+          <div className="relative h-[200px]">
+            {o.image_url ? (
+              <img src={o.image_url} alt={o.partner_name} className="absolute inset-0 w-full h-full object-cover" />
+            ) : (
+              <ImageFallback size="lg" />
+            )}
+            <div className="absolute top-4 left-4 flex gap-2">
+              <Badges />
+            </div>
+            <div className="absolute top-4 right-4 z-10">
+              <HeartButton size="sm" light />
+            </div>
+            <div className="absolute bottom-4 left-4">
+              <CashbackPill />
+            </div>
           </div>
-
-          <div className="absolute bottom-6 left-6 right-6 z-10">
-            <p className="text-[11px] font-bold text-white/70 uppercase tracking-[0.14em]">{o.partner_name}</p>
-            <p className="text-[20px] font-extrabold text-white mt-1.5 line-clamp-2 leading-[1.15] tracking-[-0.02em]">{o.name}</p>
-            <div className="flex items-end justify-between mt-4">
-              <div>
-                <p className="text-[10px] font-bold text-white/60 uppercase tracking-[0.12em]">Кэшбэк</p>
-                <p className="font-mono-cash text-[40px] font-extrabold text-white leading-none mt-1">{fmtRate(o)}</p>
-              </div>
-              <div className="bg-[#FFDC00] text-[#0A0A0C] px-4 py-2.5 rounded-full font-extrabold text-[13px] shadow-float">
+          <div className="px-5 py-4">
+            <p className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-[0.12em]">{o.partner_name}</p>
+            <p className="text-[17px] font-extrabold text-[#0A0A0C] mt-1 line-clamp-2 leading-[1.2] tracking-[-0.02em]">{o.name}</p>
+            <div className="flex items-center justify-between mt-3">
+              <p className="font-mono-cash text-[28px] font-extrabold text-[#0A0A0C] leading-none">{fmtRate(o)}</p>
+              <div className="bg-[#0A0A0C] text-white px-4 py-2 rounded-full font-bold text-[12px]">
                 Подробнее
               </div>
             </div>
           </div>
         </button>
-        <div className="absolute top-5 right-5 z-10">
-          <HeartButton light />
-        </div>
       </div>
     )
   }

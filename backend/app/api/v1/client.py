@@ -11,6 +11,7 @@ from app.models.offer import Offer
 from app.models.partner import Partner
 from app.models.match import Match
 from app.models.event import UIEvent
+from app.models.article import Article
 from app.models.transaction import Transaction
 from app.schemas.client import (
     ClientOfferResponse, ActivationResponse,
@@ -73,6 +74,7 @@ async def get_client_offers(
             end_date=offer.end_date,
             status=offer_status,
             category=offer.category,
+            is_featured=offer.is_featured,
         ))
 
     # Sort
@@ -244,3 +246,23 @@ async def _get_or_create_client(db: AsyncSession, phone_hash: str) -> Client:
         await db.flush()
 
     return client
+
+
+@router.get("/articles")
+async def get_published_articles(db: AsyncSession = Depends(get_db)):
+    articles = (await db.execute(
+        select(Article)
+        .where(Article.published == True)  # noqa: E712
+        .order_by(Article.sort_order, Article.created_at.desc())
+    )).scalars().all()
+    return [
+        {
+            "id": str(a.id),
+            "title": a.title,
+            "subtitle": a.subtitle,
+            "content": a.content,
+            "image_url": a.image_url,
+            "read_time": a.read_time,
+        }
+        for a in articles
+    ]

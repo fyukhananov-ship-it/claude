@@ -13,6 +13,7 @@ interface OfferItem extends OfferCardItem {
   status: string
   category: string | null
   partner_logo: string | null
+  is_featured?: boolean
 }
 
 const catIcons: Record<string, string> = {
@@ -88,18 +89,20 @@ export default function OfferCatalog() {
     activeOffers.filter(o => activatedIds.has(o.id)).slice(0, 6)
   , [activeOffers, activatedIds])
 
-  // Single hero: highest normalized rate
-  const heroOffer = useMemo(() => {
-    if (activeOffers.length === 0) return null
-    return [...activeOffers].sort((a, b) => normalizedRate(b) - normalizedRate(a))[0]
+  // Featured offers (admin-flagged or top by rate)
+  const featuredOffers = useMemo(() => {
+    const flagged = activeOffers.filter(o => o.is_featured)
+    if (flagged.length > 0) return flagged.slice(0, 5)
+    if (activeOffers.length === 0) return []
+    return [...activeOffers].sort((a, b) => normalizedRate(b) - normalizedRate(a)).slice(0, 1)
   }, [activeOffers])
 
-  // Top picks: next 4 after hero, diverse categories
+  // Top picks: next 4 after featured, diverse categories
   const topPicks = useMemo(() => {
-    if (!heroOffer) return []
-    const seen = new Set<string>([heroOffer.category || ''])
+    const featuredIds = new Set(featuredOffers.map(o => o.id))
+    const seen = new Set<string>(featuredOffers.map(o => o.category || ''))
     return activeOffers
-      .filter(o => o.id !== heroOffer.id)
+      .filter(o => !featuredIds.has(o.id))
       .sort((a, b) => normalizedRate(b) - normalizedRate(a))
       .filter(o => {
         const cat = o.category || ''
@@ -108,7 +111,7 @@ export default function OfferCatalog() {
         return true
       })
       .slice(0, 4)
-  }, [activeOffers, heroOffer])
+  }, [activeOffers, featuredOffers])
 
   // "Скоро закончатся" — offers ending within 14 days
   const expiringSoon = useMemo(() => {
@@ -168,76 +171,65 @@ export default function OfferCatalog() {
       {showOnboarding && <OnboardingStories onComplete={() => setShowOnboarding(false)} />}
 
       {/* Header */}
-      <div className="bg-dark-hero relative text-white px-5 pt-[max(52px,env(safe-area-inset-top,52px))] pb-6">
-        <div className="relative z-10">
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 bg-[#FFDC00] rounded-2xl flex items-center justify-center">
-                <span className="text-[11px] font-extrabold text-[#0A0A0C] tracking-wide">CLO</span>
-              </div>
-              <div>
-                <p className="text-[17px] font-bold tracking-[-0.02em] leading-tight">Подарки и акции</p>
-                <p className="text-[12px] text-white/55 font-medium mt-0.5">Билайн × НСПК</p>
-              </div>
-            </div>
-            <button
-              onClick={() => navigate(`/client/${phoneHash}/cashback`)}
-              className="bg-white/[0.07] border border-white/[0.08] rounded-2xl px-3.5 py-2.5 press-scale backdrop-blur-sm"
-              aria-label="Мой кэшбэк"
-            >
-              <p className="text-[9px] text-white/50 font-bold uppercase tracking-[0.12em]">Кэшбэк</p>
-              <p className="font-mono-cash text-[15px] font-extrabold text-[#FFDC00] leading-none mt-1">{formatCurrency(total)}</p>
-            </button>
-          </div>
+      <div className="bg-[#F5F6F8] px-5 pt-[max(52px,env(safe-area-inset-top,52px))] pb-3">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-[26px] font-extrabold text-[#0A0A0C] tracking-[-0.03em]">Кэшбэк</h1>
+          <button
+            onClick={() => navigate(`/client/${phoneHash}/cashback`)}
+            className="bg-white rounded-2xl px-3.5 py-2 press-scale shadow-card"
+            aria-label="Мой кэшбэк"
+          >
+            <p className="font-mono-cash text-[15px] font-extrabold text-[#0A0A0C] leading-none">{formatCurrency(total)}</p>
+            <p className="text-[10px] text-[#9CA3AF] font-bold mt-0.5">накоплено</p>
+          </button>
+        </div>
 
-          {/* Search */}
-          <div className="relative">
-            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-[17px] h-[17px] text-white/35" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              value={search}
-              onChange={e => { setSearch(e.target.value); if (e.target.value) setActiveCategory(null) }}
-              placeholder="Партнёр или категория"
-              className="w-full pl-11 pr-10 py-3 bg-white/[0.07] text-white placeholder-white/35 rounded-2xl text-[16px] font-medium focus:outline-none focus:bg-white/[0.11] focus:ring-1 focus:ring-[#FFDC00]/40 border border-white/[0.06] backdrop-blur-sm transition-all"
-              aria-label="Поиск"
-            />
-            {search && (
-              <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/10 flex items-center justify-center" aria-label="Очистить">
-                <svg className="w-3.5 h-3.5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-            )}
-          </div>
+        {/* Search */}
+        <div className="relative">
+          <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-[17px] h-[17px] text-[#9CA3AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="text"
+            value={search}
+            onChange={e => { setSearch(e.target.value); if (e.target.value) setActiveCategory(null) }}
+            placeholder="Партнёр или категория"
+            className="w-full pl-11 pr-10 py-3 bg-white text-[#0A0A0C] placeholder-[#9CA3AF] rounded-2xl text-[16px] font-medium focus:outline-none focus:ring-2 focus:ring-[#0A0A0C]/10 shadow-card transition-all"
+            aria-label="Поиск"
+          />
+          {search && (
+            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#F5F6F8] flex items-center justify-center" aria-label="Очистить">
+              <svg className="w-3.5 h-3.5 text-[#6B7280]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Compact chip categories */}
-      <div className="px-5 py-4 overflow-x-auto no-scrollbar bg-[#F5F6F8]">
+      {/* Category chips */}
+      <div className="px-5 pb-4 overflow-x-auto no-scrollbar bg-[#F5F6F8]">
         <div className="flex gap-2 min-w-max">
           <button
             onClick={() => { setActiveCategory(null); setSearch('') }}
             className={cn(
-              'px-4 py-2 rounded-full text-[13px] font-bold shrink-0 press-scale transition-all',
+              'px-4 py-2 rounded-full text-[13px] font-semibold shrink-0 press-scale transition-all',
               !activeCategory
-                ? 'bg-[#0A0A0C] text-white shadow-card'
-                : 'bg-white text-[#6B7280] shadow-card'
+                ? 'bg-[#0A0A0C] text-white'
+                : 'bg-white text-[#6B7280] border border-[#E5E7EB]'
             )}
           >
-            ⭐ Все
+            Все
           </button>
           {CATEGORIES.map(cat => (
             <button
               key={cat}
               onClick={() => { setActiveCategory(cat); setSearch('') }}
               className={cn(
-                'px-4 py-2 rounded-full text-[13px] font-bold shrink-0 press-scale transition-all whitespace-nowrap',
+                'px-4 py-2 rounded-full text-[13px] font-semibold shrink-0 press-scale transition-all whitespace-nowrap',
                 activeCategory === cat
-                  ? 'bg-[#FFDC00] text-[#0A0A0C] shadow-card'
-                  : 'bg-white text-[#6B7280] shadow-card'
+                  ? 'bg-[#0A0A0C] text-white'
+                  : 'bg-white text-[#6B7280] border border-[#E5E7EB]'
               )}
             >
-              <span className="mr-1.5">{catIcons[cat]}</span>
               {cat}
             </button>
           ))}
@@ -262,14 +254,27 @@ export default function OfferCatalog() {
         </div>
       ) : isHome ? (
         <div className="pb-28">
-          {/* ═══ HERO SPOTLIGHT — Offer of the day ═══ */}
-          {heroOffer && phoneHash && (
-            <div className="px-5 mb-6">
-              <div className="flex items-baseline justify-between mb-3">
-                <h2 className="text-[11px] font-extrabold text-[#D97706] uppercase tracking-[0.14em]">★ Топ оффер</h2>
-                <span className="text-[11px] text-[#9CA3AF] font-bold uppercase tracking-[0.1em]">Сегодня</span>
+          {/* ═══ FEATURED OFFERS — swipeable ═══ */}
+          {featuredOffers.length > 0 && phoneHash && (
+            <div className="mb-6">
+              <div className="px-5 flex items-baseline justify-between mb-3">
+                <h2 className="text-[11px] font-extrabold text-[#D97706] uppercase tracking-[0.14em]">Топ офферы</h2>
               </div>
-              <OfferCard offer={heroOffer} phoneHash={phoneHash} variant="hero" />
+              {featuredOffers.length === 1 ? (
+                <div className="px-5">
+                  <OfferCard offer={featuredOffers[0]} phoneHash={phoneHash} variant="hero" />
+                </div>
+              ) : (
+                <div className="pl-5 overflow-x-auto no-scrollbar snap-x snap-mandatory">
+                  <div className="flex gap-4 pr-5">
+                    {featuredOffers.map(o => (
+                      <div key={o.id} className="snap-start shrink-0 w-[85vw] max-w-[380px]">
+                        <OfferCard offer={o} phoneHash={phoneHash} variant="hero" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -277,8 +282,8 @@ export default function OfferCatalog() {
           {myActivations.length > 0 && phoneHash && (
             <div className="mb-6">
               <div className="px-5 flex items-baseline justify-between mb-3">
-                <h2 className="text-[18px] font-extrabold text-[#0A0A0C] tracking-[-0.02em]">Мои активации</h2>
-                <span className="text-[12px] text-[#9CA3AF] font-bold">{myActivations.length}</span>
+                <h2 className="text-[17px] font-bold text-[#0A0A0C] tracking-[-0.02em]">Мои активации</h2>
+                <span className="text-[12px] text-[#9CA3AF] font-medium">{myActivations.length}</span>
               </div>
               <div className="pl-5 overflow-x-auto no-scrollbar">
                 <div className="flex gap-2 pr-5">
@@ -292,7 +297,7 @@ export default function OfferCatalog() {
           {topPicks.length > 0 && phoneHash && (
             <div className="px-5 mb-6">
               <div className="flex items-baseline justify-between mb-3">
-                <h2 className="text-[18px] font-extrabold text-[#0A0A0C] tracking-[-0.02em]">Для вас</h2>
+                <h2 className="text-[17px] font-bold text-[#0A0A0C] tracking-[-0.02em]">Для вас</h2>
                 <span className="text-[11px] text-[#9CA3AF] font-bold uppercase tracking-[0.1em]">Лучшее</span>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -301,53 +306,23 @@ export default function OfferCatalog() {
             </div>
           )}
 
-          {/* ═══ SLOT MACHINE BANNER ═══ */}
+          {/* ═══ SPIN BANNER ═══ */}
           <div className="px-5 mb-6">
-            {(() => {
-              let slotResult: { partner: string; rate: string; color: string; desc: string } | null = null
-              try { const raw = localStorage.getItem('clo_slot_result'); if (raw) slotResult = JSON.parse(raw) } catch {}
-
-              return slotResult ? (
-                <button onClick={() => navigate(`/client/${phoneHash}/spin/offer-1`)}
-                  className="w-full relative rounded-[22px] p-5 press-scale overflow-hidden text-left shadow-float"
-                  style={{ background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)' }}>
-                  <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-emerald-500/10 blur-2xl" />
-                  <div className="relative z-10 flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shrink-0 shadow-lg">
-                      <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[10px] font-bold text-white/60 uppercase tracking-[0.14em]">Ваш выигрыш</p>
-                      <div className="flex items-baseline gap-2 mt-1">
-                        <span className="font-mono-cash text-[28px] font-extrabold text-white leading-none">{slotResult.rate}</span>
-                        <span className="text-[14px] font-bold text-white/90 truncate">{slotResult.partner}</span>
-                      </div>
-                      <p className="text-[12px] text-white/55 mt-1.5 font-medium">Нажмите, чтобы крутить снова</p>
-                    </div>
-                  </div>
-                </button>
-              ) : (
-                <button onClick={() => navigate(`/client/${phoneHash}/spin/offer-1`)}
-                  className="w-full bg-dark-hero relative rounded-[22px] p-5 press-scale overflow-hidden text-left shadow-float">
-                  <div className="relative z-10 flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-[#FFDC00] flex items-center justify-center shrink-0">
-                      <svg className="w-6 h-6 text-[#0A0A0C]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-[15px] font-extrabold text-white tracking-[-0.01em]">Испытайте удачу</p>
-                      <p className="text-[12px] text-white/60 mt-0.5 font-medium">Кэшбэк до 30% за один спин</p>
-                    </div>
-                    <svg className="w-5 h-5 text-white/40 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </button>
-              )
-            })()}
+            <button onClick={() => navigate(`/client/${phoneHash}/spin/offer-1`)}
+              className="w-full bg-[#0A0A0C] rounded-[20px] p-4 press-scale text-left flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-[#FFDC00] flex items-center justify-center shrink-0">
+                <svg className="w-5 h-5 text-[#0A0A0C]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[14px] font-bold text-white tracking-[-0.01em]">Колесо фортуны</p>
+                <p className="text-[12px] text-white/50 mt-0.5">Выиграйте повышенный кэшбэк</p>
+              </div>
+              <svg className="w-5 h-5 text-white/30 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
 
           {/* ═══ СКОРО ЗАКОНЧАТСЯ — vertical list ═══ */}
@@ -356,7 +331,7 @@ export default function OfferCatalog() {
               <div className="flex items-baseline justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                  <h2 className="text-[18px] font-extrabold text-[#0A0A0C] tracking-[-0.02em]">Скоро закончатся</h2>
+                  <h2 className="text-[17px] font-bold text-[#0A0A0C] tracking-[-0.02em]">Скоро закончатся</h2>
                 </div>
                 <button
                   onClick={() => { setSortMode('expiring'); setActiveCategory(null); window.scrollTo(0, 0) }}
@@ -375,7 +350,7 @@ export default function OfferCatalog() {
           {featuredFood.length > 0 && phoneHash && (
             <div className="mb-6">
               <div className="px-5 flex items-baseline justify-between mb-3">
-                <h2 className="text-[18px] font-extrabold text-[#0A0A0C] tracking-[-0.02em]">Поесть вне дома</h2>
+                <h2 className="text-[17px] font-bold text-[#0A0A0C] tracking-[-0.02em]">Поесть вне дома</h2>
                 <button
                   onClick={() => { setActiveCategory('Поесть вне дома'); window.scrollTo(0, 0) }}
                   className="text-[12px] font-bold text-[#6B7280] press-scale"
@@ -395,7 +370,7 @@ export default function OfferCatalog() {
           {newArrivals.length > 0 && phoneHash && (
             <div className="px-5 mb-6">
               <div className="flex items-baseline justify-between mb-3">
-                <h2 className="text-[18px] font-extrabold text-[#0A0A0C] tracking-[-0.02em]">Новинки</h2>
+                <h2 className="text-[17px] font-bold text-[#0A0A0C] tracking-[-0.02em]">Новинки</h2>
                 <button
                   onClick={() => { setSortMode('new'); setActiveCategory(null); window.scrollTo(0, 0) }}
                   className="text-[12px] font-bold text-[#6B7280] press-scale"
@@ -414,7 +389,7 @@ export default function OfferCatalog() {
 
           {/* ═══ ALL CATEGORIES ═══ */}
           <div className="px-5 mt-6">
-            <h2 className="text-[18px] font-extrabold text-[#0A0A0C] tracking-[-0.02em] mb-3">Все категории</h2>
+            <h2 className="text-[17px] font-bold text-[#0A0A0C] tracking-[-0.02em] mb-3">Все категории</h2>
             <div className="grid grid-cols-2 gap-2.5">
               {categoriesWithCounts.map(c => (
                 <button

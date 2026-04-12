@@ -9,6 +9,7 @@ interface Offer {
   max_cashback_per_client: string; budget: string; budget_spent: string
   start_date: string; end_date: string; status: string; segment: string; category: string; terminals_count: number
   image_url?: string | null
+  is_featured?: boolean
 }
 
 interface Partner { id: string; name: string }
@@ -32,7 +33,7 @@ const in90 = new Date(Date.now() + 90 * 86400000).toISOString().split('T')[0]
 const emptyForm = {
   partner_id: '', name: '', description: '', cashback_type: 'percent', cashback_rate: '',
   min_check: '', max_cashback_per_tx: '', max_cashback_per_client: '', budget: '',
-  start_date: today, end_date: in90, segment: 'all', category: '', image_url: '',
+  start_date: today, end_date: in90, segment: 'all', category: '', image_url: '', is_featured: false,
 }
 
 // Compress image to JPEG data URL (max dimension, quality 0-1)
@@ -127,6 +128,7 @@ export default function OfferModeration() {
       segment: o.segment,
       category: o.category || '',
       image_url: o.image_url || '',
+      is_featured: o.is_featured || false,
     })
     setShowCreate(true)
   }
@@ -306,6 +308,12 @@ export default function OfferModeration() {
                   </select>
                 </Field>
               </div>
+
+              {/* Featured toggle */}
+              <label className="flex items-center gap-3 py-2 cursor-pointer">
+                <input type="checkbox" checked={!!form.is_featured} onChange={e => setForm(f => ({ ...f, is_featured: e.target.checked }))} className="w-5 h-5 rounded-lg accent-[#FFD500]" />
+                <span className="text-[13px] font-bold text-[#111]">Топ оффер (отображается в карусели наверху)</span>
+              </label>
 
               {/* Name + Description */}
               <Field label="Название оффера">

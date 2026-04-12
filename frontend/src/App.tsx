@@ -30,6 +30,7 @@ import Partners from './admin/pages/Partners'
 import OfferModeration from './admin/pages/OfferModeration'
 import RegistryUpload from './admin/pages/RegistryUpload'
 import Finance from './admin/pages/Finance'
+import AdminArticles from './admin/pages/Articles'
 
 export default function App() {
   return (
@@ -80,6 +81,7 @@ export default function App() {
           <Route path="partners" element={<Partners />} />
           <Route path="moderation" element={<OfferModeration />} />
           <Route path="registry" element={<RegistryUpload />} />
+          <Route path="articles" element={<AdminArticles />} />
           <Route path="finance" element={<Finance />} />
         </Route>
 

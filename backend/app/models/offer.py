@@ -40,6 +40,7 @@ class Offer(Base):
         Enum("all", "new", "existing", name="offer_segment"), default="all"
     )
     category: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    is_featured: Mapped[bool] = mapped_column(default=False)
     geo: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(

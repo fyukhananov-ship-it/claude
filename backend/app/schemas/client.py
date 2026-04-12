@@ -19,6 +19,7 @@ class ClientOfferResponse(BaseModel):
     end_date: date
     status: str  # new, activated, cashback_received
     category: str | None = None
+    is_featured: bool = False
 
 
 class ActivationResponse(BaseModel):
