@@ -157,40 +157,39 @@ async def list_offers(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(require_role("operator")),
 ):
-    offers = (await db.execute(
-        select(Offer).order_by(Offer.created_at.desc())
-    )).scalars().all()
+    from app.models.offer import OfferTerminal
+
+    rows = (await db.execute(
+        select(Offer, Partner.name)
+        .join(Partner, Offer.partner_id == Partner.id)
+        .order_by(Offer.created_at.desc())
+    )).all()
 
     result = []
-    for o in offers:
-        partner = await db.get(Partner, o.partner_id)
-        terminals_count = (await db.execute(
-            select(func.count()).select_from(
-                select(1).where(
-                    Offer.id == o.id
-                ).correlate(Offer).subquery()
-            )
+    for offer, partner_name in rows:
+        t_count = (await db.execute(
+            select(func.count(OfferTerminal.id)).where(OfferTerminal.offer_id == offer.id)
         )).scalar() or 0
         result.append({
-            "id": str(o.id),
-            "partner_id": str(o.partner_id),
-            "partner_name": partner.name if partner else "—",
-            "name": o.name,
-            "description": o.description,
-            "image_url": o.image_url,
-            "cashback_type": o.cashback_type,
-            "cashback_rate": str(o.cashback_rate),
-            "min_check": str(o.min_check),
-            "max_cashback_per_tx": str(o.max_cashback_per_tx),
-            "max_cashback_per_client": str(o.max_cashback_per_client),
-            "budget": str(o.budget),
-            "budget_spent": str(o.budget_spent),
-            "start_date": o.start_date.isoformat(),
-            "end_date": o.end_date.isoformat(),
-            "status": o.status,
-            "segment": o.segment,
-            "category": o.category,
-            "terminals_count": len(o.terminals) if o.terminals else 0,
+            "id": str(offer.id),
+            "partner_id": str(offer.partner_id),
+            "partner_name": partner_name,
+            "name": offer.name,
+            "description": offer.description,
+            "image_url": offer.image_url,
+            "cashback_type": offer.cashback_type,
+            "cashback_rate": str(offer.cashback_rate),
+            "min_check": str(offer.min_check),
+            "max_cashback_per_tx": str(offer.max_cashback_per_tx),
+            "max_cashback_per_client": str(offer.max_cashback_per_client),
+            "budget": str(offer.budget),
+            "budget_spent": str(offer.budget_spent),
+            "start_date": offer.start_date.isoformat(),
+            "end_date": offer.end_date.isoformat(),
+            "status": offer.status,
+            "segment": offer.segment,
+            "category": offer.category,
+            "terminals_count": t_count,
         })
     return result
 
