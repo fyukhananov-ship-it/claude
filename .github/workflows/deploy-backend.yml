@@ -91,27 +91,30 @@ jobs:
           strip_components: 0
           overwrite: true
 
+      - name: Compute deploy image tag
+        id: deploy_meta
+        run: |
+          SHA_SHORT=$(git rev-parse --short HEAD)
+          echo "image=cr.yandex/${{ env.YC_REGISTRY_ID }}/${{ env.IMAGE_NAME }}:sha-${SHA_SHORT}" >> "$GITHUB_OUTPUT"
+
       - name: Pull image, run migrations, restart services
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ env.VM_IP }}
           username: ${{ env.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
-          envs: IMAGE_FULL
           script: |
             set -e
             cd /opt/clo
 
-            # Export new image tag into .env (overwrite BACKEND_IMAGE line)
-            if grep -q '^BACKEND_IMAGE=' clo.env; then
-              sed -i "s|^BACKEND_IMAGE=.*|BACKEND_IMAGE=${{ needs.build-and-push.outputs.image_full }}|" clo.env
-            else
-              echo "BACKEND_IMAGE=${{ needs.build-and-push.outputs.image_full }}" >> clo.env
-            fi
+            IMAGE="${{ steps.deploy_meta.outputs.image }}"
+            echo "Deploying image: ${IMAGE}"
 
-            # Login to CR (IAM token from metadata service — works because VM has SA attached)
-            if command -v yc &> /dev/null; then
-              yc iam create-token | docker login --username iam --password-stdin cr.yandex
+            # Update BACKEND_IMAGE in clo.env
+            if grep -q '^BACKEND_IMAGE=' clo.env; then
+              sed -i "s|^BACKEND_IMAGE=.*|BACKEND_IMAGE=${IMAGE}|" clo.env
+            else
+              echo "BACKEND_IMAGE=${IMAGE}" >> clo.env
             fi
 
             # Pull new image
