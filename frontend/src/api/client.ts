@@ -1,11 +1,12 @@
 import { mockApiCall } from './mockData'
 
 // API base URL — set via VITE_API_URL env at build time.
-// Empty string falls back to mock mode (for GitHub Pages demo).
+// Empty string means same-origin (API served by same nginx).
+// Mock mode is explicit via VITE_MOCK_MODE=true (for GitHub Pages demo).
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) || ''
 
 function shouldUseMocks(): boolean {
-  return !API_BASE
+  return import.meta.env.VITE_MOCK_MODE === 'true'
 }
 
 interface RequestOptions extends RequestInit {

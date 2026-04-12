@@ -32,7 +32,7 @@ jobs:
         working-directory: frontend
         run: npm run build
         env:
-          VITE_USE_MOCKS: 'true'
+          VITE_MOCK_MODE: 'true'
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
