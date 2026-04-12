@@ -212,7 +212,7 @@ export default function OfferCatalog() {
       </div>
 
       {/* Category chips */}
-      <div className="px-5 pb-4 overflow-x-auto no-scrollbar bg-[#F5F6F8]">
+      <div className="px-5 pt-3 pb-4 overflow-x-auto no-scrollbar bg-[#F5F6F8]">
         <div className="flex gap-2 min-w-max">
           <button
             onClick={() => { setActiveCategory(null); setSearch('') }}
