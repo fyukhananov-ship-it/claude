@@ -101,7 +101,7 @@ export default function Articles() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-[28px] font-extrabold text-[#111] tracking-[-0.03em]">Полезное</h1>
+          <h1 className="text-[28px] font-extrabold text-[#111] tracking-[-0.03em]">Журнал</h1>
           <p className="text-[13px] text-[#999] mt-1 font-medium">{articles.length} статей, {articles.filter(a => a.published).length} опубликовано</p>
         </div>
         <button onClick={openCreate}

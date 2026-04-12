@@ -14,6 +14,7 @@ import Article from './client/pages/Article'
 import Profile from './client/pages/Profile'
 import Favorites from './client/pages/Favorites'
 import Help from './client/pages/Help'
+import Journal from './client/pages/Journal'
 
 // Partner pages
 import PartnerLayout from './partner/layout/PartnerLayout'
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="/client/:phoneHash/activate/:offerId" element={<OfferDetail />} />
         <Route path="/client/:phoneHash/spin/:offerId" element={<SpinWheel />} />
         <Route path="/client/:phoneHash/thanks" element={<ThankYou />} />
+        <Route path="/client/:phoneHash/journal" element={<Journal />} />
         <Route path="/client/:phoneHash/cashback" element={<CashbackHistory />} />
         <Route path="/client/:phoneHash/profile" element={<Profile />} />
         <Route path="/client/:phoneHash/favorites" element={<Favorites />} />

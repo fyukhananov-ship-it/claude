@@ -4,7 +4,6 @@ import { api } from '@/api/client'
 import { CATEGORIES } from '@/api/mockData'
 import { formatCurrency, cn } from '@/lib/utils'
 import OnboardingStories, { useOnboardingSeen } from '@/client/components/OnboardingStories'
-import ArticlesWidget from '@/client/components/ArticlesWidget'
 import OfferCard, { OfferCardItem } from '@/client/components/OfferCard'
 import TabBar from '@/client/components/TabBar'
 
@@ -171,35 +170,45 @@ export default function OfferCatalog() {
       {showOnboarding && <OnboardingStories onComplete={() => setShowOnboarding(false)} />}
 
       {/* Header */}
-      <div className="bg-[#F5F6F8] px-5 pt-[max(52px,env(safe-area-inset-top,52px))] pb-3">
+      <div className="bg-white px-5 pt-[max(52px,env(safe-area-inset-top,52px))] pb-3 border-b border-[#F0F0F0]">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-[26px] font-extrabold text-[#0A0A0C] tracking-[-0.03em]">Кэшбэк</h1>
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 bg-gradient-to-br from-[#F59E0B] to-[#D97706] rounded-xl flex items-center justify-center">
+              <svg className="w-[18px] h-[18px] text-white" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-5l-3 3-1.5-1.5L12 7.5l5.5 5.5L16 14.5l-3-3v5h-2z" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-[20px] font-extrabold text-[#1C1917] tracking-[-0.03em] leading-none">Med</h1>
+              <p className="text-[10px] text-[#9CA3AF] font-medium mt-0.5">by Beeline</p>
+            </div>
+          </div>
           <button
             onClick={() => navigate(`/client/${phoneHash}/cashback`)}
-            className="bg-white rounded-2xl px-3.5 py-2 press-scale shadow-card"
+            className="bg-gradient-to-r from-[#FFFBEB] to-[#FEF3C7] rounded-2xl px-3.5 py-2 press-scale border border-[#F59E0B]/20"
             aria-label="Мой кэшбэк"
           >
-            <p className="font-mono-cash text-[15px] font-extrabold text-[#0A0A0C] leading-none">{formatCurrency(total)}</p>
-            <p className="text-[10px] text-[#9CA3AF] font-bold mt-0.5">накоплено</p>
+            <p className="font-mono-cash text-[15px] font-extrabold text-[#92400E] leading-none">{formatCurrency(total)}</p>
+            <p className="text-[9px] text-[#D97706] font-semibold mt-0.5">накоплено</p>
           </button>
         </div>
 
         {/* Search */}
         <div className="relative">
-          <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-[17px] h-[17px] text-[#9CA3AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[16px] h-[16px] text-[#9CA3AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
             type="text"
             value={search}
             onChange={e => { setSearch(e.target.value); if (e.target.value) setActiveCategory(null) }}
-            placeholder="Партнёр или категория"
-            className="w-full pl-11 pr-10 py-3 bg-white text-[#0A0A0C] placeholder-[#9CA3AF] rounded-2xl text-[16px] font-medium focus:outline-none focus:ring-2 focus:ring-[#0A0A0C]/10 shadow-card transition-all"
+            placeholder="Найти партнёра или категорию"
+            className="w-full pl-10 pr-10 py-2.5 bg-[#F5F6F8] text-[#1C1917] placeholder-[#9CA3AF] rounded-xl text-[16px] font-medium focus:outline-none focus:ring-2 focus:ring-[#F59E0B]/30 transition-all"
             aria-label="Поиск"
           />
           {search && (
-            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#F5F6F8] flex items-center justify-center" aria-label="Очистить">
-              <svg className="w-3.5 h-3.5 text-[#6B7280]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#E5E7EB] flex items-center justify-center" aria-label="Очистить">
+              <svg className="w-3 h-3 text-[#6B7280]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           )}
         </div>
@@ -384,9 +393,6 @@ export default function OfferCatalog() {
             </div>
           )}
 
-          {/* ═══ ARTICLES ═══ */}
-          {phoneHash && <ArticlesWidget phoneHash={phoneHash} />}
-
           {/* ═══ ALL CATEGORIES ═══ */}
           <div className="px-5 mt-6">
             <h2 className="text-[17px] font-bold text-[#0A0A0C] tracking-[-0.02em] mb-3">Все категории</h2>
@@ -453,7 +459,7 @@ export default function OfferCatalog() {
         </div>
       )}
 
-      <TabBar active="offers" />
+      <TabBar active="home" />
     </div>
   )
 }
