@@ -113,11 +113,15 @@ export default function SpinWheel() {
   }
 
   const handleActivate = async () => {
-    if (!phoneHash || !offerId) return
-    try {
-      await api.post(`/client/${phoneHash}/activate/${offerId}`)
-      navigate(`/client/${phoneHash}/thanks`)
-    } catch {}
+    if (!phoneHash || winIdx === null) return
+    const prize = PRIZES[winIdx]
+    localStorage.setItem('clo_slot_result', JSON.stringify({
+      partner: prize.partner,
+      rate: prize.rate,
+      color: prize.color,
+      desc: prize.desc,
+    }))
+    navigate(`/client/${phoneHash}`)
   }
 
   const winner = winIdx !== null ? PRIZES[winIdx] : null
