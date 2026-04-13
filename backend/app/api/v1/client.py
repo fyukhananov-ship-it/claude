@@ -259,6 +259,20 @@ async def get_brand(db: AsyncSession = Depends(get_db)):
     }
 
 
+@router.get("/onboarding")
+async def get_onboarding(db: AsyncSession = Depends(get_db)):
+    import json
+    row = (await db.execute(
+        select(AppSettings).where(AppSettings.key == "onboarding_slides")
+    )).scalar_one_or_none()
+    if row and row.value:
+        try:
+            return json.loads(row.value)
+        except Exception:
+            pass
+    return []
+
+
 @router.get("/articles")
 async def get_published_articles(db: AsyncSession = Depends(get_db)):
     articles = (await db.execute(

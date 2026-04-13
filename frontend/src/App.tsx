@@ -34,6 +34,7 @@ import RegistryUpload from './admin/pages/RegistryUpload'
 import Finance from './admin/pages/Finance'
 import AdminArticles from './admin/pages/Articles'
 import BrandSettings from './admin/pages/BrandSettings'
+import AdminOnboarding from './admin/pages/Onboarding'
 
 export default function App() {
   return (
@@ -87,6 +88,7 @@ export default function App() {
           <Route path="moderation" element={<OfferModeration />} />
           <Route path="registry" element={<RegistryUpload />} />
           <Route path="articles" element={<AdminArticles />} />
+          <Route path="onboarding" element={<AdminOnboarding />} />
           <Route path="brand" element={<BrandSettings />} />
           <Route path="finance" element={<Finance />} />
         </Route>

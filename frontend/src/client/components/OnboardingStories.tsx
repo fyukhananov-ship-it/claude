@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { cn } from '@/lib/utils'
+import { api } from '@/api/client'
 
 const STORAGE_KEY = 'clo_onboarding_seen'
 
@@ -12,7 +13,7 @@ interface Story {
   accent: string
 }
 
-const stories: Story[] = [
+const defaultStories: Story[] = [
   {
     bg: 'from-[#111] via-[#1a1a2e] to-[#111]',
     image: `${import.meta.env.BASE_URL}assets/onboarding/welcome.jpg`,
@@ -52,6 +53,7 @@ const DOUBLE_TAP_DELAY = 300
 const SWIPE_DOWN_THRESHOLD = 80
 
 export default function OnboardingStories({ onComplete }: { onComplete: () => void }) {
+  const [stories, setStories] = useState<Story[]>(defaultStories)
   const [current, setCurrent] = useState(0)
   const [progress, setProgress] = useState(0)
   const [exiting, setExiting] = useState(false)
@@ -62,6 +64,13 @@ export default function OnboardingStories({ onComplete }: { onComplete: () => vo
   const currentRef = useRef(current)
   currentRef.current = current
 
+  // Load stories from API, fall back to defaults
+  useEffect(() => {
+    api.get<Story[]>('/client/onboarding')
+      .then(d => { if (Array.isArray(d) && d.length > 0) setStories(d) })
+      .catch(() => {})
+  }, [])
+
   // Preload all story images on mount
   useEffect(() => {
     stories.forEach(s => {
@@ -70,7 +79,7 @@ export default function OnboardingStories({ onComplete }: { onComplete: () => vo
         img.src = s.image
       }
     })
-  }, [])
+  }, [stories])
 
   const clearTimers = useCallback(() => {
     if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null }
