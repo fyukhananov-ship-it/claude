@@ -198,7 +198,6 @@ export default function OfferCatalog() {
             aria-label="Мой кэшбэк"
           >
             <p className="font-mono-cash text-[15px] font-extrabold text-[#5B21B6] leading-none">{formatCurrency(total)}</p>
-            <p className="text-[9px] text-[#7C3AED] font-medium mt-0.5">накоплено</p>
           </button>
         </div>
 

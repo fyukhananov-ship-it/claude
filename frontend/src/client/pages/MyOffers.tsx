@@ -35,6 +35,14 @@ export default function MyOffers() {
   const navigate = useNavigate()
   const [offers, setOffers] = useState<ActivatedOffer[]>([])
   const [loading, setLoading] = useState(true)
+  const [spinResult, setSpinResult] = useState<{ partner: string; rate: string } | null>(null)
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('clo_slot_result')
+      if (raw) setSpinResult(JSON.parse(raw))
+    } catch {}
+  }, [])
 
   useEffect(() => {
     if (!phoneHash) return
@@ -58,7 +66,7 @@ export default function MyOffers() {
           <div className="flex items-center justify-center py-20">
             <div className="w-8 h-8 border-[3px] border-[#7C3AED] border-t-transparent rounded-full animate-spin" />
           </div>
-        ) : offers.length === 0 ? (
+        ) : offers.length === 0 && !spinResult ? (
           <div className="text-center py-20">
             <div className="w-16 h-16 bg-[#F5F6F8] rounded-full flex items-center justify-center mx-auto mb-3">
               <svg className="w-7 h-7 text-[#9CA3AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -76,6 +84,26 @@ export default function MyOffers() {
           </div>
         ) : (
           <div className="space-y-3">
+            {/* Spin wheel result */}
+            {spinResult && (
+              <div className="bg-white rounded-[16px] p-3.5 flex items-center gap-3.5 shadow-card">
+                <div className="w-14 h-14 rounded-2xl overflow-hidden shrink-0 flex items-center justify-center"
+                  style={{ background: 'linear-gradient(135deg, #7C3AED, #4C1D95)' }}>
+                  <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[14px] font-bold text-[#1C1917] truncate">{spinResult.partner}</p>
+                  <p className="text-[12px] text-[#6B7280] mt-0.5">Выигрыш в колесе фортуны</p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="font-mono-cash text-[20px] font-extrabold text-[#7C3AED] leading-none">{spinResult.rate}</p>
+                  <p className="text-[9px] text-[#9CA3AF] font-medium mt-0.5">кэшбэк</p>
+                </div>
+              </div>
+            )}
+
             {offers.map(o => {
               const t = tint(o.partner_name)
               return (
