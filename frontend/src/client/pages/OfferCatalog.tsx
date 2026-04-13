@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react' // v2
 import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '@/api/client'
 import { CATEGORIES } from '@/api/mockData'
