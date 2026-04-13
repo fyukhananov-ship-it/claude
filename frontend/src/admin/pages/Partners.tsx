@@ -136,7 +136,7 @@ export default function Partners() {
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold text-[#999] uppercase tracking-[0.08em] mb-1.5">Email</label>
-                  <input type="email" value={form.contact_email} onChange={e => setForm({...form, contact_email: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-[#eee] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#FFD500]/40" placeholder="partner@example.com" />
+                  <input value={form.contact_email} onChange={e => setForm({...form, contact_email: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-[#eee] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#FFD500]/40" placeholder="partner@example.com" />
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold text-[#999] uppercase tracking-[0.08em] mb-1.5">Телефон</label>
@@ -155,7 +155,7 @@ export default function Partners() {
                   <button onClick={() => setModal(null)} className="flex-1 py-3 rounded-xl bg-[#f0f0f0] text-[#666] text-[13px] font-bold press-scale">Отмена</button>
                   <button
                     onClick={modal === 'create' ? handleCreate : handleEdit}
-                    disabled={saving || !form.name || !form.contact_email}
+                    disabled={saving || !form.name}
                     className="flex-1 py-3 rounded-xl bg-[#FFD500] text-[#111] text-[13px] font-bold press-scale disabled:opacity-50"
                   >
                     {saving ? 'Сохранение...' : modal === 'create' ? 'Создать' : 'Сохранить'}
