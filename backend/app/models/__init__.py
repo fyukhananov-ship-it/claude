@@ -7,6 +7,7 @@ from app.models.payout import Payout
 from app.models.billing import BillingTransaction
 from app.models.event import UIEvent
 from app.models.article import Article
+from app.models.settings import AppSettings
 
 __all__ = [
     "Partner", "User",
@@ -18,4 +19,5 @@ __all__ = [
     "BillingTransaction",
     "UIEvent",
     "Article",
+    "AppSettings",
 ]

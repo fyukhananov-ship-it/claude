@@ -10,6 +10,7 @@ from app.database import get_db
 from app.models.partner import Partner, User
 from app.models.offer import Offer
 from app.models.article import Article
+from app.models.settings import AppSettings
 from app.models.match import Match
 from app.models.transaction import TransactionBatch, Transaction
 from app.models.billing import BillingTransaction
@@ -592,3 +593,97 @@ async def upload_article_image(
     article.image_url = url
     await db.commit()
     return {"image_url": url}
+
+
+# ─── App Settings ───
+
+
+@router.get("/settings")
+async def get_settings(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_role("operator")),
+):
+    rows = (await db.execute(select(AppSettings))).scalars().all()
+    return {r.key: r.value for r in rows}
+
+
+@router.put("/settings")
+async def update_settings(
+    body: dict,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_role("operator")),
+):
+    for key, value in body.items():
+        existing = (await db.execute(
+            select(AppSettings).where(AppSettings.key == key)
+        )).scalar_one_or_none()
+        if existing:
+            existing.value = str(value)
+        else:
+            db.add(AppSettings(key=key, value=str(value)))
+    await db.commit()
+    return {"ok": True}
+
+
+@router.post("/settings/logo")
+async def upload_logo(
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_role("operator")),
+):
+    if file.content_type not in ("image/png", "image/jpeg", "image/webp", "image/svg+xml"):
+        raise HTTPException(400, "Only PNG, JPG, WebP and SVG are allowed")
+    content = await file.read()
+    if len(content) > 2 * 1024 * 1024:
+        raise HTTPException(400, "Image must be under 2MB")
+    url = await save_upload(content, file.filename or "logo.png", subdir="brand", content_type=file.content_type)
+    existing = (await db.execute(
+        select(AppSettings).where(AppSettings.key == "brand_logo")
+    )).scalar_one_or_none()
+    if existing:
+        existing.value = url
+    else:
+        db.add(AppSettings(key="brand_logo", value=url))
+    await db.commit()
+    return {"logo_url": url}
+
+
+# ─── Partner Edit ───
+
+
+@router.put("/partners/{partner_id}")
+async def update_partner(
+    partner_id: UUID,
+    body: dict,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_role("operator")),
+):
+    partner = await db.get(Partner, partner_id)
+    if not partner:
+        raise HTTPException(404, "Partner not found")
+    for field in ["name", "contact_email", "contact_phone", "status"]:
+        if field in body:
+            setattr(partner, field, body[field])
+    await db.commit()
+    return {"id": str(partner.id), "name": partner.name}
+
+
+@router.post("/partners/{partner_id}/logo")
+async def upload_partner_logo(
+    partner_id: UUID,
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_role("operator")),
+):
+    partner = await db.get(Partner, partner_id)
+    if not partner:
+        raise HTTPException(404, "Partner not found")
+    if file.content_type not in ("image/png", "image/jpeg", "image/webp"):
+        raise HTTPException(400, "Only PNG, JPG and WebP images are allowed")
+    content = await file.read()
+    if len(content) > 2 * 1024 * 1024:
+        raise HTTPException(400, "Image must be under 2MB")
+    url = await save_upload(content, file.filename or "logo.jpg", subdir="partners", content_type=file.content_type)
+    partner.logo_url = url
+    await db.commit()
+    return {"logo_url": url}

@@ -141,30 +141,29 @@ export default function OfferCard({ offer: o, phoneHash, variant = 'horizontal' 
   if (variant === 'hero') {
     return (
       <div className="relative">
-        <button onClick={handleOpen} className="w-full rounded-[24px] overflow-hidden press-scale text-left block bg-white shadow-float">
-          <div className="relative h-[200px]">
+        <button onClick={handleOpen} className="w-full rounded-[20px] overflow-hidden press-scale text-left block bg-white shadow-card">
+          <div className="relative h-[180px]">
             {o.image_url ? (
               <img src={o.image_url} alt={o.partner_name} className="absolute inset-0 w-full h-full object-cover" />
             ) : (
               <ImageFallback size="lg" />
             )}
-            <div className="absolute top-4 left-4 flex gap-2">
-              <Badges />
+            <div className="absolute top-3 left-3 flex gap-1.5">
+              <Badges sm />
             </div>
-            <div className="absolute top-4 right-4 z-10">
+            <div className="absolute top-3 right-3 z-10">
               <HeartButton size="sm" light />
             </div>
-            <div className="absolute bottom-4 left-4">
-              <CashbackPill />
-            </div>
           </div>
-          <div className="px-5 py-4">
-            <p className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-[0.12em]">{o.partner_name}</p>
-            <p className="text-[17px] font-extrabold text-[#0A0A0C] mt-1 line-clamp-2 leading-[1.2] tracking-[-0.02em]">{o.name}</p>
-            <div className="flex items-center justify-between mt-3">
-              <p className="font-mono-cash text-[28px] font-extrabold text-[#0A0A0C] leading-none">{fmtRate(o)}</p>
-              <div className="bg-[#0A0A0C] text-white px-4 py-2 rounded-full font-bold text-[12px]">
-                Подробнее
+          <div className="px-4 py-3.5">
+            <div className="flex items-center justify-between">
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-semibold text-[#9CA3AF] uppercase tracking-[0.08em]">{o.partner_name}</p>
+                <p className="text-[15px] font-bold text-[#0A0A0C] mt-0.5 line-clamp-1 leading-tight tracking-[-0.01em]">{o.name}</p>
+              </div>
+              <div className="shrink-0 ml-3 text-right">
+                <p className="font-mono-cash text-[22px] font-extrabold text-[#0A0A0C] leading-none">{fmtRate(o)}</p>
+                <p className="text-[9px] text-[#9CA3AF] font-medium mt-0.5">кэшбэк</p>
               </div>
             </div>
           </div>

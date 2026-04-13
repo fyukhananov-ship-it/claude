@@ -6,14 +6,18 @@ import { api } from '@/api/client'
 interface Partner {
   id: string; name: string; contact_email: string; contact_phone: string
   balance: string; status: string; offers_count: number; created_at: string
+  logo_url?: string | null
 }
+
+type ModalType = 'create' | 'edit' | 'topup' | null
 
 export default function Partners() {
   const [partners, setPartners] = useState<Partner[]>([])
   const [loading, setLoading] = useState(true)
-  const [modal, setModal] = useState<'create' | 'topup' | null>(null)
+  const [modal, setModal] = useState<ModalType>(null)
+  const [editId, setEditId] = useState('')
   const [topupId, setTopupId] = useState('')
-  const [form, setForm] = useState({ name: '', contact_email: '', contact_phone: '' })
+  const [form, setForm] = useState({ name: '', contact_email: '', contact_phone: '', status: 'active' })
   const [topupAmount, setTopupAmount] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -25,10 +29,34 @@ export default function Partners() {
   }, [])
   useEffect(() => { load() }, [load])
 
+  const openCreate = () => {
+    setEditId('')
+    setForm({ name: '', contact_email: '', contact_phone: '', status: 'active' })
+    setModal('create')
+  }
+
+  const openEdit = (p: Partner) => {
+    setEditId(p.id)
+    setForm({ name: p.name, contact_email: p.contact_email, contact_phone: p.contact_phone || '', status: p.status })
+    setModal('edit')
+  }
+
   const handleCreate = async () => {
     setSaving(true)
-    try { await api.post('/admin/partners', form); setModal(null); setForm({ name: '', contact_email: '', contact_phone: '' }); load() }
-    catch {} finally { setSaving(false) }
+    try {
+      await api.post('/admin/partners', { name: form.name, contact_email: form.contact_email, contact_phone: form.contact_phone })
+      setModal(null)
+      load()
+    } catch {} finally { setSaving(false) }
+  }
+
+  const handleEdit = async () => {
+    setSaving(true)
+    try {
+      await api.put(`/admin/partners/${editId}`, form)
+      setModal(null)
+      load()
+    } catch {} finally { setSaving(false) }
   }
 
   const handleTopup = async () => {
@@ -47,12 +75,11 @@ export default function Partners() {
           <h1 className="text-[28px] font-extrabold text-[#111] tracking-[-0.03em]">Партнёры</h1>
           <p className="text-[13px] text-[#999] mt-1 font-medium">{partners.length} зарегистрировано</p>
         </div>
-        <button onClick={() => setModal('create')} className="px-4 py-2.5 rounded-xl bg-[#FFD500] text-[#111] text-[13px] font-bold press-scale shadow-[0_2px_12px_rgba(255,213,0,0.25)]">
+        <button onClick={openCreate} className="px-4 py-2.5 rounded-xl bg-[#FFD500] text-[#111] text-[13px] font-bold press-scale shadow-[0_2px_12px_rgba(255,213,0,0.25)]">
           Добавить партнёра
         </button>
       </div>
 
-      {/* Table */}
       <div className="bg-white rounded-2xl border border-[#f0f0f0] overflow-hidden">
         <table className="w-full">
           <thead>
@@ -80,9 +107,14 @@ export default function Partners() {
                 </td>
                 <td className="px-5 py-4 font-mono-cash text-[14px] font-bold text-[#111]">{p.offers_count}</td>
                 <td className="px-5 py-4">
-                  <button onClick={() => { setTopupId(p.id); setModal('topup') }} className="text-[12px] font-bold text-[#FFD500] hover:text-[#B8960A] transition-colors">
-                    Пополнить
-                  </button>
+                  <div className="flex gap-2">
+                    <button onClick={() => openEdit(p)} className="text-[12px] font-bold text-[#666] hover:text-[#111] transition-colors">
+                      Изменить
+                    </button>
+                    <button onClick={() => { setTopupId(p.id); setModal('topup') }} className="text-[12px] font-bold text-[#FFD500] hover:text-[#B8960A] transition-colors">
+                      Пополнить
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -90,14 +122,13 @@ export default function Partners() {
         </table>
       </div>
 
-      {/* Modal */}
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setModal(null)}>
-          <div className="bg-white rounded-2xl border border-[#f0f0f0] w-full max-w-md p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl border border-[#f0f0f0] w-full max-w-md p-6 shadow-2xl mx-4" onClick={e => e.stopPropagation()}>
             <h2 className="text-[18px] font-extrabold text-[#111] mb-5">
-              {modal === 'create' ? 'Новый партнёр' : 'Пополнить баланс'}
+              {modal === 'create' ? 'Новый партнёр' : modal === 'edit' ? 'Редактировать партнёра' : 'Пополнить баланс'}
             </h2>
-            {modal === 'create' ? (
+            {(modal === 'create' || modal === 'edit') ? (
               <div className="space-y-4">
                 <div>
                   <label className="block text-[11px] font-bold text-[#999] uppercase tracking-[0.08em] mb-1.5">Название</label>
@@ -111,10 +142,23 @@ export default function Partners() {
                   <label className="block text-[11px] font-bold text-[#999] uppercase tracking-[0.08em] mb-1.5">Телефон</label>
                   <input value={form.contact_phone} onChange={e => setForm({...form, contact_phone: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-[#eee] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#FFD500]/40" placeholder="+7 (999) 123-45-67" />
                 </div>
+                {modal === 'edit' && (
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#999] uppercase tracking-[0.08em] mb-1.5">Статус</label>
+                    <select value={form.status} onChange={e => setForm({...form, status: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-[#eee] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#FFD500]/40">
+                      <option value="active">Активен</option>
+                      <option value="blocked">Заблокирован</option>
+                    </select>
+                  </div>
+                )}
                 <div className="flex gap-3 pt-2">
                   <button onClick={() => setModal(null)} className="flex-1 py-3 rounded-xl bg-[#f0f0f0] text-[#666] text-[13px] font-bold press-scale">Отмена</button>
-                  <button onClick={handleCreate} disabled={saving || !form.name || !form.contact_email} className="flex-1 py-3 rounded-xl bg-[#FFD500] text-[#111] text-[13px] font-bold press-scale disabled:opacity-50 shadow-[0_2px_12px_rgba(255,213,0,0.25)]">
-                    {saving ? 'Создание...' : 'Создать'}
+                  <button
+                    onClick={modal === 'create' ? handleCreate : handleEdit}
+                    disabled={saving || !form.name || !form.contact_email}
+                    className="flex-1 py-3 rounded-xl bg-[#FFD500] text-[#111] text-[13px] font-bold press-scale disabled:opacity-50"
+                  >
+                    {saving ? 'Сохранение...' : modal === 'create' ? 'Создать' : 'Сохранить'}
                   </button>
                 </div>
               </div>

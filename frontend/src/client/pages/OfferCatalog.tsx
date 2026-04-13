@@ -7,6 +7,8 @@ import OnboardingStories, { useOnboardingSeen } from '@/client/components/Onboar
 import OfferCard, { OfferCardItem } from '@/client/components/OfferCard'
 import TabBar from '@/client/components/TabBar'
 
+interface Brand { name: string; logo_url: string | null }
+
 interface OfferItem extends OfferCardItem {
   description: string
   status: string
@@ -51,6 +53,11 @@ export default function OfferCatalog() {
   const [total, setTotal] = useState('0')
   const onboardingSeen = useOnboardingSeen()
   const [showOnboarding, setShowOnboarding] = useState(!onboardingSeen)
+  const [brand, setBrand] = useState<Brand>({ name: 'Med', logo_url: null })
+
+  useEffect(() => {
+    api.get<Brand>('/client/brand').then(b => { if (b?.name) setBrand(b) }).catch(() => {})
+  }, [])
 
   const fetchOffers = () => {
     if (!phoneHash) return
@@ -173,20 +180,25 @@ export default function OfferCatalog() {
       <div className="bg-white px-5 pt-[max(52px,env(safe-area-inset-top,52px))] pb-3 border-b border-[#F0F0F0]">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-[#F59E0B] to-[#D97706] rounded-xl flex items-center justify-center">
-              <svg className="w-[18px] h-[18px] text-white" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-5l-3 3-1.5-1.5L12 7.5l5.5 5.5L16 14.5l-3-3v5h-2z" />
-              </svg>
-            </div>
-            <h1 className="text-[22px] font-extrabold text-[#1C1917] tracking-[-0.03em] leading-none">Med</h1>
+            {brand.logo_url ? (
+              <img src={brand.logo_url} alt="" className="w-9 h-9 rounded-xl object-cover" />
+            ) : (
+              <div className="w-9 h-9 bg-gradient-to-br from-[#F59E0B] to-[#D97706] rounded-xl flex items-center justify-center">
+                <svg className="w-[18px] h-[18px] text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-5l-3 3-1.5-1.5L12 7.5l5.5 5.5L16 14.5l-3-3v5h-2z" />
+                </svg>
+              </div>
+            )}
+            <h1 className="text-[22px] font-extrabold text-[#1C1917] tracking-[-0.03em] leading-none">{brand.name}</h1>
           </div>
           <button
             onClick={() => navigate(`/client/${phoneHash}/cashback`)}
-            className="bg-gradient-to-r from-[#FEF3C7]/60 to-[#FFFBEB]/80 rounded-2xl px-3.5 py-2 press-scale"
+            className="rounded-2xl px-3.5 py-2 press-scale"
+            style={{ background: 'linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 50%, #C4B5FD 100%)' }}
             aria-label="Мой кэшбэк"
           >
-            <p className="font-mono-cash text-[15px] font-extrabold text-[#92400E] leading-none">{formatCurrency(total)}</p>
-            <p className="text-[9px] text-[#B45309] font-medium mt-0.5">накоплено</p>
+            <p className="font-mono-cash text-[15px] font-extrabold text-[#5B21B6] leading-none">{formatCurrency(total)}</p>
+            <p className="text-[9px] text-[#7C3AED] font-medium mt-0.5">накоплено</p>
           </button>
         </div>
 
@@ -263,9 +275,6 @@ export default function OfferCatalog() {
           {/* ═══ FEATURED OFFERS — swipeable ═══ */}
           {featuredOffers.length > 0 && phoneHash && (
             <div className="mb-6">
-              <div className="px-5 flex items-baseline justify-between mb-3">
-                <h2 className="text-[11px] font-extrabold text-[#D97706] uppercase tracking-[0.14em]">Топ офферы</h2>
-              </div>
               {featuredOffers.length === 1 ? (
                 <div className="px-5">
                   <OfferCard offer={featuredOffers[0]} phoneHash={phoneHash} variant="hero" />

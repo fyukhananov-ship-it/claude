@@ -15,6 +15,7 @@ import Profile from './client/pages/Profile'
 import Favorites from './client/pages/Favorites'
 import Help from './client/pages/Help'
 import Journal from './client/pages/Journal'
+import MyOffers from './client/pages/MyOffers'
 
 // Partner pages
 import PartnerLayout from './partner/layout/PartnerLayout'
@@ -32,6 +33,7 @@ import OfferModeration from './admin/pages/OfferModeration'
 import RegistryUpload from './admin/pages/RegistryUpload'
 import Finance from './admin/pages/Finance'
 import AdminArticles from './admin/pages/Articles'
+import BrandSettings from './admin/pages/BrandSettings'
 
 export default function App() {
   return (
@@ -48,6 +50,7 @@ export default function App() {
         <Route path="/client/:phoneHash/activate/:offerId" element={<OfferDetail />} />
         <Route path="/client/:phoneHash/spin/:offerId" element={<SpinWheel />} />
         <Route path="/client/:phoneHash/thanks" element={<ThankYou />} />
+        <Route path="/client/:phoneHash/my-offers" element={<MyOffers />} />
         <Route path="/client/:phoneHash/journal" element={<Journal />} />
         <Route path="/client/:phoneHash/cashback" element={<CashbackHistory />} />
         <Route path="/client/:phoneHash/profile" element={<Profile />} />
@@ -84,6 +87,7 @@ export default function App() {
           <Route path="moderation" element={<OfferModeration />} />
           <Route path="registry" element={<RegistryUpload />} />
           <Route path="articles" element={<AdminArticles />} />
+          <Route path="brand" element={<BrandSettings />} />
           <Route path="finance" element={<Finance />} />
         </Route>
 

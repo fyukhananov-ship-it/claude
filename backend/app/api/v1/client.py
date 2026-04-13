@@ -12,6 +12,7 @@ from app.models.partner import Partner
 from app.models.match import Match
 from app.models.event import UIEvent
 from app.models.article import Article
+from app.models.settings import AppSettings
 from app.models.transaction import Transaction
 from app.schemas.client import (
     ClientOfferResponse, ActivationResponse,
@@ -246,6 +247,16 @@ async def _get_or_create_client(db: AsyncSession, phone_hash: str) -> Client:
         await db.flush()
 
     return client
+
+
+@router.get("/brand")
+async def get_brand(db: AsyncSession = Depends(get_db)):
+    rows = (await db.execute(select(AppSettings))).scalars().all()
+    settings = {r.key: r.value for r in rows}
+    return {
+        "name": settings.get("brand_name", "Med"),
+        "logo_url": settings.get("brand_logo"),
+    }
 
 
 @router.get("/articles")
