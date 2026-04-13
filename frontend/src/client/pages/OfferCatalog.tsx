@@ -180,15 +180,7 @@ export default function OfferCatalog() {
       <div className="bg-white px-5 pt-[max(52px,env(safe-area-inset-top,52px))] pb-3 border-b border-[#F0F0F0]">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            {brand.logo_url ? (
-              <img src={brand.logo_url} alt="" className="w-11 h-11 rounded-xl object-cover" />
-            ) : (
-              <div className="w-11 h-11 bg-gradient-to-br from-[#F59E0B] to-[#D97706] rounded-xl flex items-center justify-center">
-                <svg className="w-[20px] h-[20px] text-white" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-5l-3 3-1.5-1.5L12 7.5l5.5 5.5L16 14.5l-3-3v5h-2z" />
-                </svg>
-              </div>
-            )}
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#EDE9FE] to-[#C4B5FD]" />
             <h1 className="text-[24px] font-extrabold text-[#1C1917] tracking-[-0.03em] leading-none">{brand.name}</h1>
           </div>
           <button
