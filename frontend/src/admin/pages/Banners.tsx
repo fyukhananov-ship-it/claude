@@ -4,6 +4,7 @@ import { api } from '@/api/client'
 
 interface BannerItem {
   id: string; title: string; subtitle: string; partner_name: string
+  partner_logo_url: string | null
   image_url: string | null; cta_text: string; offer_id: string | null
   enabled: boolean; sort_order: number
 }
@@ -12,7 +13,7 @@ interface OfferOption { id: string; name: string; partner_name: string }
 
 const emptyForm = {
   title: '', subtitle: '', partner_name: '', cta_text: 'Перейти',
-  offer_id: '', enabled: true, sort_order: 0, image_url: '',
+  offer_id: '', enabled: true, sort_order: 0, image_url: '', partner_logo_url: '',
 }
 
 export default function Banners() {
@@ -24,6 +25,7 @@ export default function Banners() {
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
 
   const load = useCallback(() => {
     setLoading(true)
@@ -49,6 +51,7 @@ export default function Banners() {
       title: b.title, subtitle: b.subtitle, partner_name: b.partner_name,
       cta_text: b.cta_text, offer_id: b.offer_id || '', enabled: b.enabled,
       sort_order: b.sort_order, image_url: b.image_url || '',
+      partner_logo_url: b.partner_logo_url || '',
     })
     setShowForm(true)
   }
@@ -92,6 +95,17 @@ export default function Banners() {
       setForm(f => ({ ...f, image_url: result.image_url }))
       load()
     } catch {} finally { setUploading(false) }
+  }
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !editingId) return
+    setUploadingLogo(true)
+    try {
+      const result = await api.uploadFile<{ partner_logo_url: string }>(`/admin/banners/${editingId}/partner-logo`, file)
+      setForm(f => ({ ...f, partner_logo_url: result.partner_logo_url }))
+      load()
+    } catch {} finally { setUploadingLogo(false) }
   }
 
   const upd = (k: string, v: string | number | boolean) => setForm(f => ({ ...f, [k]: v }))
@@ -171,6 +185,25 @@ export default function Banners() {
               <div>
                 <label className="block text-[11px] font-bold text-[#999] uppercase tracking-[0.08em] mb-1.5">Партнёр</label>
                 <input value={form.partner_name} onChange={e => upd('partner_name', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-[#eee] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#FFD500]/40" placeholder="585*Золотой" />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-[#999] uppercase tracking-[0.08em] mb-1.5">Логотип партнёра</label>
+                <div className="flex gap-3 items-center">
+                  {form.partner_logo_url ? (
+                    <img src={form.partner_logo_url} alt="" className="w-12 h-12 rounded-full object-cover border border-[#eee]" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-[#F5F6F8] flex items-center justify-center">
+                      <span className="text-[18px] text-[#9CA3AF]">{form.partner_name?.[0] || '?'}</span>
+                    </div>
+                  )}
+                  <input value={form.partner_logo_url} onChange={e => upd('partner_logo_url', e.target.value)} className="flex-1 px-4 py-3 rounded-xl border border-[#eee] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#FFD500]/40" placeholder="URL или загрузите" />
+                  {editingId && (
+                    <label className="px-4 py-3 rounded-xl bg-[#f0f0f0] text-[12px] font-bold cursor-pointer press-scale shrink-0">
+                      {uploadingLogo ? '...' : 'Загрузить'}
+                      <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                    </label>
+                  )}
+                </div>
               </div>
               <div>
                 <label className="block text-[11px] font-bold text-[#999] uppercase tracking-[0.08em] mb-1.5">Текст кнопки</label>

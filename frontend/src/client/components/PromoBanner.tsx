@@ -7,6 +7,7 @@ interface BannerData {
   title: string
   subtitle: string
   partner_name: string
+  partner_logo_url: string | null
   image_url: string | null
   cta_text: string
   offer_id: string | null
@@ -28,7 +29,8 @@ export default function PromoBanner({ phoneHash }: { phoneHash: string }) {
     const el = scrollRef.current
     if (!el || banners.length <= 1) return
     const handleScroll = () => {
-      const idx = Math.round(el.scrollLeft / el.offsetWidth)
+      const w = el.firstElementChild?.firstElementChild?.getBoundingClientRect().width || el.offsetWidth
+      const idx = Math.round(el.scrollLeft / w)
       setActiveIdx(Math.min(idx, banners.length - 1))
     }
     el.addEventListener('scroll', handleScroll, { passive: true })
@@ -37,65 +39,75 @@ export default function PromoBanner({ phoneHash }: { phoneHash: string }) {
 
   if (banners.length === 0) return null
 
+  const handleClick = (b: BannerData) => {
+    if (b.offer_id) navigate(`/client/${phoneHash}/offer/${b.offer_id}`)
+  }
+
   const renderCard = (b: BannerData) => (
-    <div className="bg-white rounded-[20px] overflow-hidden shadow-card">
-      {/* Hero image */}
-      <div className="h-[200px] relative bg-[#F5F6F8]">
+    <button
+      onClick={() => handleClick(b)}
+      className="w-full text-left press-scale rounded-[24px] overflow-hidden bg-white"
+    >
+      {/* Hero image — fills top, generous height */}
+      <div className="h-[260px] relative bg-gradient-to-br from-[#F3F4F6] to-[#E5E7EB]">
         {b.image_url ? (
           <img src={b.image_url} alt="" className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-[#EDE9FE] to-[#DDD6FE] flex items-center justify-center">
-            <span className="text-[48px] opacity-30">🎁</span>
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-[80px] opacity-20">🎁</span>
           </div>
         )}
       </div>
 
-      {/* Content */}
-      <div className="p-4">
+      {/* Text block */}
+      <div className="px-5 pt-4 pb-5">
         {b.title && (
-          <p className="text-[17px] font-bold text-[#1C1917] leading-tight tracking-[-0.02em]">{b.title}</p>
+          <p className="text-[20px] font-extrabold text-[#1C1917] leading-[1.15] tracking-[-0.02em]">
+            {b.title}
+          </p>
         )}
         {b.subtitle && (
-          <p className="text-[13px] text-[#6B7280] mt-1">{b.subtitle}</p>
+          <p className="text-[13px] text-[#9CA3AF] mt-1.5 leading-snug">{b.subtitle}</p>
         )}
 
-        {/* Partner row + CTA */}
-        <div className="flex items-center justify-between mt-3">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-[#F5F6F8] flex items-center justify-center shrink-0">
-              <span className="text-[14px] font-bold text-[#9CA3AF]">{b.partner_name?.[0] || '?'}</span>
+        {/* Partner row with CTA */}
+        {(b.partner_name || b.offer_id) && (
+          <div className="flex items-center gap-3 mt-4 pt-4 border-t border-[#F3F4F6]">
+            {b.partner_logo_url ? (
+              <img src={b.partner_logo_url} alt="" className="w-10 h-10 rounded-full object-cover shrink-0 bg-[#F5F6F8]" />
+            ) : b.partner_name ? (
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#EDE9FE] to-[#C4B5FD] flex items-center justify-center shrink-0">
+                <span className="text-[14px] font-extrabold text-[#5B21B6]">{b.partner_name[0]}</span>
+              </div>
+            ) : null}
+            <div className="flex-1 min-w-0">
+              <p className="text-[14px] font-bold text-[#1C1917] truncate">{b.partner_name}</p>
             </div>
-            <div className="min-w-0">
-              <p className="text-[13px] font-semibold text-[#1C1917] truncate">{b.partner_name}</p>
-            </div>
+            {b.offer_id && (
+              <div className="bg-[#1C1917] text-white px-4 py-2 rounded-full text-[12px] font-bold shrink-0">
+                {b.cta_text || 'Перейти'}
+              </div>
+            )}
           </div>
-          {b.offer_id && (
-            <button
-              onClick={() => navigate(`/client/${phoneHash}/offer/${b.offer_id}`)}
-              className="bg-[#1C1917] text-white px-4 py-2 rounded-full text-[12px] font-bold press-scale shrink-0"
-            >
-              {b.cta_text || 'Перейти'}
-            </button>
-          )}
-        </div>
+        )}
       </div>
-    </div>
+    </button>
   )
 
   if (banners.length === 1) {
     return (
-      <div className="px-5 mb-5">
+      <div className="px-5 pt-4 pb-2">
         {renderCard(banners[0])}
       </div>
     )
   }
 
   return (
-    <div className="mb-5">
+    <div className="pt-4 pb-2">
       <div ref={scrollRef} className="overflow-x-auto no-scrollbar snap-x snap-mandatory">
-        <div className="flex" style={{ width: `${banners.length * 100}%` }}>
+        <div className="flex px-5 gap-3">
           {banners.map(b => (
-            <div key={b.id} className="snap-start px-5" style={{ width: `${100 / banners.length}%` }}>
+            <div key={b.id} className="snap-center shrink-0 w-[calc(100vw-40px)] max-w-[380px]">
               {renderCard(b)}
             </div>
           ))}

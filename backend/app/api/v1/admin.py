@@ -707,6 +707,7 @@ async def list_banners(
             "title": b.title,
             "subtitle": b.subtitle,
             "partner_name": b.partner_name,
+            "partner_logo_url": b.partner_logo_url,
             "image_url": b.image_url,
             "cta_text": b.cta_text,
             "offer_id": str(b.offer_id) if b.offer_id else None,
@@ -751,7 +752,7 @@ async def update_banner(
     banner = await db.get(Banner, banner_id)
     if not banner:
         raise HTTPException(404, "Banner not found")
-    for field in ["title", "subtitle", "partner_name", "image_url", "cta_text", "enabled", "sort_order"]:
+    for field in ["title", "subtitle", "partner_name", "partner_logo_url", "image_url", "cta_text", "enabled", "sort_order"]:
         if field in body:
             setattr(banner, field, body[field])
     if "offer_id" in body:
@@ -794,3 +795,24 @@ async def upload_banner_image(
     banner.image_url = url
     await db.commit()
     return {"image_url": url}
+
+
+@router.post("/banners/{banner_id}/partner-logo")
+async def upload_banner_partner_logo(
+    banner_id: UUID,
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_role("operator")),
+):
+    banner = await db.get(Banner, banner_id)
+    if not banner:
+        raise HTTPException(404, "Banner not found")
+    if file.content_type not in ("image/png", "image/jpeg", "image/webp"):
+        raise HTTPException(400, "Only PNG, JPG and WebP images are allowed")
+    content = await file.read()
+    if len(content) > 2 * 1024 * 1024:
+        raise HTTPException(400, "Image must be under 2MB")
+    url = await save_upload(content, file.filename or "logo.jpg", subdir="banners", content_type=file.content_type)
+    banner.partner_logo_url = url
+    await db.commit()
+    return {"partner_logo_url": url}

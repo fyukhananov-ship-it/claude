@@ -216,6 +216,9 @@ export default function OfferCatalog() {
         </div>
       </div>
 
+      {/* Promo banner above categories */}
+      {phoneHash && !search && !activeCategory && <PromoBanner phoneHash={phoneHash} />}
+
       {/* Category chips */}
       <div className="px-5 pt-3 pb-4 overflow-x-auto no-scrollbar bg-[#F5F6F8]">
         <div className="flex gap-2 min-w-max">
@@ -265,9 +268,6 @@ export default function OfferCatalog() {
         </div>
       ) : isHome ? (
         <div className="pb-28">
-          {/* ═══ PROMO BANNER ═══ */}
-          {phoneHash && <PromoBanner phoneHash={phoneHash} />}
-
           {/* ═══ FEATURED OFFERS — swipeable ═══ */}
           {featuredOffers.length > 0 && phoneHash && (
             <div className="mb-6">

@@ -14,6 +14,7 @@ class Banner(Base):
     title: Mapped[str] = mapped_column(String(255))
     subtitle: Mapped[str] = mapped_column(String(500), default="")
     partner_name: Mapped[str] = mapped_column(String(255), default="")
+    partner_logo_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
     image_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
     cta_text: Mapped[str] = mapped_column(String(100), default="Перейти")
     offer_id: Mapped[uuid.UUID | None] = mapped_column(

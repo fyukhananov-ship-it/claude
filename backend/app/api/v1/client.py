@@ -390,6 +390,7 @@ async def get_banners(db: AsyncSession = Depends(get_db)):
             "title": b.title,
             "subtitle": b.subtitle,
             "partner_name": b.partner_name,
+            "partner_logo_url": b.partner_logo_url,
             "image_url": b.image_url,
             "cta_text": b.cta_text,
             "offer_id": str(b.offer_id) if b.offer_id else None,
