@@ -11,6 +11,7 @@ from app.models.partner import Partner, User
 from app.models.offer import Offer
 from app.models.article import Article
 from app.models.settings import AppSettings
+from app.models.banner import Banner
 from app.models.match import Match
 from app.models.transaction import TransactionBatch, Transaction
 from app.models.billing import BillingTransaction
@@ -687,3 +688,109 @@ async def upload_partner_logo(
     partner.logo_url = url
     await db.commit()
     return {"logo_url": url}
+
+
+# ─── Banners CRUD ───
+
+
+@router.get("/banners")
+async def list_banners(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_role("operator")),
+):
+    banners = (await db.execute(
+        select(Banner).order_by(Banner.sort_order, Banner.created_at.desc())
+    )).scalars().all()
+    return [
+        {
+            "id": str(b.id),
+            "title": b.title,
+            "subtitle": b.subtitle,
+            "partner_name": b.partner_name,
+            "image_url": b.image_url,
+            "cta_text": b.cta_text,
+            "offer_id": str(b.offer_id) if b.offer_id else None,
+            "enabled": b.enabled,
+            "sort_order": b.sort_order,
+        }
+        for b in banners
+    ]
+
+
+@router.post("/banners")
+async def create_banner(
+    body: dict,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_role("operator")),
+):
+    offer_id = body.get("offer_id") or None
+    if offer_id:
+        offer_id = UUID(offer_id)
+    banner = Banner(
+        title=body["title"],
+        subtitle=body.get("subtitle", ""),
+        partner_name=body.get("partner_name", ""),
+        cta_text=body.get("cta_text", "Перейти"),
+        offer_id=offer_id,
+        enabled=body.get("enabled", True),
+        sort_order=body.get("sort_order", 0),
+    )
+    db.add(banner)
+    await db.commit()
+    await db.refresh(banner)
+    return {"id": str(banner.id)}
+
+
+@router.put("/banners/{banner_id}")
+async def update_banner(
+    banner_id: UUID,
+    body: dict,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_role("operator")),
+):
+    banner = await db.get(Banner, banner_id)
+    if not banner:
+        raise HTTPException(404, "Banner not found")
+    for field in ["title", "subtitle", "partner_name", "image_url", "cta_text", "enabled", "sort_order"]:
+        if field in body:
+            setattr(banner, field, body[field])
+    if "offer_id" in body:
+        val = body["offer_id"]
+        banner.offer_id = UUID(val) if val else None
+    await db.commit()
+    return {"id": str(banner.id)}
+
+
+@router.delete("/banners/{banner_id}")
+async def delete_banner(
+    banner_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_role("operator")),
+):
+    banner = await db.get(Banner, banner_id)
+    if not banner:
+        raise HTTPException(404, "Banner not found")
+    await db.delete(banner)
+    await db.commit()
+    return {"ok": True}
+
+
+@router.post("/banners/{banner_id}/image")
+async def upload_banner_image(
+    banner_id: UUID,
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_role("operator")),
+):
+    banner = await db.get(Banner, banner_id)
+    if not banner:
+        raise HTTPException(404, "Banner not found")
+    if file.content_type not in ("image/png", "image/jpeg", "image/webp"):
+        raise HTTPException(400, "Only PNG, JPG and WebP images are allowed")
+    content = await file.read()
+    if len(content) > 2 * 1024 * 1024:
+        raise HTTPException(400, "Image must be under 2MB")
+    url = await save_upload(content, file.filename or "banner.jpg", subdir="banners", content_type=file.content_type)
+    banner.image_url = url
+    await db.commit()
+    return {"image_url": url}

@@ -13,6 +13,7 @@ from app.models.match import Match
 from app.models.event import UIEvent
 from app.models.article import Article
 from app.models.settings import AppSettings
+from app.models.banner import Banner
 from app.models.transaction import Transaction
 from app.schemas.client import (
     ClientOfferResponse, ActivationResponse,
@@ -257,6 +258,27 @@ async def get_brand(db: AsyncSession = Depends(get_db)):
         "name": settings.get("brand_name", "Med"),
         "logo_url": settings.get("brand_logo"),
     }
+
+
+@router.get("/banners")
+async def get_banners(db: AsyncSession = Depends(get_db)):
+    banners = (await db.execute(
+        select(Banner)
+        .where(Banner.enabled == True)  # noqa: E712
+        .order_by(Banner.sort_order, Banner.created_at.desc())
+    )).scalars().all()
+    return [
+        {
+            "id": str(b.id),
+            "title": b.title,
+            "subtitle": b.subtitle,
+            "partner_name": b.partner_name,
+            "image_url": b.image_url,
+            "cta_text": b.cta_text,
+            "offer_id": str(b.offer_id) if b.offer_id else None,
+        }
+        for b in banners
+    ]
 
 
 @router.get("/onboarding")

@@ -5,6 +5,7 @@ import { CATEGORIES } from '@/api/mockData'
 import { formatCurrency, cn } from '@/lib/utils'
 import OnboardingStories, { useOnboardingSeen } from '@/client/components/OnboardingStories'
 import OfferCard, { OfferCardItem } from '@/client/components/OfferCard'
+import PromoBanner from '@/client/components/PromoBanner'
 import TabBar from '@/client/components/TabBar'
 
 interface Brand { name: string; logo_url: string | null }
@@ -263,6 +264,9 @@ export default function OfferCatalog() {
         </div>
       ) : isHome ? (
         <div className="pb-28">
+          {/* ═══ PROMO BANNER ═══ */}
+          {phoneHash && <PromoBanner phoneHash={phoneHash} />}
+
           {/* ═══ FEATURED OFFERS — swipeable ═══ */}
           {featuredOffers.length > 0 && phoneHash && (
             <div className="mb-6">

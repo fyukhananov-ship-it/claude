@@ -8,6 +8,7 @@ from app.models.billing import BillingTransaction
 from app.models.event import UIEvent
 from app.models.article import Article
 from app.models.settings import AppSettings
+from app.models.banner import Banner
 
 __all__ = [
     "Partner", "User",
@@ -20,4 +21,5 @@ __all__ = [
     "UIEvent",
     "Article",
     "AppSettings",
+    "Banner",
 ]
