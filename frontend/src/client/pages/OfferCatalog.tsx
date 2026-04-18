@@ -6,6 +6,7 @@ import { formatCurrency, cn } from '@/lib/utils'
 import OnboardingStories, { useOnboardingSeen } from '@/client/components/OnboardingStories'
 import OfferCard, { OfferCardItem } from '@/client/components/OfferCard'
 import PromoBanner from '@/client/components/PromoBanner'
+import GachaWidget from '@/client/components/GachaWidget'
 import TabBar from '@/client/components/TabBar'
 
 interface Brand { name: string; logo_url: string | null }
@@ -316,27 +317,8 @@ export default function OfferCatalog() {
             </div>
           )}
 
-          {/* ═══ SPIN BANNER ═══ */}
-          <div className="px-5 mb-6">
-            <button onClick={() => navigate(`/client/${phoneHash}/spin/offer-1`)}
-              className="w-full rounded-[20px] p-4 press-scale text-left flex items-center gap-3.5 overflow-hidden relative"
-              style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 40%, #4C1D95 100%)' }}>
-              <div className="absolute -top-10 -right-10 w-28 h-28 rounded-full bg-white/[0.08]" />
-              <div className="absolute bottom-0 left-8 w-16 h-16 rounded-full bg-white/[0.05]" />
-              <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0 relative z-10">
-                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <div className="flex-1 min-w-0 relative z-10">
-                <p className="text-[14px] font-bold text-white tracking-[-0.01em]">Колесо фортуны</p>
-                <p className="text-[12px] text-white/60 mt-0.5">Выиграйте повышенный кэшбэк</p>
-              </div>
-              <svg className="w-5 h-5 text-white/40 shrink-0 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
+          {/* ═══ GACHA DROP ═══ */}
+          {phoneHash && <GachaWidget phoneHash={phoneHash} />}
 
           {/* ═══ СКОРО ЗАКОНЧАТСЯ — vertical list ═══ */}
           {expiringSoon.length > 0 && phoneHash && (

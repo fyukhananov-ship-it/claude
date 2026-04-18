@@ -16,6 +16,7 @@ import Favorites from './client/pages/Favorites'
 import Help from './client/pages/Help'
 import Journal from './client/pages/Journal'
 import MyOffers from './client/pages/MyOffers'
+import GachaPull from './client/pages/GachaPull'
 
 // Partner pages
 import PartnerLayout from './partner/layout/PartnerLayout'
@@ -51,6 +52,7 @@ export default function App() {
         <Route path="/client/:phoneHash/offer/:offerId" element={<OfferDetail />} />
         <Route path="/client/:phoneHash/activate/:offerId" element={<OfferDetail />} />
         <Route path="/client/:phoneHash/spin/:offerId" element={<SpinWheel />} />
+        <Route path="/client/:phoneHash/gacha" element={<GachaPull />} />
         <Route path="/client/:phoneHash/thanks" element={<ThankYou />} />
         <Route path="/client/:phoneHash/my-offers" element={<MyOffers />} />
         <Route path="/client/:phoneHash/journal" element={<Journal />} />

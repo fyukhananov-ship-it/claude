@@ -199,6 +199,123 @@ async def activate_offer(
     )
 
 
+PITY_GUARANTEE = 10
+RARITY_LEGENDARY = "legendary"
+RARITY_EPIC = "epic"
+RARITY_RARE = "rare"
+RARITY_COMMON = "common"
+
+
+@router.get("/{phone_hash}/gacha")
+async def get_gacha_state(
+    phone_hash: str,
+    db: AsyncSession = Depends(get_db),
+):
+    client = await _get_or_create_client(db, phone_hash)
+    await db.commit()
+    return {
+        "pity": client.gacha_pity,
+        "pity_max": PITY_GUARANTEE,
+        "total_pulls": client.gacha_total_pulls,
+    }
+
+
+@router.post("/{phone_hash}/gacha/pull")
+async def gacha_pull(
+    phone_hash: str,
+    db: AsyncSession = Depends(get_db),
+):
+    import random
+
+    client = await _get_or_create_client(db, phone_hash)
+
+    active_offers = (await db.execute(
+        select(Offer, Partner)
+        .join(Partner, Offer.partner_id == Partner.id)
+        .where(Offer.status == "active")
+    )).all()
+
+    if not active_offers:
+        raise HTTPException(400, "No active offers available")
+
+    client.gacha_pity += 1
+    client.gacha_total_pulls += 1
+    is_pity = client.gacha_pity >= PITY_GUARANTEE
+
+    # Sort by cashback rate descending
+    sorted_offers = sorted(active_offers, key=lambda x: float(x[0].cashback_rate), reverse=True)
+
+    # Assign rarities
+    total = len(sorted_offers)
+    def get_rarity(idx: int) -> str:
+        pct = idx / max(total, 1)
+        if pct < 0.1:
+            return RARITY_LEGENDARY
+        if pct < 0.3:
+            return RARITY_EPIC
+        if pct < 0.6:
+            return RARITY_RARE
+        return RARITY_COMMON
+
+    if is_pity:
+        # Guaranteed legendary
+        chosen_offer, chosen_partner = sorted_offers[0]
+        rarity = RARITY_LEGENDARY
+        client.gacha_pity = 0
+    else:
+        # Weighted random: common 60%, rare 25%, epic 12%, legendary 3%
+        roll = random.random()
+        if roll < 0.03:
+            pool = sorted_offers[:max(1, total // 10)]
+            rarity = RARITY_LEGENDARY
+        elif roll < 0.15:
+            pool = sorted_offers[:max(1, total // 3)]
+            rarity = RARITY_EPIC
+        elif roll < 0.40:
+            pool = sorted_offers[:max(1, total * 6 // 10)]
+            rarity = RARITY_RARE
+        else:
+            pool = sorted_offers
+            rarity = RARITY_COMMON
+
+        chosen_offer, chosen_partner = random.choice(pool)
+
+    # Auto-activate the offer
+    existing = (await db.execute(
+        select(ClientActivation).where(
+            ClientActivation.client_id == client.id,
+            ClientActivation.offer_id == chosen_offer.id,
+        )
+    )).scalar_one_or_none()
+
+    if not existing:
+        db.add(ClientActivation(client_id=client.id, offer_id=chosen_offer.id))
+        db.add(UIEvent(
+            client_id=client.id,
+            offer_id=chosen_offer.id,
+            event_type="activation",
+            placement_type="gacha",
+        ))
+
+    await db.commit()
+
+    return {
+        "offer": {
+            "id": str(chosen_offer.id),
+            "name": chosen_offer.name,
+            "partner_name": chosen_partner.name,
+            "cashback_type": chosen_offer.cashback_type,
+            "cashback_rate": str(chosen_offer.cashback_rate),
+            "image_url": chosen_offer.image_url,
+        },
+        "rarity": rarity,
+        "pity": client.gacha_pity,
+        "pity_max": PITY_GUARANTEE,
+        "is_pity": is_pity,
+        "total_pulls": client.gacha_total_pulls,
+    }
+
+
 @router.get("/{phone_hash}/cashback", response_model=list[CashbackHistoryItem])
 async def get_cashback_history(
     phone_hash: str,

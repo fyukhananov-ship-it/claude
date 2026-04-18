@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import String, Enum, Numeric, DateTime, ForeignKey, func, UniqueConstraint
+from sqlalchemy import String, Integer, Enum, Numeric, DateTime, ForeignKey, func, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -17,6 +17,8 @@ class Client(Base):
     cashback_total: Mapped[Decimal] = mapped_column(
         Numeric(12, 2), default=Decimal("0.00")
     )
+    gacha_pity: Mapped[int] = mapped_column(Integer, default=0)
+    gacha_total_pulls: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     activations: Mapped[list["ClientActivation"]] = relationship(back_populates="client")
