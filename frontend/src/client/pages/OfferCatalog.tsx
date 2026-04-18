@@ -317,9 +317,6 @@ export default function OfferCatalog() {
             </div>
           )}
 
-          {/* ═══ GACHA DROP ═══ */}
-          {phoneHash && <GachaWidget phoneHash={phoneHash} />}
-
           {/* ═══ СКОРО ЗАКОНЧАТСЯ — vertical list ═══ */}
           {expiringSoon.length > 0 && phoneHash && (
             <div className="px-5 mb-6">
@@ -396,6 +393,9 @@ export default function OfferCatalog() {
               ))}
             </div>
           </div>
+
+          {/* ═══ GACHA DROP ═══ */}
+          {phoneHash && <GachaWidget phoneHash={phoneHash} />}
         </div>
       ) : (
         /* ═══ FILTERED VIEW ═══ */

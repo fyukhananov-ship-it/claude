@@ -37,6 +37,7 @@ import AdminArticles from './admin/pages/Articles'
 import BrandSettings from './admin/pages/BrandSettings'
 import AdminOnboarding from './admin/pages/Onboarding'
 import AdminBanners from './admin/pages/Banners'
+import AdminGacha from './admin/pages/GachaSettings'
 
 export default function App() {
   return (
@@ -93,6 +94,7 @@ export default function App() {
           <Route path="articles" element={<AdminArticles />} />
           <Route path="onboarding" element={<AdminOnboarding />} />
           <Route path="banners" element={<AdminBanners />} />
+          <Route path="gacha" element={<AdminGacha />} />
           <Route path="brand" element={<BrandSettings />} />
           <Route path="finance" element={<Finance />} />
         </Route>

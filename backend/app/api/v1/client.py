@@ -199,11 +199,21 @@ async def activate_offer(
     )
 
 
-PITY_GUARANTEE = 10
-RARITY_LEGENDARY = "legendary"
-RARITY_EPIC = "epic"
-RARITY_RARE = "rare"
-RARITY_COMMON = "common"
+DEFAULT_PITY_MAX = 10
+
+
+async def _get_gacha_config(db):
+    import json
+    rows = (await db.execute(select(AppSettings))).scalars().all()
+    settings = {r.key: r.value for r in rows}
+    pity_max = int(settings.get("gacha_pity_max", DEFAULT_PITY_MAX))
+    drops = []
+    if settings.get("gacha_drops"):
+        try:
+            drops = json.loads(settings["gacha_drops"])
+        except Exception:
+            pass
+    return pity_max, drops
 
 
 @router.get("/{phone_hash}/gacha")
@@ -212,10 +222,11 @@ async def get_gacha_state(
     db: AsyncSession = Depends(get_db),
 ):
     client = await _get_or_create_client(db, phone_hash)
+    pity_max, _ = await _get_gacha_config(db)
     await db.commit()
     return {
         "pity": client.gacha_pity,
-        "pity_max": PITY_GUARANTEE,
+        "pity_max": pity_max,
         "total_pulls": client.gacha_total_pulls,
     }
 
@@ -226,59 +237,68 @@ async def gacha_pull(
     db: AsyncSession = Depends(get_db),
 ):
     import random
+    from uuid import UUID as PyUUID
 
     client = await _get_or_create_client(db, phone_hash)
-
-    active_offers = (await db.execute(
-        select(Offer, Partner)
-        .join(Partner, Offer.partner_id == Partner.id)
-        .where(Offer.status == "active")
-    )).all()
-
-    if not active_offers:
-        raise HTTPException(400, "No active offers available")
+    pity_max, configured_drops = await _get_gacha_config(db)
 
     client.gacha_pity += 1
     client.gacha_total_pulls += 1
-    is_pity = client.gacha_pity >= PITY_GUARANTEE
+    is_pity = client.gacha_pity >= pity_max
 
-    # Sort by cashback rate descending
-    sorted_offers = sorted(active_offers, key=lambda x: float(x[0].cashback_rate), reverse=True)
-
-    # Assign rarities
-    total = len(sorted_offers)
-    def get_rarity(idx: int) -> str:
-        pct = idx / max(total, 1)
-        if pct < 0.1:
-            return RARITY_LEGENDARY
-        if pct < 0.3:
-            return RARITY_EPIC
-        if pct < 0.6:
-            return RARITY_RARE
-        return RARITY_COMMON
-
-    if is_pity:
-        # Guaranteed legendary
-        chosen_offer, chosen_partner = sorted_offers[0]
-        rarity = RARITY_LEGENDARY
-        client.gacha_pity = 0
-    else:
-        # Weighted random: common 60%, rare 25%, epic 12%, legendary 3%
-        roll = random.random()
-        if roll < 0.03:
-            pool = sorted_offers[:max(1, total // 10)]
-            rarity = RARITY_LEGENDARY
-        elif roll < 0.15:
-            pool = sorted_offers[:max(1, total // 3)]
-            rarity = RARITY_EPIC
-        elif roll < 0.40:
-            pool = sorted_offers[:max(1, total * 6 // 10)]
-            rarity = RARITY_RARE
+    if configured_drops:
+        # Use admin-configured pool
+        if is_pity:
+            legendary_drops = [d for d in configured_drops if d.get("rarity") == "legendary"]
+            chosen_drop = random.choice(legendary_drops) if legendary_drops else random.choice(configured_drops)
+            rarity = "legendary"
+            client.gacha_pity = 0
         else:
-            pool = sorted_offers
-            rarity = RARITY_COMMON
+            weighted_pool = []
+            for d in configured_drops:
+                weighted_pool.extend([d] * max(1, int(d.get("weight", 1))))
+            chosen_drop = random.choice(weighted_pool)
+            rarity = chosen_drop.get("rarity", "common")
 
-        chosen_offer, chosen_partner = random.choice(pool)
+        offer_id = PyUUID(chosen_drop["offer_id"])
+        offer = await db.get(Offer, offer_id)
+        if not offer:
+            raise HTTPException(400, "Configured offer not found")
+        partner = await db.get(Partner, offer.partner_id)
+        chosen_offer, chosen_partner = offer, partner
+    else:
+        # Fallback: use all active offers with auto-rarity
+        active_offers = (await db.execute(
+            select(Offer, Partner)
+            .join(Partner, Offer.partner_id == Partner.id)
+            .where(Offer.status == "active")
+        )).all()
+
+        if not active_offers:
+            raise HTTPException(400, "No active offers available")
+
+        sorted_offers = sorted(active_offers, key=lambda x: float(x[0].cashback_rate), reverse=True)
+        total = len(sorted_offers)
+
+        if is_pity:
+            chosen_offer, chosen_partner = sorted_offers[0]
+            rarity = "legendary"
+            client.gacha_pity = 0
+        else:
+            roll = random.random()
+            if roll < 0.03:
+                pool = sorted_offers[:max(1, total // 10)]
+                rarity = "legendary"
+            elif roll < 0.15:
+                pool = sorted_offers[:max(1, total // 3)]
+                rarity = "epic"
+            elif roll < 0.40:
+                pool = sorted_offers[:max(1, total * 6 // 10)]
+                rarity = "rare"
+            else:
+                pool = sorted_offers
+                rarity = "common"
+            chosen_offer, chosen_partner = random.choice(pool)
 
     # Auto-activate the offer
     existing = (await db.execute(
